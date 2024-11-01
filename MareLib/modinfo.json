@@ -1,0 +1,13 @@
+{
+    "type": "code",
+    "modid": "marelib",
+    "name": "MareLib",
+    "authors": [
+        "nuts"
+    ],
+    "description": "mares mares mares",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": ""
+    }
+}
