@@ -16,7 +16,7 @@ public class Texture : IDisposable
     /// </summary>
     public static Texture Create(string assetPath, bool aliased = true, bool mipmaps = false)
     {
-        IAsset? textureAsset = MainHook.Capi.Assets.Get(new AssetLocation(assetPath)) ?? throw new Exception($"Texture asset not found: {assetPath}!");
+        IAsset? textureAsset = MainAPI.Capi.Assets.Get(new AssetLocation(assetPath)) ?? throw new Exception($"Texture asset not found: {assetPath}!");
         byte[] pngData = textureAsset.Data;
 
         return Create(pngData, aliased, mipmaps);

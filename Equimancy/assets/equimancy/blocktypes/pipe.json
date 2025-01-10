@@ -1,0 +1,28 @@
+{
+  "code": "pipe",
+  "class": "BlockPipe",
+  "entityClass": "BlockEntityPipe",
+  "sideopaque":
+  {
+    "all": false
+  },
+  "blockmaterial": "Metal",
+  "creativeinventory":
+  {
+    "general":
+    [
+      "*"
+    ],
+    "equimancy":
+    [
+      "*"
+    ]
+  },
+  "sounds":
+  {
+    "place": "equimancy:pipebreak",
+    "break": "equimancy:pipebreak",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone*"
+  }
+}

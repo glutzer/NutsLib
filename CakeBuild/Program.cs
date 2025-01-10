@@ -17,17 +17,34 @@ namespace CakeBuild;
 
 public static class Program
 {
-    public static int Main(string[] args)
+    public static string[] ModsToBuild { get; } = { "MareLib" };
+    public static bool BuildToModsFolder { get; } = true;
+
+    public static string ModsFolder { get; } = null!;
+    public static string CurrentMod { get; private set; } = null!;
+
+    static Program()
     {
-        return new CakeHost()
-            .UseContext<BuildContext>()
-            .Run(args);
+        string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify);
+        ModsFolder = System.IO.Path.Combine(appData, "VintagestoryData/mods");
+    }
+
+    public static void Main(string[] args)
+    {
+        for (int i = 0; i < ModsToBuild.Length; i++)
+        {
+            CurrentMod = ModsToBuild[i];
+            new CakeHost()
+                .UseContext<BuildContext>()
+                .Run(args);
+        }
     }
 }
 
 public class BuildContext : FrostingContext
 {
-    public const string ProjectName = "MareLib";
+    public string ProjectName = Program.CurrentMod;
+    public bool BuildToModsFolder = Program.BuildToModsFolder;
     public string BuildConfiguration { get; }
     public string Version { get; }
     public string Name { get; }
@@ -53,8 +70,8 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext>
             return;
         }
 
-        FilePathCollection jsonFiles = context.GetFiles($"../{BuildContext.ProjectName}/assets/**/*.json");
-        foreach (Cake.Core.IO.FilePath file in jsonFiles)
+        FilePathCollection jsonFiles = context.GetFiles($"../{context.ProjectName}/assets/**/*.json");
+        foreach (FilePath file in jsonFiles)
         {
             try
             {
@@ -75,14 +92,13 @@ public sealed class BuildTask : FrostingTask<BuildContext>
 {
     public override void Run(BuildContext context)
     {
-        context.DotNetClean($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
+        context.DotNetClean($"../{context.ProjectName}/{context.ProjectName}.csproj",
             new DotNetCleanSettings
             {
                 Configuration = context.BuildConfiguration
             });
 
-
-        context.DotNetPublish($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
+        context.DotNetPublish($"../{context.ProjectName}/{context.ProjectName}.csproj",
             new DotNetPublishSettings
             {
                 Configuration = context.BuildConfiguration
@@ -99,17 +115,25 @@ public sealed class PackageTask : FrostingTask<BuildContext>
         context.EnsureDirectoryExists("../Releases");
         context.CleanDirectory("../Releases");
         context.EnsureDirectoryExists($"../Releases/{context.Name}");
-        context.CopyFiles($"../{BuildContext.ProjectName}/bin/{context.BuildConfiguration}/Mods/mod/publish/*", $"../Releases/{context.Name}");
-        if (context.DirectoryExists($"../{BuildContext.ProjectName}/assets"))
+        context.CopyFiles($"../{context.ProjectName}/bin/{context.BuildConfiguration}/Mods/mod/publish/*", $"../Releases/{context.Name}");
+        if (context.DirectoryExists($"../{context.ProjectName}/assets"))
         {
-            context.CopyDirectory($"../{BuildContext.ProjectName}/assets", $"../Releases/{context.Name}/assets");
+            context.CopyDirectory($"../{context.ProjectName}/assets", $"../Releases/{context.Name}/assets");
         }
-        context.CopyFile($"../{BuildContext.ProjectName}/modinfo.json", $"../Releases/{context.Name}/modinfo.json");
-        if (context.FileExists($"../{BuildContext.ProjectName}/modicon.png"))
+        context.CopyFile($"../{context.ProjectName}/modinfo.json", $"../Releases/{context.Name}/modinfo.json");
+        if (context.FileExists($"../{context.ProjectName}/modicon.png"))
         {
-            context.CopyFile($"../{BuildContext.ProjectName}/modicon.png", $"../Releases/{context.Name}/modicon.png");
+            context.CopyFile($"../{context.ProjectName}/modicon.png", $"../Releases/{context.Name}/modicon.png");
         }
-        context.Zip($"../Releases/{context.Name}", $"../Releases/{context.Name}_{context.Version}.zip");
+
+        if (context.BuildToModsFolder)
+        {
+            context.Zip($"../Releases/{context.Name}", $"{Program.ModsFolder}/{context.Name}_{context.Version}.zip");
+        }
+        else
+        {
+            context.Zip($"../Releases/{context.Name}", $"../Releases/{context.Name}_{context.Version}.zip");
+        }
     }
 }
 

@@ -15,6 +15,9 @@ public static class FontRegistry
 {
     private static readonly Dictionary<string, Font> fonts = new();
 
+    /// <summary>
+    /// Constant used for all spaces.
+    /// </summary>
     private const float SPACE_ADVANCE = 0.2f;
 
     /// <summary>
@@ -38,6 +41,7 @@ public static class FontRegistry
 
         // How much the font must be translated downward to center it, * scale.
         float centerOffset = fontJson.metrics.ascender / 2;
+        float lineHeight = fontJson.metrics.lineHeight;
 
         int atlasWidth = fontJson.atlas.width;
         int atlasHeight = fontJson.atlas.height;
@@ -71,7 +75,7 @@ public static class FontRegistry
             fontDict.Add(' ', spaceChar);
         }
 
-        fonts.Add(name, new Font(fontDict, centerOffset, fontAtlas));
+        fonts.Add(name, new Font(fontDict, centerOffset, lineHeight, fontAtlas));
     }
 
     public static MeshHandle CreateGlyphHandle(FontBounds planeBounds, FontBounds atlasBounds, int atlasWidth, int atlasHeight)
@@ -101,7 +105,7 @@ public static class FontRegistry
     /// </summary>
     public static void LoadFonts()
     {
-        ICoreClientAPI capi = MainHook.Capi;
+        ICoreClientAPI capi = MainAPI.Capi;
 
         string dataPath = GamePaths.DataPath;
 
@@ -109,7 +113,7 @@ public static class FontRegistry
         if (Directory.Exists(dataPath + "/FontCache")) Directory.Delete(dataPath + "/FontCache", true);
         Directory.CreateDirectory(dataPath + "/FontCache");
 
-        foreach (IAsset font in capi.Assets.GetMany("config/fonts"))
+        foreach (IAsset font in capi.Assets.GetMany("fonts"))
         {
             File.WriteAllBytes(dataPath + "/FontCache/font.zip", font.Data);
             ZipFile.ExtractToDirectory(dataPath + "/FontCache/font.zip", dataPath + "/FontCache");

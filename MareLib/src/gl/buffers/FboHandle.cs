@@ -31,10 +31,7 @@ public class FboHandle : IDisposable
     /// <summary>
     /// Get the texture of an attachment.
     /// </summary>
-    public Texture this[FramebufferAttachment attachment]
-    {
-        get => attachments[attachment];
-    }
+    public Texture this[FramebufferAttachment attachment] => attachments[attachment];
 
     /// <summary>
     /// Binds this fbo for use.
@@ -45,12 +42,31 @@ public class FboHandle : IDisposable
         GL.BindFramebuffer(target, handle);
     }
 
+    /// <summary>
+    /// Set the draw buffers for this framebuffer.
+    /// Should only need to be set once.
+    /// </summary>
+    public void DrawBuffers(params DrawBuffersEnum[] attachments)
+    {
+        int previousFramebufferId = GL.GetInteger(GetPName.FramebufferBinding);
+
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, handle);
+
+        GL.DrawBuffers(attachments.Length, attachments);
+
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebufferId);
+    }
+
     public void SetDimensions(int width, int height)
     {
         if (width == Width && height == Height) return;
 
         Width = width;
         Height = height;
+
+        int previousFramebufferId = GL.GetInteger(GetPName.FramebufferBinding);
+
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, handle);
 
         // These SHOULD already be attached so no need to re-attach them?
         foreach (KeyValuePair<FramebufferAttachment, Texture> attachment in attachments)
@@ -60,16 +76,20 @@ public class FboHandle : IDisposable
 
             if (attachment.Key == FramebufferAttachment.DepthAttachment)
             {
-                GL.TexStorage2D(TextureTarget2d.Texture2D, 0, SizedInternalFormat.DepthComponent32f, width, height);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, Width, Height, 0, PixelFormat.DepthComponent, PixelType.UnsignedByte, 0);
             }
             else
             {
-                GL.TexStorage2D(TextureTarget2d.Texture2D, 0, SizedInternalFormat.Rgba8, width, height);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Width, Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
             }
 
             attachment.Value.Width = width;
             attachment.Value.Height = height;
+
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, attachment.Key, TextureTarget.Texture2D, textureHandle, 0);
         }
+
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebufferId);
     }
 
     public FboHandle AddAttachment(FramebufferAttachment attachment, bool aliased = true)
@@ -82,18 +102,18 @@ public class FboHandle : IDisposable
         int textureHandle = GL.GenTexture();
         GL.BindTexture(TextureTarget.Texture2D, textureHandle);
 
-        // Make it nearest.
-        Texture.SetAliasing(aliased, false, TextureTarget.Texture2D);
-
         if (attachment == FramebufferAttachment.DepthAttachment)
         {
-            GL.TexStorage2D(TextureTarget2d.Texture2D, 0, SizedInternalFormat.DepthComponent32f, Width, Height);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, Width, Height, 0, PixelFormat.DepthComponent, PixelType.UnsignedByte, 0);
         }
         else
         {
-            GL.TexStorage2D(TextureTarget2d.Texture2D, 0, SizedInternalFormat.Rgba8, Width, Height);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Width, Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
             activeColorBuffers[attachment - FramebufferAttachment.ColorAttachment0] = true;
         }
+
+        // Make it nearest.
+        Texture.SetAliasing(aliased, false, TextureTarget.Texture2D);
 
         int previousFramebufferId = GL.GetInteger(GetPName.FramebufferBinding);
 
@@ -116,5 +136,14 @@ public class FboHandle : IDisposable
 
         GL.DeleteFramebuffer(handle);
         GC.SuppressFinalize(this);
+    }
+
+    public FramebufferErrorCode Status()
+    {
+        int previousFramebufferId = GL.GetInteger(GetPName.FramebufferBinding);
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, handle);
+        FramebufferErrorCode status = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebufferId);
+        return status;
     }
 }

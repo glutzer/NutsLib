@@ -7,12 +7,6 @@ public partial class TextureBuilder
     public static SKColor Shadow { get; } = new SKColor(0, 0, 0, 135);
     public static SKColor Highlight { get; } = new SKColor(255, 255, 255, 75);
 
-    public TextureBuilder NoShader()
-    {
-        paint.Shader = null;
-        return this;
-    }
-
     public void DrawEmbossed(SKPath path, bool inside)
     {
         SKColor shadowColor = inside ? Shadow : Highlight;

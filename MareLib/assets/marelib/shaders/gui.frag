@@ -4,12 +4,14 @@ in vec2 uv;
 
 uniform int shaderType;
 uniform sampler2D tex2d;
-uniform vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 color = vec4(1.0);
+uniform vec4 fontColor = vec4(1.0);
 
 // 9 slice stuff.
 uniform vec2 dimensions;
 uniform vec2 border;
 uniform vec2 centerScale;
+uniform int bold;
 
 // const float smoothing = 1.0 / 16.0;
 const float pxRange = 12.0;
@@ -62,16 +64,23 @@ vec4 do9Slice() {
   return texture(tex2d, newUV);
 }
 
+void setDepth() {}
+
 void main() {
   if (shaderType == 0) { // Regular ui texture.
     fragColor = texture(tex2d, uv) * color;
   } else if (shaderType == 1) { // 9-slice ui texture.
     fragColor = do9Slice() * color;
   } else if (shaderType == 2) { // Msdf font.
+    float sdPower = 0.5;
+    if (bold == 1) {
+      sdPower -= 0.15;
+    }
+
     vec3 msd = texture(tex2d, uv).rgb;
     float sd = median(msd.r, msd.g, msd.b);
-    float screenPxDistance = screenPxRange() * (sd - 0.5);
+    float screenPxDistance = screenPxRange() * (sd - sdPower);
     float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
-    fragColor = vec4(color.xyz, opacity * color.w);
+    fragColor = vec4(fontColor.xyz, opacity * fontColor.w);
   }
 }

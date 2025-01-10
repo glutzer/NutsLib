@@ -30,6 +30,18 @@ public partial class TextureBuilder
         return texture;
     }
 
+    public TextureBuilder NoShader()
+    {
+        paint.Shader = null;
+        return this;
+    }
+
+    public TextureBuilder Shader(SKShader shader)
+    {
+        paint.Shader = shader;
+        return this;
+    }
+
     public readonly SKBitmap bmp;
     public readonly SKCanvas canvas;
     public readonly SKPaint paint;

@@ -74,7 +74,7 @@ public class MeshHandle
     {
         if (vertexId != 0 || indexId != 0 || vaoId != 0)
         {
-            throw new Exception("Leaking handle!");
+
         }
     }
 }

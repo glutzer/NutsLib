@@ -3,15 +3,20 @@ using System;
 
 namespace MareLib;
 
-public unsafe class UboHandle<T> : IDisposable where T : unmanaged
+public unsafe class UboHandle<T> : IUbo, IDisposable where T : unmanaged
 {
-    private readonly int handle;
+    public readonly int handle;
+    public int Handle => handle;
+
     private readonly BufferUsageHint usageType;
 
     public UboHandle(BufferUsageHint usageType)
     {
         handle = GL.GenBuffer();
         this.usageType = usageType;
+
+        GL.BindBuffer(BufferTarget.UniformBuffer, handle);
+        GL.BufferData(BufferTarget.UniformBuffer, sizeof(T), IntPtr.Zero, usageType);
     }
 
     public void BufferData(T data)

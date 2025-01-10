@@ -1,8 +1,6 @@
-﻿using OpenTK.Mathematics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Vintagestory.API.Client;
-using Vintagestory.Client.NoObf;
 
 namespace MareLib;
 
@@ -21,18 +19,29 @@ public abstract class Gui : GuiDialog
     public override string? ToggleKeyCombinationCode => null;
     public override bool UnregisterOnClose => true;
 
-    private readonly List<Widget> elements = new();
-    private Widget[] elementsRenderOrder = Array.Empty<Widget>();
-    private Widget[] elementsInteractOrder = Array.Empty<Widget>();
+    private readonly List<Widget> widgets = new();
+    private Widget[] widgetsBackToFront = Array.Empty<Widget>();
 
     public readonly GuiEvents guiEvents = new();
 
     public Gui(ICoreClientAPI capi) : base(capi)
     {
-        MainHook.OnWindowResize += OnWindowResize;
-        MainHook.OnGuiRescale += OnGuiRescale;
+
     }
 
+    public static int Scaled(int value)
+    {
+        return value * MainAPI.GuiScale;
+    }
+
+    public static float Scaled(float value)
+    {
+        return value * MainAPI.GuiScale;
+    }
+
+    /// <summary>
+    /// Register events for the whole gui.
+    /// </summary>
     public virtual void RegisterEvents(GuiEvents guiEvents)
     {
 
@@ -40,11 +49,15 @@ public abstract class Gui : GuiDialog
 
     public override void OnGuiOpened()
     {
-        SetElements();
+        MainAPI.OnWindowResize += OnWindowResize;
+        MainAPI.OnGuiRescale += OnGuiRescale;
+        SetWidgets();
     }
 
     public override void OnGuiClosed()
     {
+        MainAPI.OnWindowResize -= OnWindowResize;
+        MainAPI.OnGuiRescale -= OnGuiRescale;
         Dispose();
     }
 
@@ -61,109 +74,104 @@ public abstract class Gui : GuiDialog
     }
 
     /// <summary>
-    /// Add every element to the gui here.
+    /// Add every widget to the gui here.
     /// Returns the main bounds of the gui.
     /// </summary>
-    public abstract Bounds PopulateElements();
+    public abstract void PopulateWidgets(out Bounds mainBounds);
 
     /// <summary>
-    /// Remakes all elements.
+    /// Remakes all widgets.
     /// </summary>
-    private void SetElements()
+    private void SetWidgets()
     {
         Dispose();
 
-        elements.Clear();
-        MainBounds = PopulateElements();
+        widgets.Clear();
+        PopulateWidgets(out Bounds mainBounds);
+        MainBounds = mainBounds;
 
-        PartitionElements();
+        PartitionWidgets();
         MainBounds.SetBounds();
 
-        foreach (Widget element in elementsRenderOrder) element.Initialize();
+        foreach (Widget widget in widgetsBackToFront) widget.Initialize();
     }
 
     /// <summary>
     /// Partitions events and order.
     /// </summary>
-    private void PartitionElements()
+    private void PartitionWidgets()
     {
         guiEvents.ClearEvents();
 
         SortedDictionary<int, List<Widget>> sortedDictionary = new();
         List<Widget> sortedList = new();
-        PartitionElements(sortedDictionary, elements, 0);
+        PartitionWidgets(sortedDictionary, widgets, 0);
         foreach (List<Widget> pair in sortedDictionary.Values)
         {
             sortedList.AddRange(pair);
         }
-        elementsRenderOrder = sortedList.ToArray();
-        sortedList.Reverse();
-        elementsInteractOrder = sortedList.ToArray();
+        widgetsBackToFront = sortedList.ToArray();
 
         // Re-register events.
         RegisterEvents(guiEvents);
-        foreach (Widget element in elementsInteractOrder)
+
+        for (int i = widgetsBackToFront.Length; i-- > 0;)
         {
-            element.RegisterEvents(guiEvents);
+            widgetsBackToFront[i].RegisterEvents(guiEvents);
         }
     }
 
-    private static void PartitionElements(SortedDictionary<int, List<Widget>> sortedDictionary, List<Widget> elements, int currentPriority)
+    private static void PartitionWidgets(SortedDictionary<int, List<Widget>> sortedDictionary, List<Widget> widgets, int currentPriority)
     {
-        foreach (Widget element in elements)
+        foreach (Widget widget in widgets)
         {
-            int sortPriority = element.SortPriority + currentPriority;
+            int sortPriority = widget.SortPriority + currentPriority;
             if (!sortedDictionary.ContainsKey(sortPriority)) sortedDictionary.Add(sortPriority, new List<Widget>());
-            sortedDictionary[sortPriority].Add(element);
+            sortedDictionary[sortPriority].Add(widget);
 
-            if (element.children == null) continue;
-            PartitionElements(sortedDictionary, element.children, currentPriority);
+            if (widget.children == null) continue;
+            PartitionWidgets(sortedDictionary, widget.children, currentPriority);
         }
     }
 
     /// <summary>
-    /// Marks elements to be repartitioned on the next frame.
+    /// Marks widgets to be repartitioned on the next frame.
     /// </summary>
     public void MarkForRepartition()
     {
         shouldRepartition = true;
     }
 
-    public void AddElement(Widget element)
+    public void AddWidget(Widget widget)
     {
-        elements.Add(element);
+        widgets.Add(widget);
     }
 
     public override void OnRenderGUI(float dt)
     {
-        if (shouldRepartition) PartitionElements();
+        if (shouldRepartition) PartitionWidgets();
 
+        // Must re-use the current gui shader when done.
         IShaderProgram currentShader = capi.Render.CurrentActiveShader;
-        currentShader.Stop();
 
-        ShaderProgram guiShader = MareShaderRegistry.Shaders["gui"];
+        MareShader guiShader = MareShaderRegistry.Get("gui");
         guiShader.Use();
 
-        // Set ortho.
-        Matrix4 projection = Matrix4.CreateOrthographicOffCenter(0, MainHook.RenderWidth, MainHook.RenderHeight, 0, -1, 1);
-        guiShader.Uniform("projectionMatrix", projection);
-
-        capi.Render.GLDisableDepthTest();
+        RenderTools.DisableDepthTest();
 
         guiEvents.TriggerBeforeRender(dt);
 
-        foreach (Widget element in elementsRenderOrder)
+        foreach (Widget widget in widgetsBackToFront)
         {
-            element.OnRender(dt, guiShader);
+            widget.OnRender(dt, guiShader);
         }
 
         guiEvents.TriggerAfterRender(dt);
 
         // Depth testing is enabled for normal guis but these are sorted.
         // Must be re-enabled for rendering items.
-        capi.Render.GLEnableDepthTest();
+        RenderTools.EnableDepthTest();
 
-        guiShader.Stop();
         currentShader.Use();
     }
 
@@ -172,7 +180,7 @@ public abstract class Gui : GuiDialog
     /// </summary>
     public void OnWindowResize(int width, int height)
     {
-        SetElements();
+        SetWidgets();
     }
 
     /// <summary>
@@ -180,7 +188,7 @@ public abstract class Gui : GuiDialog
     /// </summary>
     public void OnGuiRescale(int scale)
     {
-        SetElements();
+        SetWidgets();
     }
 
     public override void OnMouseDown(MouseEvent args)
@@ -220,9 +228,9 @@ public abstract class Gui : GuiDialog
 
     public override void Dispose()
     {
-        foreach (Widget element in elementsRenderOrder)
+        foreach (Widget widget in widgetsBackToFront)
         {
-            element.Dispose();
+            widget.Dispose();
         }
 
         // Might be some "composers" in there.

@@ -1,9 +1,7 @@
 ﻿using OpenTK.Mathematics;
-using System.Runtime.InteropServices;
 
 namespace MareLib;
 
-[StructLayout(LayoutKind.Sequential)]
 public struct GuiVertex
 {
     public Vector3 position;

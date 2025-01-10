@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Vintagestory.Client.NoObf;
 
 namespace MareLib;
 
@@ -37,18 +36,18 @@ public abstract class Widget
 
     public void AddClip(Bounds bounds)
     {
-        AddChild(new ClipElement(gui, true, bounds));
+        AddChild(new ClipWidget(gui, true, bounds));
     }
 
     public void EndClip(Bounds bounds)
     {
-        AddChild(new ClipElement(gui, false, bounds));
+        AddChild(new ClipWidget(gui, false, bounds));
     }
 
     /// <summary>
     /// Shader assumed to already be in use.
     /// </summary>
-    public virtual void OnRender(float dt, ShaderProgram guiShader)
+    public virtual void OnRender(float dt, MareShader shader)
     {
 
     }

@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MareLib;
 
+/// <summary>
+/// Similar to a dictionary, stores things by an id.
+/// </summary>
 public class QueuedArray<T>
 {
     private readonly Queue<int> freeIndices = new();
     private int nextIndex;
-    public readonly T[] array;
+    public T[] array;
     public int Count { get; private set; }
 
     public QueuedArray(int size)
@@ -26,6 +30,11 @@ public class QueuedArray<T>
         }
 
         Count++;
+
+        if (nextIndex == array.Length)
+        {
+            Array.Resize(ref array, array.Length * 2);
+        }
 
         array[nextIndex] = item;
         return nextIndex++;

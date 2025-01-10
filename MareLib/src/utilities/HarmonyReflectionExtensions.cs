@@ -123,39 +123,16 @@ public static class HarmonyReflectionExtensions
         AccessTools.Property(instance.GetType(), propertyName).SetValue(instance, setVal);
     }
 
-    /// <summary>
-    ///     Gets a static property within the calling type. This can be an internal or private property within another assembly.
-    /// </summary>
-    /// <typeparam name="T">The type of property to return.</typeparam>
-    /// <param name="type">The type in which the property resides.</param>
-    /// <param name="propertyName">The name of the property to return.</param>
-    /// <returns>An object containing the value of the property, reflected by this instance.</returns>
     public static T GetStaticProperty<T>(this Type type, string propertyName)
     {
         return (T)AccessTools.Property(type, propertyName).GetValue(null)!;
     }
 
-    /// <summary>
-    ///     Sets a static property within the calling type. This can be an internal or private property within another assembly.
-    /// </summary>
-    /// <param name="type">The type in which the property resides.</param>
-    /// <param name="propertyName">The name of the property to set.</param>
-    /// <param name="setVal">The value to set the property to.</param>
     public static void SetStaticProperty(this Type type, string propertyName, object setVal)
     {
         AccessTools.Property(type, propertyName).SetValue(null, setVal);
     }
 
-    // Methods.
-
-    /// <summary>
-    ///     Calls a method within an instance of an object, via reflection. This can be an internal or private method within another assembly.
-    /// </summary>
-    /// <typeparam name="T">The return type, expected back from the method.</typeparam>
-    /// <param name="instance">The instance to call the method from.</param>
-    /// <param name="method">The name of the method to call.</param>
-    /// <param name="args">The arguments to pass to the method.</param>
-    /// <returns>The return value of the reflected method call.</returns>
     public static T CallMethod<T>(this object instance, string method, params object[] args)
     {
         return (T)AccessTools.Method(instance.GetType(), method).Invoke(instance, args)!;
@@ -166,92 +143,45 @@ public static class HarmonyReflectionExtensions
         return (T)AccessTools.Method(instance.GetType(), method, parameters).Invoke(instance, args)!;
     }
 
-    /// <summary>
-    ///     Calls a method within an instance of an object, via reflection. This can be an internal or private method within another assembly.
-    /// </summary>
-    /// <param name="instance">The instance to call the method from.</param>
-    /// <param name="method">The name of the method to call.</param>
-    /// <param name="args">The arguments to pass to the method.</param>
     public static void CallMethod(this object instance, string method, params object[] args)
     {
         AccessTools.Method(instance.GetType(), method)?.Invoke(instance, args);
     }
 
-    /// <summary>
-    ///     Calls a method within an instance of an object, via reflection. This can be an internal or private method within another assembly.
-    /// </summary>
-    /// <param name="instance">The instance to call the method from.</param>
-    /// <param name="method">The name of the method to call.</param>
     public static void CallMethod(this object instance, string method)
     {
         AccessTools.Method(instance.GetType(), method)?.Invoke(instance, null);
     }
 
-    /// <summary>
-    ///     Calls a static method within an object, via reflection. This can be an internal or private method within another assembly.
-    /// </summary>
-    /// <param name="instance">The instance to call the method from.</param>
-    /// <param name="method">The name of the method to call.</param>
     public static void CallStaticMethod(this object instance, string method)
     {
         AccessTools.Method(instance.GetType(), method)?.Invoke(null, null);
     }
 
-    /// <summary>
-    ///     Calls a static method within a type, via reflection. This can be an internal or private method within another assembly.
-    /// </summary>
-    /// <param name="type">The type to call the method from.</param>
-    /// <param name="method">The name of the method to call.</param>
     public static void CallStaticMethod(this Type type, string method)
     {
         AccessTools.Method(type, method)?.Invoke(null, null);
     }
 
-    /// <summary>
-    ///     Gets the <see cref="MethodInfo"/> for a method within an instance of a class, via reflection. This can be an internal or private method within another assembly.
-    /// </summary>
-    /// <param name="instance">The instance to get the method from.</param>
-    /// <param name="method">The method to gather info about.</param>
-    /// <param name="parameters">An itemised method signature, used to distinguish between overloads.</param>
-    /// <param name="generics">An itemised array of generic parameters, used to distinguish between overloads.</param>
-    /// <returns>Returns a <see cref="MethodInfo"/> for the specified method.</returns>
-    public static MethodInfo GetMethod(this object instance, string method, Type[] parameters = null, Type[] generics = null)
+    public static MethodInfo GetMethod(this object instance, string method, Type[] parameters = null!, Type[] generics = null!)
     {
         return AccessTools.Method(instance.GetType(), method, parameters, generics);
     }
 
-    // Types.
-
-    /// <summary>
-    ///     Creates the instance of a specified Type. Be aware that this will ignore all Service Providers, and attempt to directly instantiate a class.
-    /// </summary>
-    /// <param name="type">The type to create an instance of.</param>
-    /// <returns>A new instance of the specified type.</returns>
     public static object CreateInstance(this Type type)
     {
         return AccessTools.CreateInstance(type);
     }
 
-    /// <summary>
-    ///     Gets the type of the class within an assembly, via reflection.
-    /// </summary>
-    /// <param name="assembly">The assembly the class resides in.</param>
-    /// <param name="className">The name of the class.</param>
-    /// <returns>The <see cref="Type"/> of the class, if found within the assembly, otherwise, returns <c>null</c>.</returns>
     public static Type GetClassType(this Assembly assembly, string className)
     {
         Type[] types = AccessTools.GetTypesFromAssembly(assembly);
         return Array.Find(types, t => t.Name == className)!;
     }
 
-    // Objects.
-
     /// <summary>
-    ///     Makes a deep copy of any object.
+    /// Make a deep copy of any object.
     /// </summary>
-    /// <typeparam name="T">The type of the instance that should be created; for legacy reasons, this must be a class or interface.</typeparam>
-    /// <param name="source">The original object.</param>
-    /// <returns>A copy of the original object but of type <typeparamref name="T" /></returns>
     public static T DeepClone<T>(this T source) where T : class
     {
         return AccessTools.MakeDeepCopy<T>(source);

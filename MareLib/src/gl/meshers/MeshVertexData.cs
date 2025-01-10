@@ -1,4 +1,5 @@
 ﻿using OpenTK.Mathematics;
+using System;
 using System.Runtime.InteropServices;
 
 namespace MareLib;
@@ -20,24 +21,42 @@ public struct MeshVertexData
         this.normal = normal;
     }
 
-    public void RotateX(float radians)
+    public void RotateX(float radians, bool round = true)
     {
         Matrix3 matrix = Matrix3.CreateRotationX(radians);
         position *= matrix;
         normal *= matrix;
+
+        if (round)
+        {
+            position = new Vector3(MathF.Round(position.X, 6), MathF.Round(position.Y, 6), MathF.Round(position.Z, 6));
+            normal = new Vector3(MathF.Round(normal.X, 6), MathF.Round(normal.Y, 6), MathF.Round(normal.Z, 6));
+        }
     }
 
-    public void RotateY(float radians)
+    public void RotateY(float radians, bool round = true)
     {
         Matrix3 matrix = Matrix3.CreateRotationY(radians);
         position *= matrix;
         normal *= matrix;
+
+        if (round)
+        {
+            position = new Vector3(MathF.Round(position.X, 6), MathF.Round(position.Y, 6), MathF.Round(position.Z, 6));
+            normal = new Vector3(MathF.Round(normal.X, 6), MathF.Round(normal.Y, 6), MathF.Round(normal.Z, 6));
+        }
     }
 
-    public void RotateZ(float radians)
+    public void RotateZ(float radians, bool round = true)
     {
         Matrix3 matrix = Matrix3.CreateRotationZ(radians);
         position *= matrix;
         normal *= matrix;
+
+        if (round)
+        {
+            position = new Vector3(MathF.Round(position.X, 6), MathF.Round(position.Y, 6), MathF.Round(position.Z, 6));
+            normal = new Vector3(MathF.Round(normal.X, 6), MathF.Round(normal.Y, 6), MathF.Round(normal.Z, 6));
+        }
     }
 }

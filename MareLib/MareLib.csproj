@@ -67,8 +67,6 @@
   <Content Include="assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </Content>
-  <None Remove="genfontpacks.cmd" />
-  <None Remove="msdf-atlas-gen.exe" />
   <Content Include="genfontpacks.cmd">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
@@ -81,8 +79,9 @@
 </ItemGroup>
 
 <ItemGroup>
-  <Folder Include="assets\marelib\textures\" />
-  <Folder Include="src\patches\" />
+  <Content Update="assets\marelib\fluidtypes\freshwater.json">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </Content>
 </ItemGroup>
 
 </Project>

@@ -1,5 +1,8 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
+using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Vintagestory.API.Client;
 
 namespace MareLib;
 
@@ -10,17 +13,16 @@ public class Bounds
 {
     public Bounds? parentBounds;
 
-    public List<Bounds> children = new(4);
+    public List<Bounds>? children;
 
-    public bool ShouldScale => !noScaling && sizingH != BoundsSizing.PercentSize && sizingV != BoundsSizing.PercentSize;
-    private bool noScaling;
+    public bool NoScale { get; private set; }
     private bool alignOutsideH;
     private bool alignOutsideV;
     private BoundsSizing positioningH;
     private BoundsSizing positioningV;
     private BoundsSizing sizingH;
     private BoundsSizing sizingV;
-    private BoundsAlignment alignment;
+    private Align alignment;
 
     private int fixedX;
     private int fixedY;
@@ -43,6 +45,9 @@ public class Bounds
     public int Width { get; private set; }
     public int Height { get; private set; }
     public int Scale { get; private set; }
+
+    private readonly int frameWidth;
+    private readonly int frameHeight;
 
     /// <summary>
     /// Called when bounds are set if they are a different size.
@@ -83,24 +88,23 @@ public class Bounds
         int cWidth = Width;
         int cHeight = Height;
 
-        // Implement scaling here...
-        int guiScale = MainHook.GuiScale;
-        if (noScaling) guiScale = 1;
+        int guiScale = MainAPI.GuiScale;
+        if (parentBounds?.NoScale == true) NoScaling(); // Don't scale if parent doesn't scale.
+        if (NoScale) guiScale = 1;
 
         Scale = guiScale;
 
-        int frameWidth = MainHook.RenderWidth;
-        int frameHeight = MainHook.RenderHeight;
+        // X and Y were previously multiplied by gui scale, don't do that now?
 
         scaledX = positioningH switch
         {
-            BoundsSizing.FixedSize => fixedX * guiScale,
+            BoundsSizing.FixedSize => fixedX, // * guiScale
             _ => parentBounds == null ? (int)(percentX * frameWidth) : (int)(percentX * parentBounds.Width)
         };
 
         scaledY = positioningV switch
         {
-            BoundsSizing.FixedSize => fixedY * guiScale,
+            BoundsSizing.FixedSize => fixedY, // * guiScale
             _ => parentBounds == null ? (int)(percentY * frameHeight) : (int)(percentY * parentBounds.Height)
         };
 
@@ -133,9 +137,12 @@ public class Bounds
         }
 
         // Initialize children.
-        foreach (Bounds child in children)
+        if (children != null)
         {
-            child.SetBounds();
+            foreach (Bounds child in children)
+            {
+                child.SetBounds();
+            }
         }
 
         if (cWidth != Width || cHeight != Height) OnResize?.Invoke();
@@ -145,45 +152,45 @@ public class Bounds
     {
         switch (alignment)
         {
-            case BoundsAlignment.None:
+            case Align.None:
                 break;
-            case BoundsAlignment.LeftTop: // These are both effectively the same.
+            case Align.LeftTop: // These are both effectively the same.
                 if (alignOutsideH) scaledX -= scaledWidth;
                 if (alignOutsideV) scaledY -= scaledHeight;
                 break;
-            case BoundsAlignment.LeftMiddle:
+            case Align.LeftMiddle:
                 if (alignOutsideH) scaledX -= scaledWidth;
                 scaledY += (parentHeight / 2) - (scaledHeight / 2);
                 break;
-            case BoundsAlignment.LeftBottom:
+            case Align.LeftBottom:
                 if (alignOutsideH) scaledX -= scaledWidth;
                 if (alignOutsideV) scaledY += scaledHeight;
                 scaledY += parentHeight - scaledHeight;
                 break;
-            case BoundsAlignment.CenterTop:
+            case Align.CenterTop:
                 if (alignOutsideV) scaledY -= scaledHeight;
                 scaledX += (parentWidth / 2) - (scaledWidth / 2);
                 break;
-            case BoundsAlignment.Center: // Both of these for absolute center.
+            case Align.Center: // Both of these for absolute center.
                 scaledX += (parentWidth / 2) - (scaledWidth / 2);
                 scaledY += (parentHeight / 2) - (scaledHeight / 2);
                 break;
-            case BoundsAlignment.CenterBottom:
+            case Align.CenterBottom:
                 if (alignOutsideV) scaledY += scaledHeight;
                 scaledX += (parentWidth / 2) - (scaledWidth / 2);
                 scaledY += parentHeight - scaledHeight;
                 break;
-            case BoundsAlignment.RightTop:
+            case Align.RightTop:
                 if (alignOutsideH) scaledX += scaledWidth;
                 if (alignOutsideV) scaledY -= scaledHeight;
                 scaledX += parentWidth - scaledWidth;
                 break;
-            case BoundsAlignment.RightMiddle:
+            case Align.RightMiddle:
                 if (alignOutsideH) scaledX += scaledWidth;
                 scaledX += parentWidth - scaledWidth;
                 scaledY += (parentHeight / 2) - (scaledHeight / 2);
                 break;
-            case BoundsAlignment.RightBottom:
+            case Align.RightBottom:
                 if (alignOutsideH) scaledX += scaledWidth;
                 if (alignOutsideV) scaledY += scaledHeight;
                 scaledX += parentWidth - scaledWidth;
@@ -192,9 +199,10 @@ public class Bounds
         }
     }
 
-    private Bounds()
+    private Bounds(int frameWidth, int frameHeight)
     {
-
+        this.frameWidth = frameWidth;
+        this.frameHeight = frameHeight;
     }
 
     private Bounds(Bounds parent)
@@ -207,7 +215,15 @@ public class Bounds
     /// </summary>
     public static Bounds Create()
     {
-        return new Bounds();
+        return new Bounds(MainAPI.RenderWidth, MainAPI.RenderHeight);
+    }
+
+    /// <summary>
+    /// Create a top level bounds.
+    /// </summary>
+    public static Bounds Create(int renderWidth, int renderHeight)
+    {
+        return new Bounds(renderWidth, renderHeight);
     }
 
     public static Bounds CreateFrom(Bounds parent)
@@ -217,7 +233,7 @@ public class Bounds
 
     public Bounds NoScaling()
     {
-        noScaling = true;
+        NoScale = true;
         return this;
     }
 
@@ -238,27 +254,6 @@ public class Bounds
         fixedY = newY;
 
         SetBounds();
-    }
-
-    public bool IsInside(int x, int y)
-    {
-        // Return if the x and y are inside the render bounds.
-        return x >= X && x <= X + Width && y >= Y && y <= Y + Height;
-    }
-
-    public bool IsInside(float x, float y)
-    {
-        return x >= X && x <= X + Width && y >= Y && y <= Y + Height;
-    }
-
-    public bool IsInside(double x, double y)
-    {
-        return x >= X && x <= X + Width && y >= Y && y <= Y + Height;
-    }
-
-    public bool IsIntersecting(Bounds bounds)
-    {
-        return X < bounds.X + bounds.Width && X + Width > bounds.X && Y < bounds.Y + bounds.Height && Y + Height > bounds.Y;
     }
 
     public Bounds FixedX(int x)
@@ -393,7 +388,7 @@ public class Bounds
         return this;
     }
 
-    public Bounds Alignment(BoundsAlignment boundsAlignment, bool alignOutsideH = false, bool alignOutsideV = false)
+    public Bounds Alignment(Align boundsAlignment, bool alignOutsideH = false, bool alignOutsideV = false)
     {
         alignment = boundsAlignment;
         this.alignOutsideH = alignOutsideH;
@@ -467,7 +462,130 @@ public class Bounds
     public Bounds SetParent(Bounds parent)
     {
         parentBounds = parent;
-        parent?.children.Add(this);
+        parent.children ??= new List<Bounds>();
+        parent.children.Add(this);
         return this;
+    }
+
+    // Transform checks.
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsInAllBounds(int x, int y, int boundsX, int boundsY, int boundsWidth, int boundsHeight)
+    {
+        if (RenderTools.GuiTransformStack.Count > 1)
+        {
+            Matrix4 currentTransform = RenderTools.GuiTransformStack.Peek();
+
+            Vector4 startVector = new Vector4(boundsX, boundsY, 0, 1) * currentTransform;
+            Vector4 endVector = new Vector4(boundsX + boundsWidth, boundsY + boundsHeight, 0, 1) * currentTransform;
+
+            Vector4 min = Vector4.ComponentMin(startVector, endVector);
+            Vector4 max = Vector4.ComponentMax(startVector, endVector);
+
+            bool isInside = x >= min.X && x <= max.X && y >= min.Y && y <= max.Y;
+
+            return isInside && RenderTools.IsPointInsideScissor(x, y);
+        }
+        else
+        {
+            return x >= boundsX && x <= boundsX + boundsWidth && y >= boundsY && y <= boundsY + boundsHeight
+            && RenderTools.IsPointInsideScissor(x, y);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInAllBounds(MouseEvent mouseEvent)
+    {
+        return IsInAllBounds(mouseEvent.X, mouseEvent.Y);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInAllBounds(int x, int y)
+    {
+        return IsInAllBounds(x, (float)y);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInAllBounds(float x, float y)
+    {
+        if (RenderTools.GuiTransformStack.Count > 1)
+        {
+            Matrix4 currentTransform = RenderTools.GuiTransformStack.Peek();
+
+            Vector4 startVector = new Vector4(X, Y, 0, 1) * currentTransform;
+            Vector4 endVector = new Vector4(X + Width, Y + Height, 0, 1) * currentTransform;
+
+            Vector4 min = Vector4.ComponentMin(startVector, endVector);
+            Vector4 max = Vector4.ComponentMax(startVector, endVector);
+
+            bool isInside = x >= min.X && x <= max.X && y >= min.Y && y <= max.Y;
+
+            return isInside && RenderTools.IsPointInsideScissor((int)x, (int)y);
+        }
+        else
+        {
+            return IsInside(x, y) && RenderTools.IsPointInsideScissor((int)x, (int)y);
+        }
+    }
+
+    // Clip + bounds checks.
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsInsideAndClip(int x, int y, int boundsX, int boundsY, int boundsWidth, int boundsHeight)
+    {
+        return x >= boundsX && x <= boundsX + boundsWidth && y >= boundsY && y <= boundsY + boundsHeight
+            && RenderTools.IsPointInsideScissor(x, y);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInsideAndClip(MouseEvent mouseEvent)
+    {
+        return IsInside(mouseEvent.X, mouseEvent.Y) && RenderTools.IsPointInsideScissor(mouseEvent.X, mouseEvent.Y);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInsideAndClip(int x, int y)
+    {
+        return IsInside(x, y) && RenderTools.IsPointInsideScissor(x, y);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInsideAndClip(float x, float y)
+    {
+        return IsInside(x, y) && RenderTools.IsPointInsideScissor((int)x, (int)y);
+    }
+
+    // Bounds checks.
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsInside(int x, int y, int boundsX, int boundsY, int boundsWidth, int boundsHeight)
+    {
+        return x >= boundsX && x <= boundsX + boundsWidth && y >= boundsY && y <= boundsY + boundsHeight;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInside(MouseEvent mouseEvent)
+    {
+        return mouseEvent.X >= X && mouseEvent.X <= X + Width && mouseEvent.Y >= Y && mouseEvent.Y <= Y + Height;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInside(int x, int y)
+    {
+        return x >= X && x <= X + Width && y >= Y && y <= Y + Height;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsInside(float x, float y)
+    {
+        return x >= X && x <= X + Width && y >= Y && y <= Y + Height;
+    }
+
+    // Intersecting.
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsIntersecting(Bounds bounds)
+    {
+        return X < bounds.X + bounds.Width && X + Width > bounds.X && Y < bounds.Y + bounds.Height && Y + Height > bounds.Y;
     }
 }

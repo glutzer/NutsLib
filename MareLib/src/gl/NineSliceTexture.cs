@@ -3,6 +3,14 @@ using System;
 
 namespace MareLib;
 
+public static class NineSliceExtension
+{
+    public static NineSliceTexture AsNineSlice(this Texture texture, int slicePixelX, int slicePixelY)
+    {
+        return new NineSliceTexture(texture, slicePixelX, slicePixelY);
+    }
+}
+
 public class NineSliceTexture : IDisposable
 {
     public Texture texture;
@@ -27,7 +35,7 @@ public class NineSliceTexture : IDisposable
     public Vector2 GetCenterScale(float width, float height)
     {
         Vector2 originalCenter = new(texture.Width - (SliceSize.X * 2), texture.Height - (SliceSize.Y * 2));
-        Vector2 newCenter = new Vector2(width, height) - SliceSize * 2;
+        Vector2 newCenter = new Vector2(width, height) - (SliceSize * 2);
         return newCenter / originalCenter;
     }
 
