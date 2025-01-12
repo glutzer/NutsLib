@@ -12,6 +12,7 @@ layout(std140) uniform renderGlobals {
   mat4 orthographicMatrix;
 };
 
+out vec2 uv;
 out vec3 worldNormal;
 out vec3 eyeVector;
 
@@ -24,5 +25,7 @@ void main() {
   worldNormal = normalize(mat3(viewMatrix * modelMatrix) * normalIn);
 
   eyeVector = normalize(mvPosition.xyz); // Camera is at 0, so no need to
-                                         // subtract the camera's position.
+  // subtract the camera's position.
+
+  uv = uvIn;
 }

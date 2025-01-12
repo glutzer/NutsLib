@@ -1,6 +1,8 @@
 ﻿using MareLib;
 using OpenTK.Mathematics;
+using System;
 using System.Collections.Generic;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 
@@ -48,13 +50,19 @@ public abstract class Spell
     /// <summary>
     /// For the server, what players are in range and will receive updates.
     /// </summary>
-    public readonly List<IServerPlayer> trackedPlayers = new();
-    public IServerPlayer? castedBy;
+    public readonly HashSet<TrackedPlayer> trackedPlayers = new();
+
+    public Entity? castedBy;
 
     public readonly SpellManager spellManager;
-    public long InstanceId { get; private set; }
+    public readonly long InstanceId;
+    public readonly string code;
+    public readonly SpellConfig config;
+    public readonly long castedAtTime;
 
-    public Spell(SpellManager spellManager, long instanceId, Vector3d position)
+    protected bool isServer;
+
+    public Spell(SpellManager spellManager, long instanceId, Vector3d position, string code, SpellConfig? config)
     {
         this.spellManager = spellManager;
         InstanceId = instanceId;
@@ -62,19 +70,35 @@ public abstract class Spell
         lastPosition = position;
         Position = position;
         nextPosition = position;
+
+        this.code = code;
+
+        this.config = config ?? new SpellConfig();
+
+        isServer = spellManager.isServer;
+
+        // Get entity casting this.
+        if (config != null)
+        {
+            long casterId = config.GetCastedBy();
+            castedBy = spellManager.api.World.GetEntityById(casterId);
+        }
+
+        castedAtTime = spellManager.api.World.ElapsedMilliseconds;
     }
 
     /// <summary>
-    /// Spell will be initialized with a set of attributes. All attributes will be synced from server -> client.
-    /// Maybe also have spawn attributes?
+    /// Initialize a spell when spawned.
+    /// Client/server.
     /// </summary>
-    public virtual void Initialize(SpellConfig spellConfig)
+    public virtual void Initialize()
     {
 
     }
 
     /// <summary>
-    /// Called 10 times per second on active spells, on client and server.
+    /// Called 10 times per second on active spells.
+    /// Client/server.
     /// </summary>
     public virtual void OnTick()
     {
@@ -84,6 +108,7 @@ public abstract class Spell
     /// <summary>
     /// Removes spell.
     /// Will be removed during next tick update.
+    /// Client/server.
     /// </summary>
     public void Kill()
     {
@@ -93,7 +118,7 @@ public abstract class Spell
     /// <summary>
     /// Handle a packet on the client.
     /// </summary>
-    public virtual void HandlePacket(int id, byte[]? data)
+    public virtual void HandlePacket(SpellPacket packet)
     {
 
     }
@@ -103,7 +128,10 @@ public abstract class Spell
     /// </summary>
     public void SendPacket(int id)
     {
-        spellManager.SendPacket(new SpellPacket() { spellInstance = InstanceId, id = id });
+        foreach (TrackedPlayer player in trackedPlayers)
+        {
+            player.AddSpellPacket(this, id, null);
+        }
     }
 
     /// <summary>
@@ -111,13 +139,35 @@ public abstract class Spell
     /// </summary>
     public void SendPacket<T>(int id, T data)
     {
-        spellManager.SendPacket(new SpellPacket() { spellInstance = InstanceId, id = id, data = SerializerUtil.Serialize(data) });
+        foreach (TrackedPlayer player in trackedPlayers)
+        {
+            player.AddSpellPacket(this, id, SerializerUtil.Serialize(data));
+        }
     }
 
     /// <summary>
     /// When spell is removed by any means.
+    /// Client/server.
     /// </summary>
     public virtual void OnRemoved()
+    {
+
+    }
+
+    /// <summary>
+    /// When a player is now tracking the spell.
+    /// Server only.
+    /// </summary>
+    public virtual void OnTrackingPlayer(TrackedPlayer player)
+    {
+
+    }
+
+    /// <summary>
+    /// When a player is no longer tracking or has logged out.
+    /// Server only.
+    /// </summary>
+    public virtual void OnNoLongerTrackingPlayer(TrackedPlayer player)
     {
 
     }

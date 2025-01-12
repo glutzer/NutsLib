@@ -1,20 +1,14 @@
 ﻿using MareLib;
 using OpenTK.Mathematics;
 using System.Collections.Generic;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
 namespace Equimancy;
 
-public interface IParticleSystem
-{
-    public void UpdateParticles(float dt);
-    public void Dispose();
-    public bool Alive { get; }
-}
-
 /// <summary>
 /// Non-singleton particle system that will handle spawning and rendering particles.
-/// Takes a struct which will be used as a particle instance.
+/// Takes T, a particle instance that will be updated, and I, an instance on the GPU.
 /// </summary>
 public class ParticleSystem<T, I> : IParticleSystem where T : unmanaged where I : unmanaged
 {
@@ -23,25 +17,33 @@ public class ParticleSystem<T, I> : IParticleSystem where T : unmanaged where I 
     public bool Alive { get; private set; } = true;
     public int ActiveParticles { get; protected set; }
 
-    public ParticleSystem()
+    public long InstanceId { get; private set; }
+    private readonly EnumRenderStage stage;
+
+    public ParticleSystem(EnumRenderStage stage)
     {
         particleUbo = new MappedUboHandle<I>(64);
-        MainAPI.GetGameSystem<ParticleManager>(EnumAppSide.Client).RegisterSystem(this);
+
+        ParticleManager manager = MainAPI.GetGameSystem<ParticleManager>(EnumAppSide.Client);
+        manager.RegisterRenderer(this, stage);
+        InstanceId = manager.GetNextInstance();
+
+        this.stage = stage;
+    }
+
+    /// <summary>
+    /// Register it to receive events.
+    /// </summary>
+    public void RegisterEmitter()
+    {
+        MainAPI.GetGameSystem<ParticleManager>(EnumAppSide.Client).RegisterEmitter(this);
     }
 
     /// <summary>
     /// Emit particles once.
-    /// May be called on an interval, or by subemitters when a particle event happens.
+    /// May be called on an interval, or by sub-emitters when a particle event happens.
     /// </summary>
     public virtual void Emit(Vector3d position)
-    {
-
-    }
-
-    /// <summary>
-    /// Called before rendering at an interval.
-    /// </summary>
-    public virtual void UpdateParticles(float dt)
     {
 
     }
@@ -60,9 +62,37 @@ public class ParticleSystem<T, I> : IParticleSystem where T : unmanaged where I 
         particleQueue.Enqueue(particle);
     }
 
+    /// <summary>
+    /// Dispose gpu data, queue system to be removed by manager.
+    /// </summary>
     public virtual void Dispose()
     {
         particleUbo.Dispose();
-        Alive = false;
+
+        ParticleManager manager = MainAPI.GetGameSystem<ParticleManager>(EnumAppSide.Client);
+
+        manager.UnregisterEmitter(this);
+        manager.UnregisterRenderer(this, stage);
+    }
+
+    public virtual void UpdateEmitter(float dt)
+    {
+
+    }
+
+    /// <summary>
+    /// Update all gpu particle instances here.
+    /// </summary>
+    public virtual void BeforeFrame(float dt)
+    {
+
+    }
+
+    /// <summary>
+    /// Render particles on opaque or oit.
+    /// </summary>
+    public virtual void Render(float dt)
+    {
+
     }
 }

@@ -64,11 +64,6 @@ public static class AttributeUtilities
         return Array.Empty<(Type, T)>();
     }
 
-    public static T GetAttribute<T>(Type spellType)
-    {
-        throw new NotImplementedException();
-    }
-
     public static void ReloadAttributes()
     {
         ClassAnnotations.Clear();

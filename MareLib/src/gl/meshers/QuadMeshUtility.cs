@@ -42,13 +42,13 @@ public static class QuadMeshUtility
     /// <summary>
     /// Adds a quad from -0.5 to 0.5.
     /// </summary>
-    public static void AddQuadData<T>(MeshInfo<T> meshData, MeshDelegate<T> meshDelegate) where T : unmanaged
+    public static void AddCenteredQuadData<T>(MeshInfo<T> meshData, MeshDelegate<T> meshDelegate) where T : unmanaged
     {
         meshData.AddIndicesFromLastVertex(quadIndices);
 
         for (int i = 0; i < 4; i++)
         {
-            meshData.AddVertex(meshDelegate(guiVertices[i]));
+            meshData.AddVertex(meshDelegate(vertices[i]));
         }
     }
 
@@ -68,7 +68,7 @@ public static class QuadMeshUtility
     public static MeshHandle CreateCenteredQuadMesh<T>(MeshDelegate<T> meshDelegate) where T : unmanaged
     {
         MeshInfo<T> meshData = new(4, 6);
-        AddQuadData(meshData, meshDelegate);
+        AddCenteredQuadData(meshData, meshDelegate);
         return RenderTools.UploadMesh(meshData);
     }
 }

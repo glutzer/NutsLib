@@ -39,7 +39,7 @@ public class EquimancySaveDataSystem : NetworkedGameSystem
     private void ClientReceivesPlayerData(EquimancyPlayerData packet)
     {
         // Do not replace already initialized data.
-        EquimancyPlayerData epd = GetPlayerData(packet.PlayerName);
+        EquimancyPlayerData epd = GetPlayerData(packet.PlayerUid);
         byte[] data = SerializerUtil.Serialize(epd);
         SerializerUtil.DeserializeInto(epd, data);
     }
@@ -58,7 +58,7 @@ public class EquimancySaveDataSystem : NetworkedGameSystem
     private void LoadPlayerData(IServerPlayer player)
     {
         equimancyDb.Open();
-        EquimancyPlayerData? epd = equimancyDb.Get<EquimancyPlayerData>("playerData", player.PlayerName);
+        EquimancyPlayerData? epd = equimancyDb.Get<EquimancyPlayerData>("playerData", player.PlayerUID);
 
         if (epd == null)
         {
@@ -75,13 +75,13 @@ public class EquimancySaveDataSystem : NetworkedGameSystem
         SendPacket(epd, player);
     }
 
-    public EquimancyPlayerData GetPlayerData(string playerName)
+    public EquimancyPlayerData GetPlayerData(string playerUid)
     {
-        if (!playerData.TryGetValue(playerName, out EquimancyPlayerData? epd))
+        if (!playerData.TryGetValue(playerUid, out EquimancyPlayerData? epd))
         {
             // Re-initialize it in case it was never made.
-            epd = new EquimancyPlayerData(playerName);
-            playerData[playerName] = epd;
+            epd = new EquimancyPlayerData(playerUid);
+            playerData[playerUid] = epd;
         }
 
         return epd;
@@ -93,7 +93,7 @@ public class EquimancySaveDataSystem : NetworkedGameSystem
 
         foreach (EquimancyPlayerData data in playerData.Values)
         {
-            equimancyDb.Insert("playerData", data.PlayerName, data);
+            equimancyDb.Insert("playerData", data.PlayerUid, data);
         }
 
         equimancyDb.Close();
@@ -104,7 +104,7 @@ public class EquimancySaveDataSystem : NetworkedGameSystem
 public class EquimancyPlayerData
 {
     [ProtoMember(1)]
-    public string PlayerName { get; private set; }
+    public string PlayerUid { get; private set; }
 
     [ProtoMember(2)]
     public float Mana { get; private set; } = 100;
@@ -114,7 +114,7 @@ public class EquimancyPlayerData
 
     public EquimancyPlayerData(string playerName)
     {
-        PlayerName = playerName;
+        PlayerUid = playerName;
     }
 
 #pragma warning disable CS8618

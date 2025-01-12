@@ -58,7 +58,7 @@ public abstract class FXType<T> : IRenderer, IFXType
     /// <summary>
     /// When atleast one instance is active, enable rendering.
     /// </summary>
-    private void EnableRendering()
+    protected virtual void EnableRendering()
     {
         enabled = true;
 
@@ -73,7 +73,7 @@ public abstract class FXType<T> : IRenderer, IFXType
     /// <summary>
     /// When the last instance is removed, disable rendering.
     /// </summary>
-    private void DisableRendering()
+    protected virtual void DisableRendering()
     {
         enabled = false;
 

@@ -9,9 +9,17 @@ uniform vec2 resolution;
 // Primary framebuffer texture.
 uniform sampler2D primary;
 uniform sampler2D depth;
+uniform sampler2D tex2d;
+uniform int useTexture;
+uniform float strength = 1.0;
+
+uniform int useFresnel;
+uniform vec4 fresnelColor = vec4(1.0);
+uniform float fresnelStrength = 1.0;
 
 out vec4 fragColor;
 
+in vec2 uv;
 in vec3 worldNormal;
 in vec3 eyeVector;
 
@@ -45,7 +53,7 @@ void main() {
   vec2 uv = gl_FragCoord.xy / resolution;
 
   // Depth test fail.
-  if (gl_FragCoord.z >= texture(depth, uv).r)
+  if (gl_FragCoord.z > texture(depth, uv).r)
     discard;
 
   float iorRed = 1.0 / 1.20;
@@ -58,8 +66,17 @@ void main() {
   vec3 refractVecG = refract(eyeVector, worldNormal, iorGreen);
   vec3 refractVecB = refract(eyeVector, worldNormal, iorBlue);
 
-  float uRefractPower = 0.15;
-  float uChromaticAberration = 0.5;
+  float uRefractPower = 0.15 * strength;
+  float uChromaticAberration = 0.5 * strength;
+
+  if (useTexture == 1) {
+    float alpha = texture(tex2d, uv).a;
+    if (alpha < 0.01)
+      discard;
+
+    uRefractPower *= alpha;
+    uChromaticAberration *= alpha;
+  }
 
   for (int i = 0; i < 16; i++) {
     float slide = float(i) / float(16) * 0.05;
@@ -83,11 +100,12 @@ void main() {
 
   color /= float(16);
 
-  float f = fresnel(eyeVector, worldNormal, 1.0);
-
-  float originalAverage = (color.r + color.b + color.g) / 3.0;
-
-  color.b += f * originalAverage;
+  // Invisibility fresnel effect, not needed.
+  if (useFresnel == 1) {
+    float f = fresnel(eyeVector, worldNormal, 1.0);
+    float originalAverage = (color.r + color.b + color.g) / 3.0;
+    color += f * originalAverage * fresnelColor.rgb * fresnelColor.a;
+  }
 
   fragColor = vec4(color, 1.0);
 }

@@ -1,12 +1,26 @@
 ﻿using ProtoBuf;
 using System.Collections.Generic;
+using Vintagestory.API.Common.Entities;
 
 namespace Equimancy;
 
 [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
 public class SpellConfig
 {
-    private readonly Dictionary<string, string> settings = new();
+    public readonly Dictionary<string, string> settings = new();
+
+    public void SetCastedBy(Entity entity)
+    {
+        SetLong("castedBy", entity.EntityId);
+    }
+
+    /// <summary>
+    /// Get entity id of caster.
+    /// </summary>
+    public long GetCastedBy()
+    {
+        return GetLong("castedBy");
+    }
 
     public string SetString(string key, string value)
     {

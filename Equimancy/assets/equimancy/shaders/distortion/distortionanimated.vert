@@ -15,6 +15,7 @@ uniform mat4 playerViewMatrix;
 
 uniform int addRenderFlags;
 
+out vec2 uv;
 out vec3 worldNormal;
 out vec3 eyeVector;
 
@@ -45,4 +46,6 @@ void main() {
 
   worldNormal = normalize(mat3(playerViewMatrix * animModelMat) * normalIn);
   eyeVector = normalize(mvPosition.xyz);
+
+  uv = uvIn;
 }
