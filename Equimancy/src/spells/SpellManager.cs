@@ -267,10 +267,11 @@ public class SpellManager : NetworkedGameSystem, IRenderer
                     trackedPlayer.lastCastTime = api.World.ElapsedMilliseconds;
 
                     // Cast a spell placeholder.
+                    // Maybe don't even do it here.
                     SpellConfig config = new();
                     config.SetCastedBy(trackedPlayer.player.Entity);
-                    //SpawnSpell<Levitate>(trackedPlayer.player.Entity.Pos.ToVector(), config);
-                    SpawnSpell<ArcLightning>(trackedPlayer.player.Entity.Pos.ToVector(), config);   
+                    SpawnSpell<Levitate>(trackedPlayer.player.Entity.Pos.ToVector(), config);
+                    //SpawnSpell<ArcLightning>(trackedPlayer.player.Entity.Pos.ToVector(), config);   
                 }
             }
         }

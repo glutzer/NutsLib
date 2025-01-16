@@ -20,7 +20,8 @@
   },
   "sounds":
   {
-    "place": "equimancy:pipebreak",
+    "place": null,
+    "equimancy": "pipebreak",
     "break": "equimancy:pipebreak",
     "hit": "game:block/anvil",
     "walk": "game:walk/stone*"

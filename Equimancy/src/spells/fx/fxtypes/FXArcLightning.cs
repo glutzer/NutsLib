@@ -128,6 +128,5 @@ public class FXArcLightning : FXType<ArcLightningInstance>
     {
         meshHandle.Dispose();
         arcTexture1.Dispose();
-        particleSystem.Dispose();
     }
 }

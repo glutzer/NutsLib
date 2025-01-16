@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vintagestory.API.Client;
 
 namespace MareLib;
@@ -24,7 +25,7 @@ public abstract class Gui : GuiDialog
 
     public readonly GuiEvents guiEvents = new();
 
-    public Gui(ICoreClientAPI capi) : base(capi)
+    public Gui() : base(MainAPI.Capi)
     {
 
     }
@@ -80,9 +81,9 @@ public abstract class Gui : GuiDialog
     public abstract void PopulateWidgets(out Bounds mainBounds);
 
     /// <summary>
-    /// Remakes all widgets.
+    /// Remakes all widgets using PopulateWidgets.
     /// </summary>
-    private void SetWidgets()
+    public void SetWidgets()
     {
         Dispose();
 
@@ -203,6 +204,7 @@ public abstract class Gui : GuiDialog
 
     public override void OnMouseMove(MouseEvent args)
     {
+        MouseOverCursor = null;
         guiEvents.TriggerMouseMove(args);
     }
 
@@ -237,5 +239,27 @@ public abstract class Gui : GuiDialog
         base.Dispose();
 
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Enumerates over a type of widget in input order.
+    /// </summary>
+    public IEnumerable<T> ForWidgets<T>()
+    {
+        for (int i = widgetsBackToFront.Length; i-- > 0;)
+        {
+            if (widgetsBackToFront[i] is T widget) yield return widget;
+        }
+    }
+
+    /// <summary>
+    /// Enumerates over a type of widget in render order.
+    /// </summary>
+    public IEnumerable<T> ForWidgetsReverse<T>()
+    {
+        for (int i = 0; i < widgetsBackToFront.Length; i++)
+        {
+            if (widgetsBackToFront[i] is T widget) yield return widget;
+        }
     }
 }

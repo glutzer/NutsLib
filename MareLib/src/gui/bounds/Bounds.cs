@@ -46,6 +46,9 @@ public class Bounds
     public int Height { get; private set; }
     public int Scale { get; private set; }
 
+    public int XCenter => X + (Width / 2);
+    public int YCenter => Y + (Height / 2);
+
     private readonly int frameWidth;
     private readonly int frameHeight;
 
@@ -98,13 +101,13 @@ public class Bounds
 
         scaledX = positioningH switch
         {
-            BoundsSizing.FixedSize => fixedX, // * guiScale
+            BoundsSizing.FixedSize => fixedX * guiScale,
             _ => parentBounds == null ? (int)(percentX * frameWidth) : (int)(percentX * parentBounds.Width)
         };
 
         scaledY = positioningV switch
         {
-            BoundsSizing.FixedSize => fixedY, // * guiScale
+            BoundsSizing.FixedSize => fixedY * guiScale,
             _ => parentBounds == null ? (int)(percentY * frameHeight) : (int)(percentY * parentBounds.Height)
         };
 
@@ -464,6 +467,10 @@ public class Bounds
         parentBounds = parent;
         parent.children ??= new List<Bounds>();
         parent.children.Add(this);
+
+        // If the parent bounds does not scale, neither should this.
+        if (parent.NoScale) NoScaling();
+
         return this;
     }
 
@@ -587,5 +594,10 @@ public class Bounds
     public bool IsIntersecting(Bounds bounds)
     {
         return X < bounds.X + bounds.Width && X + Width > bounds.X && Y < bounds.Y + bounds.Height && Y + Height > bounds.Y;
+    }
+
+    public Vector2i GetFixedPos()
+    {
+        return new Vector2i(fixedX, fixedY);
     }
 }

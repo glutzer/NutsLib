@@ -40,7 +40,9 @@ public static class FontRegistry
         if (fontJson == null || fontJson.atlas == null || fontJson.metrics == null) throw new Exception($"Unable to deserialize font!");
 
         // How much the font must be translated downward to center it, * scale.
-        float centerOffset = fontJson.metrics.ascender / 2;
+        float centerOffset = (fontJson.metrics.ascender + fontJson.metrics.descender) / 2;
+
+        // Offset to new line.
         float lineHeight = fontJson.metrics.lineHeight;
 
         int atlasWidth = fontJson.atlas.width;

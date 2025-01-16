@@ -23,7 +23,7 @@ public class PipeSystem : GameSystem, IRenderer
     {
         if (api is ICoreClientAPI capi)
         {
-            debugGui = new PipeDebugGui(capi);
+            debugGui = new PipeDebugGui();
         }
     }
 

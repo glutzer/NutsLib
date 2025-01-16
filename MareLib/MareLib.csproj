@@ -78,10 +78,4 @@
   </Content>
 </ItemGroup>
 
-<ItemGroup>
-  <Content Update="assets\marelib\fluidtypes\freshwater.json">
-    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-  </Content>
-</ItemGroup>
-
 </Project>

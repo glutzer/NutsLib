@@ -1,6 +1,7 @@
 ﻿using MareLib;
 using System;
 using Vintagestory.API.Client;
+using Vintagestory.Client.NoObf;
 
 namespace Equimancy;
 
@@ -17,6 +18,7 @@ public class BaseScrollBarWidget : Widget
     protected ButtonState barState = ButtonState.Normal;
 
     protected bool fullBarHovered;
+    protected bool hoveringScrollArea;
 
     protected float barGrabRatio; // Ratio of the position of the mouse to the bar when started dragging.
 
@@ -38,7 +40,7 @@ public class BaseScrollBarWidget : Widget
         int offset = GetScrollBarOffset(size);
 
         RenderBackground(bounds.X, bounds.Y, bounds.Width, bounds.Height, shader);
-        RenderCursor(bounds.X, bounds.Y + offset, bounds.Width, size, shader);
+        RenderCursor(bounds.X, bounds.Y + offset, bounds.Width, size, shader, barState);
     }
 
     protected virtual void RenderBackground(int x, int y, int width, int height, MareShader shader)
@@ -46,7 +48,7 @@ public class BaseScrollBarWidget : Widget
 
     }
 
-    protected virtual void RenderCursor(int x, int y, int width, int height, MareShader shader)
+    protected virtual void RenderCursor(int x, int y, int width, int height, MareShader shader, ButtonState barState)
     {
 
     }
@@ -67,7 +69,7 @@ public class BaseScrollBarWidget : Widget
 
     private void GuiEvents_MouseWheel(MouseWheelEventArgs obj)
     {
-        if (!obj.IsHandled && fullBarHovered)
+        if (!obj.IsHandled && (fullBarHovered || hoveringScrollArea))
         {
             obj.SetHandled();
 
@@ -93,6 +95,9 @@ public class BaseScrollBarWidget : Widget
             return;
         }
 
+        if (obj.Handled) return;
+
+        hoveringScrollArea = scrollBounds.IsInAllBounds(obj);
         fullBarHovered = bounds.IsInsideAndClip(obj);
 
         if (bounds.IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
@@ -135,7 +140,7 @@ public class BaseScrollBarWidget : Widget
     /// </summary>
     protected float GetScrollBarRatio()
     {
-        return (float)bounds.Height / scrollBounds.Height;
+        return Math.Clamp((float)bounds.Height / scrollBounds.Height, 0, 1);
     }
 
     /// <summary>
@@ -210,7 +215,10 @@ public class BaseScrollBarWidget : Widget
     {
         float offset = (scrollBounds.Height - bounds.Height) * scrollProgress;
 
-        scrollBounds.FixedPos(0, -(int)offset);
+        // Prevent scroll bar bigger than bounds from going up, probably a bigger issue.
+        if (offset < 0) offset = 0;
+
+        scrollBounds.FixedPos(0, -(int)offset / scrollBounds.Scale);
         scrollBounds.SetBounds();
     }
 

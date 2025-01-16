@@ -1,0 +1,31 @@
+﻿{
+  "code": "particleconfigurator",
+  "class": "ParticleBlock",
+  "entityClass": "ParticleBlockEntity",
+  "blockmaterial": "Metal",
+  "creativeinventory":
+  {
+    "general":
+    [
+      "*"
+    ],
+    "equimancy":
+    [
+      "*"
+    ]
+  },
+  "textures":
+  {
+    "all":
+    {
+      "base": "game:block/soil/peat"
+    }
+  },
+  "sounds":
+  {
+    "place": "equimancy:pipebreak",
+    "break": "equimancy:pipebreak",
+    "hit": "game:block/anvil",
+    "walk": "game:walk/stone*"
+  }
+}

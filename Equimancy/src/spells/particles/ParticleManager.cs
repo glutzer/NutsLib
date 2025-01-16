@@ -39,7 +39,7 @@ public class ParticleManager : GameSystem, IRenderer
     /// </summary>
     public void RegisterEmitter(IParticleSystem system)
     {
-        emitterSystems.Add(GetNextInstance(), system);
+        emitterSystems.Add(system.InstanceId, system);
         if (emitterSystems.Count == 1) MainAPI.Capi.Event.RegisterRenderer(this, EnumRenderStage.Before);
     }
 
@@ -51,41 +51,55 @@ public class ParticleManager : GameSystem, IRenderer
 
     public void RegisterRenderer(IParticleSystem system, EnumRenderStage stage)
     {
-        if (stage == EnumRenderStage.Opaque)
+        try
         {
-            opaqueSystems.Add(system.InstanceId, system);
-            if (opaqueSystems.Count == 1)
+            if (stage == EnumRenderStage.Opaque)
             {
-                MainAPI.Capi.Event.RegisterRenderer(this, stage);
+                opaqueSystems.Add(system.InstanceId, system);
+                if (opaqueSystems.Count == 1)
+                {
+                    MainAPI.Capi.Event.RegisterRenderer(this, stage);
+                }
+            }
+            else
+            {
+                oitSystems.Add(system.InstanceId, system);
+                if (oitSystems.Count == 1)
+                {
+                    MainAPI.Capi.Event.RegisterRenderer(this, stage);
+                }
             }
         }
-        else
+        catch
         {
-            oitSystems.Add(system.InstanceId, system);
-            if (oitSystems.Count == 1)
-            {
-                MainAPI.Capi.Event.RegisterRenderer(this, stage);
-            }
+
         }
     }
 
     public void UnregisterRenderer(IParticleSystem system, EnumRenderStage stage)
     {
-        if (stage == EnumRenderStage.Opaque)
+        try
         {
-            opaqueSystems.Remove(system.InstanceId);
-            if (opaqueSystems.Count == 0)
+            if (stage == EnumRenderStage.Opaque)
             {
-                MainAPI.Capi.Event.UnregisterRenderer(this, stage);
+                opaqueSystems.Remove(system.InstanceId);
+                if (opaqueSystems.Count == 0)
+                {
+                    MainAPI.Capi.Event.UnregisterRenderer(this, stage);
+                }
+            }
+            else
+            {
+                oitSystems.Remove(system.InstanceId);
+                if (oitSystems.Count == 0)
+                {
+                    MainAPI.Capi.Event.UnregisterRenderer(this, stage);
+                }
             }
         }
-        else
+        catch
         {
-            oitSystems.Remove(system.InstanceId);
-            if (oitSystems.Count == 0)
-            {
-                MainAPI.Capi.Event.UnregisterRenderer(this, stage);
-            }
+
         }
     }
 
@@ -98,10 +112,10 @@ public class ParticleManager : GameSystem, IRenderer
                 system.UpdateEmitter(dt);
             }
 
-            //foreach (IParticleSystem system in opaqueSystems.Values)
-            //{
-            //    system.BeforeFrame(dt);
-            //}
+            foreach (IParticleSystem system in opaqueSystems.Values)
+            {
+                system.BeforeFrame(dt);
+            }
 
             foreach (IParticleSystem system in oitSystems.Values)
             {
@@ -113,13 +127,13 @@ public class ParticleManager : GameSystem, IRenderer
 
         ShaderProgramBase currentShader = ShaderProgramBase.CurrentShaderProgram;
 
-        //if (stage == EnumRenderStage.Opaque)
-        //{
-        //    foreach (IParticleSystem system in opaqueSystems.Values)
-        //    {
-        //        system.Render(dt);
-        //    }
-        //}
+        if (stage == EnumRenderStage.Opaque)
+        {
+            foreach (IParticleSystem system in opaqueSystems.Values)
+            {
+                system.Render(dt);
+            }
+        }
 
         if (stage == EnumRenderStage.OIT)
         {

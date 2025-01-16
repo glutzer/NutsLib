@@ -1,10 +1,9 @@
 ﻿using HarmonyLib;
 using MareLib;
-using System;
+using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
-using Vintagestory.Client.NoObf;
 
 namespace Equimancy;
 
@@ -30,18 +29,14 @@ public class EquimancyModSystem : ModSystem
     public override void StartClientSide(ICoreClientAPI api)
     {
         MareShaderRegistry.AddShader("equimancy:oitdebug", "equimancy:oitdebug", "oitdebug");
-
-        RemoveHudGui();
-
-        _ = new NewMouseTools(api);
-
         MareShaderRegistry.AddShader("marelib:gui", "equimancy:statusbar", "statusbar");
-        _ = new HudStats(api);
+        _ = new HudStats();
     }
 
     public override void StartPre(ICoreAPI api)
     {
         Patch();
+        AssetCategory.categories["fluidtypes"] = new AssetCategory("fluidtypes", true, EnumAppSide.Universal);
     }
 
     public static void Patch()
@@ -63,20 +58,6 @@ public class EquimancyModSystem : ModSystem
     public override void Dispose()
     {
         Unpatch();
-    }
-
-    public static void RemoveHudGui()
-    {
-        GuiAPI guiApi = (GuiAPI)MainAPI.Capi.Gui;
-        Type mouseTools = typeof(ClientMain).Assembly.GetType("Vintagestory.Client.NoObf.HudMouseTools")!;
-        GuiDialog toRemove = null!;
-        foreach (GuiDialog loadedGui in guiApi.LoadedGuis)
-        {
-            if (loadedGui.GetType() == mouseTools)
-            {
-                toRemove = loadedGui;
-            }
-        }
-        guiApi.LoadedGuis.Remove(toRemove);
+        EqTextures.Dispose();
     }
 }

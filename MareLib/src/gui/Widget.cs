@@ -4,7 +4,7 @@ namespace MareLib;
 
 public abstract class Widget
 {
-    private readonly Gui gui;
+    public readonly Gui gui;
     public Bounds bounds;
 
     public List<Widget>? children;

@@ -24,7 +24,7 @@ public class PipeDebugGui : Gui
     private readonly List<PageData> pages = new();
     private int leftPageIndex; // Index of the left page. The right page is 1 higher.
 
-    public PipeDebugGui(ICoreClientAPI capi) : base(capi)
+    public PipeDebugGui() : base()
     {
         for (int i = 0; i < 20; i++)
         {
@@ -73,17 +73,17 @@ public class PipeDebugGui : Gui
         Bounds leftPageBounds = Bounds.CreateFrom(mainBounds).Percent(0.025f, 0.025f, 0.475f, 0.95f);
         Bounds rightPageBounds = Bounds.CreateFrom(mainBounds).Percent(0.5f, 0.025f, 0.475f, 0.95f);
 
-        AddWidget(new BackgroundWidgetSkia(this, mainBounds, () =>
-        {
-            return TextureBuilder.Begin(800, 600)
-            .SetColor(new SkiaSharp.SKColor(40, 15, 0))
-            .FillMode()
-            .DrawRectangle(0, 0, 800, 600)
-            .StrokeMode(16)
-            .SetColor(new SkiaSharp.SKColor(160, 15, 0))
-            .DrawEmbossedRectangle(0, 0, 800, 600, true)
-            .End();
-        }));
+        //AddWidget(new BackgroundWidgetSkia(this, mainBounds, () =>
+        //{
+        //    return TextureBuilder.Begin(800, 600)
+        //    .SetColor(new SkiaSharp.SKColor(40, 15, 0))
+        //    .FillMode()
+        //    .DrawRectangle(0, 0, 800, 600)
+        //    .StrokeMode(16)
+        //    .SetColor(new SkiaSharp.SKColor(160, 15, 0))
+        //    .DrawEmbossedRectangle(0, 0, 800, 600, true)
+        //    .End();
+        //}));
 
         // Backgrounds pages.
         AddPage(leftPageBounds, dt => LeftPageTransform(dt, true), true, out leftPageBack);

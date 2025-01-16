@@ -59,8 +59,8 @@ public class TextObject : IRenderableText
     public int fontScale;
     public Vector4 color;
 
-    private bool bold;
-    private bool italic;
+    protected bool bold;
+    protected bool italic;
 
     public TextObject Bold(bool bold)
     {
@@ -78,8 +78,8 @@ public class TextObject : IRenderableText
     /// Pixel length of the current text/scale.
     /// </summary>
     public int PixelLength { get; protected set; }
-
     public float LineHeight => font.LineHeight * fontScale;
+    public float CenterOffset => font.CenterOffset * fontScale;
 
     public string Text
     {
@@ -87,7 +87,7 @@ public class TextObject : IRenderableText
         set
         {
             text = value;
-            PixelLength = GetLineLength(text, fontScale);
+            PixelLength = GetLineLength(text);
         }
     }
 
@@ -97,30 +97,18 @@ public class TextObject : IRenderableText
         this.font = font;
         this.fontScale = fontScale;
         this.color = color;
-        PixelLength = GetLineLength(text, fontScale);
+        PixelLength = GetLineLength(text);
     }
 
     public void SetScale(int scale)
     {
         fontScale = scale;
-        PixelLength = GetLineLength(text, fontScale);
+        PixelLength = GetLineLength(text);
     }
 
-    /// <summary>
-    /// Gets the line length in pixels, if not wrapped.
-    /// </summary>
-    public virtual int GetLineLength(string text, int fontScale)
+    public virtual int GetLineLength(string text)
     {
-        float xAdvance = 0;
-
-        FontCharData[] fontCharData = font.fontCharData;
-
-        foreach (char c in text)
-        {
-            xAdvance += fontCharData[c].xAdvance * fontScale;
-        }
-
-        return (int)xAdvance;
+        return font.GetLineWidth(text, fontScale);
     }
 
     /// <summary>
@@ -129,10 +117,7 @@ public class TextObject : IRenderableText
     /// </summary>
     public virtual float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
-        if (centerVertically) y += font.CenterOffset * fontScale;
-
-        x = (int)x;
-        y = (int)y;
+        if (centerVertically) y += CenterOffset;
 
         xAdvance += font.RenderLine(x + xAdvance, y, text, fontScale, guiShader, color, italic, bold);
 

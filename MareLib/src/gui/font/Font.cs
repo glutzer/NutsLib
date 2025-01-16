@@ -40,18 +40,18 @@ public class Font
     }
 
     /// <summary>
-    /// Gets the width of a line of text.
+    /// Gets the width of a line of text, in pixels.
     /// </summary>
-    public float GetLineWidth(string text, int fontScale)
+    public int GetLineWidth(string text, int fontScale)
     {
         float xAdvance = 0;
 
         foreach (char c in text)
         {
-            xAdvance += fontCharData[c].xAdvance * fontScale;
+            xAdvance += (int)(fontCharData[c].xAdvance * fontScale);
         }
 
-        return xAdvance;
+        return (int)xAdvance;
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public class Font
     {
         for (int i = 0; i < text.Length; i++)
         {
-            xAdvance -= fontCharData[text[i]].xAdvance * fontScale;
+            xAdvance -= (int)(fontCharData[text[i]].xAdvance * fontScale);
 
             if (xAdvance <= 0)
             {
@@ -83,36 +83,10 @@ public class Font
 
         for (int i = 0; i < index; i++)
         {
-            xAdvance += fontCharData[text[i]].xAdvance * fontScale;
+            xAdvance += (int)(fontCharData[text[i]].xAdvance * fontScale);
         }
 
         return xAdvance;
-    }
-
-    /// <summary>
-    /// Adds every line to a list, wrapping them at the max width.
-    /// </summary>
-    public void SplitTextIntoLines(string text, int fontScale, float maxWidth, List<string> outputList)
-    {
-        float xAdvance = 0;
-
-        StringBuilder sb = new();
-
-        foreach (char c in text)
-        {
-            xAdvance += fontCharData[c].xAdvance * fontScale;
-
-            if (xAdvance > maxWidth)
-            {
-                outputList.Add(sb.ToString());
-                sb.Clear();
-                xAdvance = 0;
-            }
-
-            sb.Append(c);
-        }
-
-        outputList.Add(sb.ToString());
     }
 
     /// <summary>
@@ -121,21 +95,26 @@ public class Font
     /// </summary>
     public float RenderLine(float x, float y, string text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
+        // Floor x/y.
+        x = (int)x;
+        y = (int)y;
+
         float xAdvance = 0;
 
         guiShader.Uniform("shaderType", 2);
         guiShader.Uniform("fontColor", color);
 
-        guiShader.BindTexture(fontAtlas.Handle, "tex2d", 0);
+        guiShader.BindTexture(fontAtlas, "tex2d", 0);
 
+        // Arbitrary value for italics.
         if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
         if (bold) guiShader.Uniform("bold", 1);
 
         foreach (char c in text)
         {
             FontCharData fontChar = fontCharData[c];
-            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation((int)(x + xAdvance), (int)y, 0));
-            xAdvance += fontChar.xAdvance * fontScale;
+            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
+            xAdvance += (int)(fontChar.xAdvance * fontScale);
             RenderTools.RenderFontChar(fontChar.meshHandle);
         }
 

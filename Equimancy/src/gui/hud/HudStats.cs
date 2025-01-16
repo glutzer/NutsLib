@@ -16,7 +16,7 @@ public class HudStats : Gui
 
     public EquimancyPlayerData playerData;
 
-    public HudStats(ICoreClientAPI capi) : base(capi)
+    public HudStats() : base()
     {
         TryOpen();
 

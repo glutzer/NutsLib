@@ -64,7 +64,10 @@ public struct ItemInfoString
     }
 }
 
-public class ItemInfoWidget : Widget
+/// <summary>
+/// Info about hovered item for WAILA and mouseover.
+/// </summary>
+public class ItemInfoWidget : Widget, IItemWidget
 {
     private readonly NineSliceTexture background;
     private readonly NineSliceTexture divider;
@@ -92,24 +95,6 @@ public class ItemInfoWidget : Widget
         font = FontRegistry.GetFont("celestia");
     }
 
-    public void OnEnterSlot(ItemSlot? slot)
-    {
-        this.slot = slot;
-
-        if (slot?.Itemstack != null)
-        {
-            SetItemStackData(slot);
-        }
-    }
-
-    public void OnLeaveSlot(ItemSlot? slot)
-    {
-        if (this.slot == slot)
-        {
-            this.slot = null;
-        }
-    }
-
     public void SetPosition(int mouseX, int mouseY)
     {
         int startX = mouseX + (8 * MainAPI.GuiScale);
@@ -130,9 +115,12 @@ public class ItemInfoWidget : Widget
         bounds.SetBounds();
     }
 
-    private void SetItemStackData(ItemSlot slot)
+    public void SetItemStackData(ItemSlot slot)
     {
         text.Clear();
+
+        this.slot = slot;
+        if (slot.Itemstack == null) return;
 
         CollectibleObject collectible = slot.Itemstack.Collectible;
         text.Add(new ItemInfoString(collectible.GetHeldItemName(slot.Itemstack), Gui.Scaled(8), Vector4.One, font));
@@ -171,6 +159,14 @@ public class ItemInfoWidget : Widget
 
         bounds.FixedSize(maxLineWidth, totalLineHeight);
         bounds.SetBounds();
+    }
+
+    public void OnLeaveSlot(ItemSlot slot)
+    {
+        if (this.slot == slot)
+        {
+            this.slot = null;
+        }
     }
 
     public override void OnRender(float dt, MareShader shader)

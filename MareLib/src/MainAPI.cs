@@ -179,7 +179,7 @@ public class MainAPI : ModSystem, IRenderer
     public override void StartPre(ICoreAPI api)
     {
         // Register new asset paths.
-        AssetCategory.categories["fluidtypes"] = new AssetCategory("fluidtypes", true, EnumAppSide.Universal);
+        //AssetCategory.categories["fluidtypes"] = new AssetCategory("fluidtypes", true, EnumAppSide.Universal);
         AssetCategory.categories["fonts"] = new AssetCategory("fonts", true, EnumAppSide.Client);
 
         if (api is ICoreClientAPI capi)

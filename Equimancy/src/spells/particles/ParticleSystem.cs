@@ -1,6 +1,7 @@
 ﻿using MareLib;
 using OpenTK.Mathematics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
@@ -14,7 +15,6 @@ public class ParticleSystem<T, I> : IParticleSystem where T : unmanaged where I 
 {
     protected readonly Queue<T> particleQueue = new();
     protected readonly MappedUboHandle<I> particleUbo;
-    public bool Alive { get; private set; } = true;
     public int ActiveParticles { get; protected set; }
 
     public long InstanceId { get; private set; }
@@ -25,8 +25,9 @@ public class ParticleSystem<T, I> : IParticleSystem where T : unmanaged where I 
         particleUbo = new MappedUboHandle<I>(64);
 
         ParticleManager manager = MainAPI.GetGameSystem<ParticleManager>(EnumAppSide.Client);
-        manager.RegisterRenderer(this, stage);
         InstanceId = manager.GetNextInstance();
+        
+        manager.RegisterRenderer(this, stage);
 
         this.stage = stage;
     }

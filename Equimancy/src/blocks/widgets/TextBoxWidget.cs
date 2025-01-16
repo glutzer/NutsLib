@@ -37,6 +37,7 @@ public class TextBoxWidget : Widget
     private Vector2i selectEnd;
 
     private readonly bool limitTextToBox;
+    private readonly int maxLines;
 
     public void ClearSelection()
     {
@@ -71,12 +72,14 @@ public class TextBoxWidget : Widget
         return new Vector2i(index, lineIndex);
     }
 
-    public TextBoxWidget(Gui gui, Bounds bounds, Font font, int fontScale, Vector4 color, bool limitTextToBox = true) : base(gui, bounds)
+    public TextBoxWidget(Gui gui, Bounds bounds, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, int maxLines = 1000) : base(gui, bounds)
     {
         this.font = font;
         this.fontScale = fontScale;
         this.color = color;
+
         this.limitTextToBox = limitTextToBox;
+        this.maxLines = maxLines;
 
         cursorTexture = TextureBuilder.Begin(64, 64)
             .SetColor(SkiaThemes.White.WithAlpha(100))
@@ -240,7 +243,7 @@ public class TextBoxWidget : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInsideAndClip(obj))
+        if (!obj.Handled && bounds.IsInAllBounds(obj))
         {
             obj.Handled = true;
 
@@ -273,8 +276,6 @@ public class TextBoxWidget : Widget
             MoveCursor(selectEnd.X, selectEnd.Y);
         }
     }
-
-    private bool skipNextKeyPress = false;
 
     private void GuiEvents_KeyDown(KeyEvent obj)
     {
@@ -309,6 +310,8 @@ public class TextBoxWidget : Widget
         if (obj.KeyCode == (int)GlKeys.Enter)
         {
             TryDeleteSelection();
+
+            if (cursorYIndex == maxLines - 1) return; // Max lines reached.
 
             string firstLine = lines[cursorYIndex][..cursorXIndex];
 
@@ -416,8 +419,6 @@ public class TextBoxWidget : Widget
             // Select all.
             if (obj.KeyCode == (int)GlKeys.A)
             {
-                //skipNextKeyPress = true;
-
                 selectStart = new Vector2i(0, 0);
                 selectEnd = new Vector2i(lines[^1].Length, lines.Count - 1);
                 return;
@@ -426,8 +427,6 @@ public class TextBoxWidget : Widget
             // Copy.
             if (obj.KeyCode == (int)GlKeys.C && Selecting)
             {
-                //skipNextKeyPress = true;
-
                 StringBuilder sb = new();
                 MinAndMaxSelection(out Vector2i minSelection, out Vector2i maxSelection);
                 for (int i = minSelection.Y; i < maxSelection.Y + 1; i++)
@@ -459,8 +458,6 @@ public class TextBoxWidget : Widget
 
             if (obj.KeyCode == (int)GlKeys.V)
             {
-                //skipNextKeyPress = true;
-
                 TryDeleteSelection();
 
                 string[] splitLines = MainAPI.Capi.Forms.GetClipboardText().Split('\n');
@@ -496,12 +493,6 @@ public class TextBoxWidget : Widget
         if (!active || obj.Handled) return;
 
         obj.Handled = true;
-
-        if (skipNextKeyPress)
-        {
-            skipNextKeyPress = false;
-            return;
-        }
 
         TryDeleteSelection();
 

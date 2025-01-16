@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Equimancy;
 
-[StructLayout(LayoutKind.Explicit, Size = 48)]
+[StructLayout(LayoutKind.Explicit, Size = 64)]
 public struct StandardParticleInstance
 {
     // Position relative to base point.
@@ -14,5 +14,8 @@ public struct StandardParticleInstance
     public Vector4 color;
 
     [FieldOffset(32)]
-    public float scale;
+    public Vector4 light;
+
+    [FieldOffset(48)]
+    public Vector2 scaleRot;
 }

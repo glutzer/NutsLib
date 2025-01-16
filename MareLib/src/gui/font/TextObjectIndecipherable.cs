@@ -13,6 +13,7 @@ public enum CipherType
 /// <summary>
 /// Text object that renders with the advance of another font.
 /// Can't be bold/italic.
+/// Font = runic, foster font is font to replace.
 /// </summary>
 public class TextObjectIndecipherable : TextObject
 {
@@ -24,59 +25,60 @@ public class TextObjectIndecipherable : TextObject
     {
         this.fosterFont = fosterFont;
         this.type = type;
-        PixelLength = GetLineLength(text, fontScale);
+        PixelLength = GetLineLength(text);
     }
 
-    public override int GetLineLength(string text, int fontScale)
+    public override int GetLineLength(string text)
     {
-        float xAdvance = 0;
-
-        FontCharData[] fontCharData = fosterFont?.fontCharData ?? font.fontCharData;
-
-        foreach (char c in text)
-        {
-            xAdvance += fontCharData[c].xAdvance * fontScale;
-        }
-
-        return (int)xAdvance;
+        return fosterFont?.GetLineWidth(text, fontScale) ?? font.GetLineWidth(text, fontScale);
     }
 
+    /// <summary>
+    /// Render foster line, copied from font's code.
+    /// If this looks broken it's because it's not up to date with the font code.
+    /// </summary>
     public override float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
-        if (centerVertically) y += font.CenterOffset * fontScale;
+        FontCharData[] fontData = font.fontCharData;
+        FontCharData[] fosterFontData = fosterFont.fontCharData;
 
+        // Floor x/y.
         x = (int)x;
         y = (int)y;
 
         guiShader.Uniform("shaderType", 2);
-        guiShader.BindTexture(font.fontAtlas.Handle, "tex2d", 0);
         guiShader.Uniform("fontColor", color);
 
-        FontCharData[] fontData = font.fontCharData;
-        FontCharData[] fosterFontData = fosterFont.fontCharData;
+        guiShader.BindTexture(font.fontAtlas, "tex2d", 0);
 
-        for (int i = 0; i < text.Length; i++)
+        // Arbitrary value for italics.
+        if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
+        if (bold) guiShader.Uniform("bold", 1);
+
+        int index = 0;
+
+        foreach (char c in text)
         {
-            Matrix4 translation = Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + (int)xAdvance, y, 0);
-            guiShader.Uniform("modelMatrix", translation);
+            FontCharData fontChar;
 
-            char c = text[i];
-            FontCharData charData;
-
-            if ((type == CipherType.FirstRandomized && i == 0) || type == CipherType.AllRandomized)
+            if ((type == CipherType.FirstRandomized && index == 0) || type == CipherType.AllRandomized)
             {
                 char randomChar = (char)rand.Next(65, 123);
-                charData = fontData[randomChar];
+                fontChar = fontData[randomChar];
             }
             else
             {
-                charData = fontData[c];
+                fontChar = fontData[c];
             }
 
-            RenderTools.RenderFontChar(charData.meshHandle);
-
-            xAdvance += fosterFontData[c].xAdvance * fontScale;
+            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
+            xAdvance += (int)(fosterFontData[c].xAdvance * fontScale);
+            RenderTools.RenderFontChar(fontChar.meshHandle);
+            index++;
         }
+
+        if (italic) guiShader.Uniform("italicSlant", 0f);
+        if (bold) guiShader.Uniform("bold", 0);
 
         guiShader.Uniform("shaderType", 0);
 

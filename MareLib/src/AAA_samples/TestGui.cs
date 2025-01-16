@@ -4,7 +4,7 @@ namespace MareLib;
 
 public class TestGui : Gui
 {
-    public TestGui(ICoreClientAPI capi) : base(capi)
+    public TestGui() : base()
     {
     }
 
