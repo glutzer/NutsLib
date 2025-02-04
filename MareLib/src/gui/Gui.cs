@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Vintagestory.API.Client;
 
 namespace MareLib;
@@ -131,7 +130,7 @@ public abstract class Gui : GuiDialog
             sortedDictionary[sortPriority].Add(widget);
 
             if (widget.children == null) continue;
-            PartitionWidgets(sortedDictionary, widget.children, currentPriority);
+            PartitionWidgets(sortedDictionary, widget.children, sortPriority);
         }
     }
 

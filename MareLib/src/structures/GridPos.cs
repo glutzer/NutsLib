@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using Vintagestory.API.MathTools;
 
 namespace MareLib;
@@ -6,6 +7,7 @@ namespace MareLib;
 /// <summary>
 /// Struct for fast block positions.
 /// </summary>
+[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
 public struct GridPos : IEquatable<GridPos>
 {
     public int X;

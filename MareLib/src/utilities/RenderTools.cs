@@ -126,19 +126,6 @@ public static unsafe class RenderTools
         return Matrix4.CreateTranslation((float)(x - MainAPI.OriginOffset.X), (float)(y - MainAPI.OriginOffset.Y), (float)(z - MainAPI.OriginOffset.Z));
     }
 
-    /// <summary>
-    /// Render a mesh with multiple meshes and textures from the base game.
-    /// </summary>
-    public static void RenderMultiTextureMesh(MareShader shader, MultiTextureMeshRef mmr, ReadOnlySpan<char> samplerName, int textureUnit = 0)
-    {
-        for (int i = 0; i < mmr.meshrefs.Length; i++)
-        {
-            shader.BindTexture(mmr.textureids[i], samplerName, textureUnit);
-            MeshRef meshRef = mmr.meshrefs[i];
-            RenderMesh(meshRef);
-        }
-    }
-
     public static Vector4 GetIncandescenceColor(int temperature)
     {
         if (temperature < 500)
@@ -216,7 +203,7 @@ public static unsafe class RenderTools
 
         if (itemStackRenderInfo.OverlayTexture != null && itemStackRenderInfo.OverlayOpacity > 0f)
         {
-            guiItemShader.Uniform("tex2dOverlay2D", itemStackRenderInfo.OverlayTexture.TextureId);
+            guiItemShader.Uniform("tex2dOverlay", itemStackRenderInfo.OverlayTexture.TextureId);
             guiItemShader.Uniform("overlayTextureSize", new Vector2(itemStackRenderInfo.OverlayTexture.Width, itemStackRenderInfo.OverlayTexture.Height));
             guiItemShader.Uniform("baseTextureSize", new Vector2(itemStackRenderInfo.TextureSize.Width, itemStackRenderInfo.TextureSize.Height));
             TextureAtlasPosition textureAtlasPosition = MainAPI.Capi.Render.GetTextureAtlasPosition(itemStack);
@@ -305,7 +292,7 @@ public static unsafe class RenderTools
     /// Render a 0-1 quad at a pixel position.
     /// Coordinates are rounded.
     /// </summary>
-    public static void RenderElement(MareShader guiShader, float x, float y, float width, float height, MeshHandle quadHandle)
+    public static void RenderElement(MareShader guiShader, float x, float y, float width, float height, MeshHandle handle)
     {
         // Round everything to prevent sub-pixel rendering.
         x = (int)x;
@@ -316,17 +303,7 @@ public static unsafe class RenderTools
         Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
         guiShader.Uniform("modelMatrix", translation);
 
-        RenderMesh(quadHandle);
-    }
-
-    /// <summary>
-    /// Render a single font character.
-    /// </summary>
-    public static void RenderFontChar(int vaoId)
-    {
-        GL.BindVertexArray(vaoId);
-        GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
-        GL.BindVertexArray(0); // Somewhere, someone is binding an element buffer without binding a VAO and breaking everything.
+        RenderMesh(handle);
     }
 
     /// <summary>
@@ -339,10 +316,23 @@ public static unsafe class RenderTools
         GL.BindVertexArray(0); // Somewhere, someone is binding an element buffer without binding a VAO and breaking everything.
     }
 
+    /// <summary>
+    /// Renders many instances of a mesh.
+    /// </summary>
     public static void RenderMeshInstanced(MeshHandle meshHandle, int instances)
     {
         GL.BindVertexArray(meshHandle.vaoId);
         GL.DrawElementsInstanced(meshHandle.drawMode, meshHandle.indexAmount, DrawElementsType.UnsignedInt, IntPtr.Zero, instances);
+        GL.BindVertexArray(0); // Somewhere, someone is binding an element buffer without binding a VAO and breaking everything.
+    }
+
+    /// <summary>
+    /// For fonts.
+    /// </summary>
+    public static void RenderSquareVao(int vaoId)
+    {
+        GL.BindVertexArray(vaoId);
+        GL.DrawElements(PrimitiveType.Triangles, 6, DrawElementsType.UnsignedInt, 0);
         GL.BindVertexArray(0); // Somewhere, someone is binding an element buffer without binding a VAO and breaking everything.
     }
 
@@ -352,6 +342,19 @@ public static unsafe class RenderTools
     public static void RenderMesh(MeshRef meshRef)
     {
         MainAPI.Capi.Render.RenderMesh(meshRef);
+    }
+
+    /// <summary>
+    /// Render a mesh with multiple meshes and textures from the base game.
+    /// </summary>
+    public static void RenderMultiTextureMesh(MareShader shader, MultiTextureMeshRef mmr, ReadOnlySpan<char> samplerName, int textureUnit = 0)
+    {
+        for (int i = 0; i < mmr.meshrefs.Length; i++)
+        {
+            shader.BindTexture(mmr.textureids[i], samplerName, textureUnit);
+            MeshRef meshRef = mmr.meshrefs[i];
+            RenderMesh(meshRef);
+        }
     }
 
     public static void PushScissor(Bounds bounds)
@@ -511,7 +514,6 @@ public static unsafe class RenderTools
         handle.indexId = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, handle.indexId);
         GL.BufferData(BufferTarget.ElementArrayBuffer, meshData.indexArraySize * sizeof(uint), meshData.indices, meshData.usageType);
-        // Don't unbind EBO, it must stay bound to the vertex array.
 
         handle.drawMode = meshData.drawMode;
         handle.usageType = meshData.usageType;

@@ -243,10 +243,13 @@ public class SpellManager : NetworkedGameSystem, IRenderer
                 if (key.OnKeyUp)
                 {
                     SendPacket(new ClientSpellCast() { startedCasting = false });
+                    MainAPI.Capi.World.Player.Entity.StopAnimation("CastSpell");
+
                 }
                 else
                 {
                     SendPacket(new ClientSpellCast() { startedCasting = true });
+                    MainAPI.Capi.World.Player.Entity.StartAnimation("CastSpell");
                 }
 
                 return true;
@@ -270,8 +273,15 @@ public class SpellManager : NetworkedGameSystem, IRenderer
                     // Maybe don't even do it here.
                     SpellConfig config = new();
                     config.SetCastedBy(trackedPlayer.player.Entity);
-                    SpawnSpell<Levitate>(trackedPlayer.player.Entity.Pos.ToVector(), config);
-                    //SpawnSpell<ArcLightning>(trackedPlayer.player.Entity.Pos.ToVector(), config);   
+                    //SpawnSpell<Levitate>(trackedPlayer.player.Entity.Pos.ToVector(), config);
+
+                    trackedPlayer.player.Entity.StartAnimation("CastSpell");
+
+                    SpawnSpell<ArcLightning>(trackedPlayer.player.Entity.Pos.ToVector(), config);   
+                }
+                else
+                {
+                    trackedPlayer.player.Entity.StopAnimation("CastSpell");
                 }
             }
         }

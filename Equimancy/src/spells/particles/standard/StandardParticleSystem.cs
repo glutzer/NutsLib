@@ -53,8 +53,10 @@ public class StandardParticleSystem : ParticleSystem<StandardParticle, StandardP
 
     public override void BeforeFrame(float dt)
     {
+        int count = particleQueue.Count;
+
         // Update position.
-        for (int i = 0; i < particleQueue.Count; i++)
+        for (int i = 0; i < count; i++)
         {
             StandardParticle particle = particleQueue.Dequeue();
 
@@ -76,7 +78,9 @@ public class StandardParticleSystem : ParticleSystem<StandardParticle, StandardP
         // Update gpu.
         int index = 0;
 
-        for (int i = 0; i < particleQueue.Count; i++)
+        int num = particleQueue.Count;
+
+        for (int i = 0; i < num; i++)
         {
             // Skip the queue when maximum particles are reached.
             if (index == MAX_PARTICLES)

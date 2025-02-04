@@ -1,8 +1,7 @@
-﻿using MareLib;
-using System;
+﻿using System;
 using Vintagestory.API.Client;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Implementation of a button missing: rendering, textures.

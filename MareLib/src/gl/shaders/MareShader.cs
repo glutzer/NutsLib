@@ -9,13 +9,25 @@ using Vintagestory.Client.NoObf;
 
 namespace MareLib;
 
+public struct BindingIndex
+{
+    public int bindingPoint;
+    public int bindId; // <--- What the original value was.
+
+    public BindingIndex(int bindingPoint, int bindId)
+    {
+        this.bindingPoint = bindingPoint;
+        this.bindId = bindId;
+    }
+}
+
 /// <summary>
 /// Constructed from a ShaderProgram.
 /// </summary>
 public class MareShader
 {
     // Set when re-registering shader.
-    public int[]? UniformBlockIds { get; private set; }
+    public BindingIndex[]? UniformBlockIds { get; private set; }
 
     public int ProgramId { get; private set; }
     public Dictionary<string, int> uniformLocations = null!;
@@ -40,15 +52,17 @@ public class MareShader
 
         if (numUniformBlocks > 0)
         {
-            UniformBlockIds = new int[numUniformBlocks];
+            UniformBlockIds = new BindingIndex[numUniformBlocks];
 
             for (int i = 0; i < numUniformBlocks; i++)
             {
                 GL.GetActiveUniformBlock(program.ProgramId, i, ActiveUniformBlockParameter.UniformBlockNameLength, out int nameLength);
                 GL.GetActiveUniformBlockName(program.ProgramId, i, nameLength, out _, out string uniformBlockName);
 
+                GL.GetActiveUniformBlock(program.ProgramId, i, ActiveUniformBlockParameter.UniformBlockBinding, out int bindingPoint);
+
                 // Register it, returns the id of the ubo at that index.
-                UniformBlockIds[i] = UboRegistry.RegisterUboName(uniformBlockName);
+                UniformBlockIds[i] = new BindingIndex(bindingPoint, UboRegistry.RegisterUboName(uniformBlockName));
             }
         }
         else

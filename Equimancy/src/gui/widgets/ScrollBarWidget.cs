@@ -11,10 +11,10 @@ internal class ScrollBarWidget : BaseScrollBarWidget
 
     public ScrollBarWidget(Gui gui, Bounds bounds, Bounds scrollBounds, int stepsPerPage = 10) : base(gui, bounds, scrollBounds, stepsPerPage)
     {
-        background = EqTextures.Box;
-        cursor = EqTextures.Button;
-        pressedCursor = EqTextures.ButtonPressed;
-        hoveredCursor = EqTextures.ButtonHovered;
+        background = EqGui.Box;
+        cursor = EqGui.Button;
+        pressedCursor = EqGui.ButtonPressed;
+        hoveredCursor = EqGui.ButtonHovered;
     }
 
     protected override void RenderBackground(int x, int y, int width, int height, MareShader shader)

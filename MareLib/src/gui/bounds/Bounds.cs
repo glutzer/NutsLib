@@ -3,8 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Vintagestory.API.Client;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MareLib;
+
+[Flags]
+public enum ChildSizing
+{
+    None = 0,
+    FitToChildren = 1 << 0,
+    FitToWidth = 1 << 1,
+    FitToHeight = 1 << 2,
+    FitToChildrenOnce = 1 << 3,
+    FitToWidthOnce = 1 << 4,
+    FitToHeightOnce = 1 << 5,
+    Once = FitToChildrenOnce | FitToWidthOnce | FitToHeightOnce,
+    Width = FitToChildren | FitToChildrenOnce | FitToWidth | FitToWidthOnce,
+    Height = FitToChildren | FitToChildrenOnce | FitToHeight | FitToHeightOnce,
+}
 
 /// <summary>
 /// Bounds used by ui elements/scissor etc.
@@ -24,20 +40,22 @@ public class Bounds
     private BoundsSizing sizingV;
     private Align alignment;
 
-    private int fixedX;
-    private int fixedY;
-    private int fixedWidth;
-    private int fixedHeight;
+    private float fixedX;
+    private float fixedY;
+    private float fixedWidth;
+    private float fixedHeight;
 
     private float percentX;
     private float percentY;
     private float percentWidth;
     private float percentHeight;
 
-    private int scaledX;
-    private int scaledY;
-    private int scaledWidth;
-    private int scaledHeight;
+    private float scaledX;
+    private float scaledY;
+    private float scaledWidth;
+    private float scaledHeight;
+
+    private ChildSizing childSizing;
 
     // Publicly available for rendering.
     public int X { get; private set; }
@@ -71,6 +89,20 @@ public class Bounds
 
             return this;
         }
+    }
+
+    /// <summary>
+    /// Scales a value (for things like text) before bounds are set.
+    /// </summary>
+    public int Scaled(int value)
+    {
+        return NoScale ? value : value * MainAPI.GuiScale;
+    }
+
+    public Bounds FitToChildren(ChildSizing sizing)
+    {
+        childSizing = sizing;
+        return this;
     }
 
     /// <summary>
@@ -142,6 +174,42 @@ public class Bounds
         // Initialize children.
         if (children != null)
         {
+            foreach (Bounds child in children)
+            {
+                child.SetBounds();
+            }
+        }
+
+        if (childSizing != ChildSizing.None && children != null)
+        {
+            Queue<Bounds> toCheck = new();
+            foreach (Bounds child in children) toCheck.Enqueue(child);
+
+            int startX = X;
+            int startY = Y;
+            int maxX = X + Width;
+            int maxY = Y + Height;
+
+            while (toCheck.Count > 0)
+            {
+                Bounds boundsToCheck = toCheck.Dequeue();
+
+                if ((childSizing & ChildSizing.Width) != 0) maxX = Math.Max(boundsToCheck.X + boundsToCheck.Width, maxX);
+                if ((childSizing & ChildSizing.Height) != 0) maxY = Math.Max(boundsToCheck.Y + boundsToCheck.Height, maxY);
+
+                if ((childSizing & ChildSizing.Once) == 0 && boundsToCheck.children != null)
+                {
+                    foreach (Bounds child in children)
+                    {
+                        toCheck.Enqueue(child);
+                    }
+                }
+            }
+
+            Width = maxX - startX;
+            Height = maxY - startY;
+
+            // Once again, set the bounds of the children based on this new size.
             foreach (Bounds child in children)
             {
                 child.SetBounds();
@@ -234,6 +302,12 @@ public class Bounds
         return new Bounds(parent);
     }
 
+    public Bounds Scaling()
+    {
+        NoScale = false;
+        return this;
+    }
+
     public Bounds NoScaling()
     {
         NoScale = true;
@@ -242,10 +316,10 @@ public class Bounds
 
     public void SetRenderPos(int parentRenderX, int parentRenderY)
     {
-        X = scaledX + parentRenderX;
-        Y = scaledY + parentRenderY;
-        Width = scaledWidth;
-        Height = scaledHeight;
+        X = (int)scaledX + parentRenderX;
+        Y = (int)scaledY + parentRenderY;
+        Width = (int)scaledWidth;
+        Height = (int)scaledHeight;
     }
 
     /// <summary>
@@ -437,7 +511,9 @@ public class Bounds
             sizingH = sizingH,
             sizingV = sizingV,
             positioningH = positioningH,
-            positioningV = positioningV
+            positioningV = positioningV,
+            alignOutsideH = alignOutsideH,
+            alignOutsideV = alignOutsideV
         };
     }
 
@@ -458,7 +534,9 @@ public class Bounds
             sizingH = sizingH,
             sizingV = sizingV,
             positioningH = positioningH,
-            positioningV = positioningV
+            positioningV = positioningV,
+            alignOutsideH = alignOutsideH,
+            alignOutsideV = alignOutsideV
         };
     }
 
@@ -598,6 +676,6 @@ public class Bounds
 
     public Vector2i GetFixedPos()
     {
-        return new Vector2i(fixedX, fixedY);
+        return new Vector2i((int)fixedX, (int)fixedY);
     }
 }

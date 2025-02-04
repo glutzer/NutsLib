@@ -14,14 +14,8 @@ public unsafe class MappedUboHandle<T> : IUbo, IDisposable where T : unmanaged
 
     public T this[int index]
     {
-        get
-        {
-            return Data[index];
-        }
-        set
-        {
-            Data[index] = value;
-        }
+        get => Data[index];
+        set => Data[index] = value;
     }
 
     public MappedUboHandle(int length = 1)

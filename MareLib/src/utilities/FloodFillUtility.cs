@@ -46,6 +46,7 @@ public static class FloodFillUtility
     /// Tessellates a mesh of every location as a cube.
     /// Good for x-ray or visualizing paths.
     /// Uses a standard vertex.
+    /// Skips inside faces.
     /// </summary>
     public static void CreateFloodFillMesh(HashSet<GridPos> positions, GridPos basePos, Vector4 color, out MeshHandle handle)
     {

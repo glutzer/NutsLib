@@ -179,8 +179,8 @@ public class MainAPI : ModSystem, IRenderer
     public override void StartPre(ICoreAPI api)
     {
         // Register new asset paths.
-        //AssetCategory.categories["fluidtypes"] = new AssetCategory("fluidtypes", true, EnumAppSide.Universal);
-        AssetCategory.categories["fonts"] = new AssetCategory("fonts", true, EnumAppSide.Client);
+        AssetCategory.categories["fonts"] = new AssetCategory("fonts", false, EnumAppSide.Client);
+        AssetCategory.categories["objs"] = new AssetCategory("objs", false, EnumAppSide.Client);
 
         if (api is ICoreClientAPI capi)
         {
@@ -340,8 +340,11 @@ public class MainAPI : ModSystem, IRenderer
         RenderHeight = Capi.Render.FrameHeight;
         GuiScale = (int)(RuntimeEnv.GUIScale * 4f); // 1x - 4x instead of 0.25x - 1x.
 
+        float zNear = Client.MainCamera.GetField<float>("ZNear");
+        float zFar = Client.MainCamera.GetField<float>("ZFar");
+
         // According to the camera, this is the near/far. I'm not sure where it's set though.
-        PerspectiveMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(ClientSettings.FieldOfView), (float)RenderWidth / RenderHeight, 0.1f, 3000f);
+        PerspectiveMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(ClientSettings.FieldOfView), (float)RenderWidth / RenderHeight, zNear, zFar);
         OrthographicMatrix = Matrix4.CreateOrthographicOffCenter(0, RenderWidth, RenderHeight, 0, -1000, 1000);
 
         // In the game, the camera matrix is calculated incorrectly, so here it is too.

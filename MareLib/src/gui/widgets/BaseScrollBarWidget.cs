@@ -1,9 +1,7 @@
-﻿using MareLib;
-using System;
+﻿using System;
 using Vintagestory.API.Client;
-using Vintagestory.Client.NoObf;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Implementation of a scroll bar missing: rendering, textures.
@@ -193,7 +191,7 @@ public class BaseScrollBarWidget : Widget
         int size = GetScrollBarSize(ratio);
 
         // Offset mouse position up to simulate grabbing the bar at that position.
-        float relativePosition = mouseY - bounds.Y - barGrabRatio * size;
+        float relativePosition = mouseY - bounds.Y - (barGrabRatio * size);
 
         scrollProgress = relativePosition / (bounds.Height - size);
 

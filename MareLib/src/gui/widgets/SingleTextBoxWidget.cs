@@ -1,10 +1,9 @@
-﻿using MareLib;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using System;
 using System.Text;
 using Vintagestory.API.Client;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Similar to the text box, but only for a single line.
@@ -36,7 +35,7 @@ public class SingleTextBoxWidget : FocusableWidget
     {
         get
         {
-            int center = centerValues ? bounds.Width / 2 - text.PixelLength / 2 : 0;
+            int center = centerValues ? (bounds.Width / 2) - (text.PixelLength / 2) : 0;
 
             if (!centerValues && cursorRelativePos > bounds.Width)
             {
@@ -76,7 +75,7 @@ public class SingleTextBoxWidget : FocusableWidget
 
         if (centerValues)
         {
-            text.RenderCenteredLine(bounds.X + bounds.Width / 2, bounds.Y + lineHeight, shader);
+            text.RenderCenteredLine(bounds.X + (bounds.Width / 2), bounds.Y + lineHeight, shader);
         }
         else
         {
@@ -155,7 +154,7 @@ public class SingleTextBoxWidget : FocusableWidget
 
         char character = obj.KeyChar;
 
-        if (limitTextToBox && text.font.GetLineWidth(currentLine, text.fontScale) + text.font.fontCharData[character].xAdvance * text.fontScale > bounds.Width)
+        if (limitTextToBox && text.font.GetLineWidth(currentLine, text.fontScale) + (text.font.fontCharData[character].xAdvance * text.fontScale) > bounds.Width)
         {
             // If the new character would exceed the bounds, skip.
             return;

@@ -8,8 +8,8 @@ uniform vec4 color = vec4(1.0);
 uniform vec4 fontColor = vec4(1.0);
 
 // 9 slice stuff.
-uniform vec2 dimensions;
-uniform vec2 border;
+uniform vec4 dimensions;
+uniform vec4 border;
 uniform vec2 centerScale;
 uniform int bold;
 
@@ -35,31 +35,34 @@ float map(float value, float originalMin, float originalMax, float newMin,
          newMin;
 }
 
-float processAxis(float coord, float textureBorder, float windowBorder,
+float processAxis(float coord, vec2 textureBorder, vec2 windowBorder,
                   float scale) {
   // Before.
-  if (coord < windowBorder)
-    return map(coord, 0, windowBorder, 0, textureBorder);
+  if (coord < windowBorder.x)
+    return map(coord, 0, windowBorder.x, 0, textureBorder.x);
 
   // Middle.
-  if (coord < 1 - windowBorder) {
-    float mappedValue = map(coord, windowBorder, 1 - windowBorder,
-                            textureBorder, 1 - textureBorder);
+  if (coord < 1 - windowBorder.y) {
+    float mappedValue = map(coord, windowBorder.x, 1 - windowBorder.y,
+                            textureBorder.x, 1 - textureBorder.y);
 
-    float dist = (mappedValue - textureBorder) * scale;
+    float dist = (mappedValue - textureBorder.x) * scale;
 
-    dist = mod(dist, 1 - textureBorder * 2);
+    dist = mod(dist, 1 - textureBorder.y * 2);
 
-    return textureBorder + dist;
+    return textureBorder.x + dist;
   }
 
   // After.
-  return map(coord, 1 - windowBorder, 1, 1 - textureBorder, 1);
+  return map(coord, 1 - windowBorder.y, 1, 1 - textureBorder.y, 1);
 }
 
 vec4 do9Slice() {
-  vec2 newUV = vec2(processAxis(uv.x, border.x, dimensions.x, centerScale.x),
-                    processAxis(uv.y, border.y, dimensions.y, centerScale.y));
+  vec2 newUV =
+      vec2(processAxis(uv.x, vec2(border.x, border.z),
+                       vec2(dimensions.x, dimensions.z), centerScale.x),
+           processAxis(uv.y, vec2(border.y, border.w),
+                       vec2(dimensions.y, dimensions.w), centerScale.y));
 
   return texture(tex2d, newUV);
 }

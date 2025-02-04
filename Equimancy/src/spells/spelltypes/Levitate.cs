@@ -3,6 +3,7 @@ using OpenTK.Mathematics;
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.ServerMods;
 
 namespace Equimancy;
 
@@ -120,11 +121,6 @@ public class Levitate : Spell, IPhysicsTickable
         levitatedEntity.ServerPos.Motion.Add(pushVector.X, pushVector.Y * 2, pushVector.Z);
     }
 
-    public void AfterPhysicsTick(float dt)
-    {
-
-    }
-
     public override void OnRemoved()
     {
         if (isServer)
@@ -135,5 +131,20 @@ public class Levitate : Spell, IPhysicsTickable
         {
             if (fx != null) fx.alive = false;
         }
+    }
+
+    public bool CanProceedOnThisThread()
+    {
+        return true;
+    }
+
+    public void OnPhysicsTickDone()
+    {
+
+    }
+
+    public void AfterPhysicsTick(float dt)
+    {
+        GenRockStrataNew
     }
 }

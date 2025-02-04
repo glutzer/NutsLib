@@ -1,13 +1,7 @@
 ﻿using HarmonyLib;
-using MareLib;
-using OpenTK.Mathematics;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using Vintagestory.API.Client;
-using Vintagestory.API.Common;
 using Vintagestory.Client.NoObf;
-using Vintagestory.GameContent;
 
 namespace Equimancy;
 

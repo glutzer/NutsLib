@@ -2,10 +2,16 @@
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using Vintagestory.API.Client;
+using Vintagestory.API.Common;
+using Vintagestory.Client.NoObf;
 
 namespace Equimancy;
 
-public static class EqTextures
+/// <summary>
+/// Common themes for this mods gui.
+/// </summary>
+public static class EqGui
 {
     private static readonly Dictionary<string, NineSliceTexture> textures = new();
 

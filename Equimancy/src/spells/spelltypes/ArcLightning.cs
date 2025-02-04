@@ -13,7 +13,7 @@ public class ArcLightning : Spell
     private int chainsLeft = 10;
     private readonly List<Entity> chainedToEntities = new();
     private int ticks;
-    private Vector3 color = new Vector3(1, 0, 0.5f);
+    private Vector3 color = new(1, 0, 0.5f);
 
     public ArcLightning(SpellManager spellManager, long instanceId, Vector3d position, string code, SpellConfig? config) : base(spellManager, instanceId, position, code, config)
     {
@@ -139,12 +139,21 @@ public class ArcLightning : Spell
             FXManager.GetFX<FXArcLightning>().SpawnInstance(new ArcLightningInstance(() =>
             {
                 Vector3d vec = lastChained.Pos.ToVector();
-                vec.Y += 0.5;
+
+                if (lastChained is EntityPlayer player)
+                {
+                    vec += GetLocalHornPos(player);
+                }
+                else
+                {
+                    vec.Y += 0.5f;
+                }
+
                 return vec;
             }, () =>
             {
                 Vector3d vec = entity.Pos.ToVector();
-                vec.Y += 0.5;
+                vec.Y += entity.CollisionBox.Y2 / 2;
                 return vec;
             }, color));
 

@@ -15,7 +15,7 @@ public class Patches
     {
         public static MethodBase TargetMethod()
         {
-            return typeof(ClientMain).Assembly.GetType("Vintagestory.Client.NoObf.HudDropItem").GetProperty("DrawOrder").GetGetMethod();
+            return typeof(ClientMain).Assembly.GetType("Vintagestory.Client.NoObf.HudDropItem")!.GetProperty("DrawOrder")!.GetGetMethod()!;
         }
 
         [HarmonyPrefix]

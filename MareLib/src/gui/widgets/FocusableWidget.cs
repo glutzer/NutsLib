@@ -1,7 +1,6 @@
-﻿using MareLib;
-using Vintagestory.API.Client;
+﻿using Vintagestory.API.Client;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Interface for FocusableWidget.
@@ -35,7 +34,7 @@ public class FocusableWidget : Widget, IFocusable
         if (!obj.Handled && Focused && obj.KeyCode == (int)GlKeys.Tab)
         {
             TransferFocus(obj.CtrlPressed);
-            obj.Handled = true; 
+            obj.Handled = true;
         }
     }
 

@@ -17,7 +17,7 @@ public class InputBox : Widget
     {
         Font font = FontRegistry.GetFont("friz");
 
-        background = EqTextures.Box;
+        background = EqGui.Box;
 
         if (boxes > 1)
         {

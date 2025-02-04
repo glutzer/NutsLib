@@ -1,12 +1,11 @@
-﻿using MareLib;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Vintagestory.API.Client;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Example of an editable text box, with 1 level of complexity.
@@ -270,6 +269,12 @@ public class TextBoxWidget : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
+        if (!obj.Handled && bounds.IsInAllBounds(obj))
+        {
+            // Set cursor.
+            gui.MouseOverCursor = "textselect";
+        }
+
         if (dragging)
         {
             selectEnd = GetIndexAtMousePos(obj.X, obj.Y);
@@ -500,7 +505,7 @@ public class TextBoxWidget : Widget
 
         char character = obj.KeyChar;
 
-        if (limitTextToBox && font.GetLineWidth(currentLine, fontScale) + font.fontCharData[character].xAdvance * fontScale > bounds.Width)
+        if (limitTextToBox && font.GetLineWidth(currentLine, fontScale) + (font.fontCharData[character].xAdvance * fontScale) > bounds.Width)
         {
             // If the new character would exceed the bounds, skip.
             return;

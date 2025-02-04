@@ -1,9 +1,8 @@
-﻿using MareLib;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Base class for item slots, only handles logic.
@@ -57,10 +56,10 @@ public class BaseItemGridWidget : Widget
 
     }
 
-    public virtual void RenderItem(Vector2 start, int size, float dt, MareShader shader, ItemSlot slot)
+    public virtual void RenderItem(Vector2 offset, int size, float dt, MareShader shader, ItemSlot slot)
     {
-        RenderTools.PushScissor((int)start.X, (int)start.Y, size, size);
-        RenderTools.RenderItemStackToGui(slot, shader, start.X + (size / 2), start.Y + (size / 2), size / 2, dt, true);
+        RenderTools.PushScissor((int)offset.X, (int)offset.Y, size, size);
+        RenderTools.RenderItemStackToGui(slot, shader, offset.X + (size / 2), offset.Y + (size / 2), size / 2, dt, true);
         RenderTools.PopScissor();
     }
 

@@ -1,13 +1,18 @@
 {
-    "type": "code",
-    "modid": "marelib",
-    "name": "MareLib",
-    "authors": [
-        "nuts"
-    ],
-    "description": "mares mares mares",
-    "version": "1.0.0",
-    "dependencies": {
-        "game": ""
-    }
+  "type": "code",
+  "modid": "marelib",
+  "name": "MareLib",
+  "authors":
+  [
+    "nuts"
+  ],
+  "description": "mares mares mares",
+  "version": "1.1.0",
+  "dependencies":
+  {
+    "game": ""
+  },
+  "side": "universal",
+  "requiredOnClient": true,
+  "requiredOnServer": false
 }

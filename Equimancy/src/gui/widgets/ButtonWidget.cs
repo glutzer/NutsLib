@@ -13,9 +13,9 @@ public class ButtonWidget : BaseButtonWidget
 
     public ButtonWidget(Gui gui, Bounds bounds, Action onClick, string text, int fontScale) : base(gui, bounds, onClick)
     {
-        texture = EqTextures.Button;
-        pressedTexture = EqTextures.ButtonPressed;
-        hoveredTexture = EqTextures.ButtonHovered;
+        texture = EqGui.Button;
+        pressedTexture = EqGui.ButtonPressed;
+        hoveredTexture = EqGui.ButtonHovered;
         textObject = new TextObject(text, FontRegistry.GetFont("celestia"), fontScale, Vector4.One);
     }
 

@@ -115,7 +115,45 @@ public class Font
             FontCharData fontChar = fontCharData[c];
             guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
             xAdvance += (int)(fontChar.xAdvance * fontScale);
-            RenderTools.RenderFontChar(fontChar.meshHandle);
+            RenderTools.RenderSquareVao(fontChar.meshHandle);
+        }
+
+        if (italic) guiShader.Uniform("italicSlant", 0f);
+        if (bold) guiShader.Uniform("bold", 0);
+
+        guiShader.Uniform("shaderType", 0);
+
+        return xAdvance;
+    }
+
+    /// <summary>
+    /// Renders a line of text with the gui shader.
+    /// Returns advance.
+    /// </summary>
+    public float RenderLine(float x, float y, StringBuilder text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
+    {
+        // Floor x/y.
+        x = (int)x;
+        y = (int)y;
+
+        float xAdvance = 0;
+
+        guiShader.Uniform("shaderType", 2);
+        guiShader.Uniform("fontColor", color);
+
+        guiShader.BindTexture(fontAtlas, "tex2d", 0);
+
+        // Arbitrary value for italics.
+        if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
+        if (bold) guiShader.Uniform("bold", 1);
+
+        for (int i = 0; i < text.Length; i++)
+        {
+            char c = text[i];
+            FontCharData fontChar = fontCharData[c];
+            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
+            xAdvance += (int)(fontChar.xAdvance * fontScale);
+            RenderTools.RenderSquareVao(fontChar.meshHandle);
         }
 
         if (italic) guiShader.Uniform("italicSlant", 0f);

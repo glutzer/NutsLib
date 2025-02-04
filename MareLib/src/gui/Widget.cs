@@ -29,6 +29,23 @@ public abstract class Widget
         return this;
     }
 
+    /// <summary>
+    /// Removes all children of a type.
+    /// Also removes the bounds from it's parent if possible. (Most times a bounds is only made once for a child element).
+    /// </summary>
+    public void RemoveChildAndBoundsFromParent<T>()
+    {
+        children?.RemoveAll(children =>
+        {
+            if (children is T)
+            {
+                children.bounds.parentBounds?.children?.Remove(children.bounds);
+                return true;
+            }
+            return false;
+        });
+    }
+
     public void ClearChildren()
     {
         children?.Clear();

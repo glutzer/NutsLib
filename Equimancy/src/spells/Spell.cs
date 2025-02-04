@@ -2,7 +2,10 @@
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using Vintagestory.API.Client;
+using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 
@@ -170,5 +173,34 @@ public abstract class Spell
     public virtual void OnNoLongerTrackingPlayer(TrackedPlayer player)
     {
 
+    }
+
+    /// <summary>
+    /// Not really correct but not sure what game matrix transformation is doing.
+    /// Returns the horn pos in relation to the entity's position.
+    /// </summary>
+    public static Vector3 GetLocalHornPos(EntityPlayer player)
+    {
+        AttachmentPointAndPose? pose = player.AnimManager.Animator?.GetAttachmentPointPose("Eyes");
+        if (pose == null) return Vector3.Zero;
+        AttachmentPoint attachPoint = pose.AttachPoint;
+        double rotationX = attachPoint.RotationX * GameMath.DEG2RAD;
+        double rotationY = attachPoint.RotationY * GameMath.DEG2RAD;
+        double rotationZ = attachPoint.RotationZ * GameMath.DEG2RAD;
+        Matrixf mat = new();
+
+        mat.Identity();
+
+        mat.RotateX(player.Pos.Roll);
+        mat.RotateY(player.BodyYaw + (-90 * GameMath.DEG2RAD));
+
+        //mat.RotateX((float)rotationX);
+        mat.RotateY((float)rotationY);
+        mat.RotateZ((float)rotationZ);
+
+        mat.Translate((attachPoint.PosX / 16) - 0.5f, attachPoint.PosY / 16, (attachPoint.PosZ / 16) - 0.5f);
+        mat.Mul(pose.AnimModelMatrix);
+        Vec4f pos = mat.TransformVector(new Vec4f(0, 0, 0, 1));
+        return new Vector3(pos.X, pos.Y + (float)player.LocalEyePos.Y + 0.1f, pos.Z);
     }
 }

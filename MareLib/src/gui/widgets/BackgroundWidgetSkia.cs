@@ -1,7 +1,6 @@
-﻿using MareLib;
-using Vintagestory.API.Client;
+﻿using Vintagestory.API.Client;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Provides a simple background, captures mouse events.
@@ -9,6 +8,7 @@ namespace Equimancy;
 public class BackgroundWidgetSkia : Widget
 {
     private readonly NineSliceTexture texture;
+    public override int SortPriority => 1; // Sort above.
 
     public BackgroundWidgetSkia(Gui gui, Bounds bounds, NineSliceTexture texture) : base(gui, bounds)
     {

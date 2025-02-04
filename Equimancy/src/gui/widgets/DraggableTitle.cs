@@ -10,8 +10,8 @@ public class DraggableTitle : BaseDraggableTitle
 
     public DraggableTitle(Gui gui, Bounds bounds, Bounds draggableBounds, string title, int fontScale) : base(gui, bounds, draggableBounds)
     {
-        background = EqTextures.Background;
-        text = new TextObject(title, FontRegistry.GetFont("friz"), fontScale, Vector4.One);
+        background = EqGui.Background;
+        text = new TextObject(title, FontRegistry.GetFont("friz"), bounds.Scaled(fontScale), Vector4.One);
     }
 
     public override void OnRender(float dt, MareShader shader)

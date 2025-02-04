@@ -21,7 +21,7 @@ public class ParticleConfigGui : Gui
         mainBounds = Bounds.Create().Alignment(Align.RightTop).Fixed(0, 50, 150, 200);
 
         // Bg.
-        AddWidget(new BackgroundWidgetSkia(this, mainBounds, EqTextures.Background));
+        AddWidget(new BackgroundWidgetSkia(this, mainBounds, EqGui.Background));
 
         Type type = typeof(ParticleConfig);
 
@@ -31,8 +31,8 @@ public class ParticleConfigGui : Gui
         Bounds scrollBounds = Bounds.CreateFrom(mainBounds).PercentWidth(1).Alignment(Align.CenterTop);
         Bounds barBounds = Bounds.CreateFrom(mainBounds).Percent(0, 0, 0.05f, 1f).Alignment(Align.LeftMiddle, true);
 
-        Bounds titleBounds = Bounds.CreateFrom(mainBounds).PercentWidth(1f).FixedHeight(7).Alignment(Align.CenterTop, false, true);
-        AddWidget(new DraggableTitle(this, titleBounds, mainBounds, "Particle Config", Scaled(7)));
+        Bounds titleBounds = Bounds.CreateFrom(mainBounds).PercentWidth(1).FixedHeight(7).Alignment(Align.CenterTop, false, true);
+        AddWidget(new DraggableTitle(this, titleBounds, mainBounds, "Particle Config", 7));
 
         Bounds xBounds = Bounds.CreateFrom(barBounds).PercentWidth(1).FixedHeight(7).Alignment(Align.CenterTop, false, true);
         AddWidget(new ButtonWidget(this, xBounds, () => TryClose(), "X", Scaled(5)));

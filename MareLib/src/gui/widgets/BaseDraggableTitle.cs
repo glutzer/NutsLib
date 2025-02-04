@@ -1,8 +1,7 @@
-﻿using MareLib;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using Vintagestory.API.Client;
 
-namespace Equimancy;
+namespace MareLib;
 
 /// <summary>
 /// Draggable title that moves the passed in bounds to that fixed point.

@@ -39,6 +39,8 @@ public class TextObjectIndecipherable : TextObject
     /// </summary>
     public override float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
+        if (centerVertically) y += CenterOffset;
+
         FontCharData[] fontData = font.fontCharData;
         FontCharData[] fosterFontData = fosterFont.fontCharData;
 
@@ -73,7 +75,7 @@ public class TextObjectIndecipherable : TextObject
 
             guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
             xAdvance += (int)(fosterFontData[c].xAdvance * fontScale);
-            RenderTools.RenderFontChar(fontChar.meshHandle);
+            RenderTools.RenderSquareVao(fontChar.meshHandle);
             index++;
         }
 

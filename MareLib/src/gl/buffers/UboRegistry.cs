@@ -101,13 +101,15 @@ public static class UboRegistry
     /// <summary>
     /// Syncs needed ubos for the current shader when using it.
     /// </summary>
-    public static void SyncUbos(int[] bindIndices)
+    public static void SyncUbos(BindingIndex[] bindIndices)
     {
-        for (int i = 0; i < bindIndices.Length; i++)
+        for (uint i = 0; i < bindIndices.Length; i++)
         {
-            int idToBind = bindIndices[i];
-            idToCurrentBind[idToBind] = i;
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, i, idToHandle[idToBind]);
+            int bindingPoint = bindIndices[i].bindingPoint;
+
+            int idToBind = bindIndices[i].bindId;
+            idToCurrentBind[idToBind] = bindingPoint;
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, bindingPoint, idToHandle[idToBind]);
         }
     }
 

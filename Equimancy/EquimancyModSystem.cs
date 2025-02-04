@@ -58,6 +58,6 @@ public class EquimancyModSystem : ModSystem
     public override void Dispose()
     {
         Unpatch();
-        EqTextures.Dispose();
+        EqGui.Dispose();
     }
 }

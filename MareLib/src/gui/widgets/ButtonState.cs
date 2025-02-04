@@ -1,4 +1,4 @@
-﻿namespace Equimancy;
+﻿namespace MareLib;
 
 public enum ButtonState
 {
