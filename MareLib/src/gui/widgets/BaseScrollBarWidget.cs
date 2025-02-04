@@ -22,12 +22,12 @@ public class BaseScrollBarWidget : Widget
 
     // Bounds that will be scrolled/offset.
     // The fixed position will be set as the offset.
-    protected Bounds scrollBounds;
+    protected Widget scrollWidget;
     protected int stepsPerPage;
 
-    public BaseScrollBarWidget(Gui gui, Bounds bounds, Bounds scrollBounds, int stepsPerPage = 10) : base(gui, bounds)
+    public BaseScrollBarWidget(Widget? parent, Widget scrollWidget, int stepsPerPage = 10) : base(parent)
     {
-        this.scrollBounds = scrollBounds;
+        this.scrollWidget = scrollWidget;
         this.stepsPerPage = stepsPerPage;
     }
 
@@ -37,8 +37,8 @@ public class BaseScrollBarWidget : Widget
         int size = GetScrollBarSize(ratio);
         int offset = GetScrollBarOffset(size);
 
-        RenderBackground(bounds.X, bounds.Y, bounds.Width, bounds.Height, shader);
-        RenderCursor(bounds.X, bounds.Y + offset, bounds.Width, size, shader, barState);
+        RenderBackground(X, Y, Width, Height, shader);
+        RenderCursor(X, Y + offset, Width, size, shader, barState);
     }
 
     protected virtual void RenderBackground(int x, int y, int width, int height, MareShader shader)
@@ -51,9 +51,9 @@ public class BaseScrollBarWidget : Widget
 
     }
 
-    public void SetNewScrollBounds(Bounds scrollBounds)
+    public void SetNewScrollBounds(Widget scrollWidget)
     {
-        this.scrollBounds = scrollBounds;
+        this.scrollWidget = scrollWidget;
         Reset();
     }
 
@@ -95,10 +95,10 @@ public class BaseScrollBarWidget : Widget
 
         if (obj.Handled) return;
 
-        hoveringScrollArea = scrollBounds.IsInAllBounds(obj);
-        fullBarHovered = bounds.IsInsideAndClip(obj);
+        hoveringScrollArea = scrollWidget.IsInAllBounds(obj);
+        fullBarHovered = IsInsideAndClip(obj);
 
-        if (bounds.IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
+        if (IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
         {
             barState = ButtonState.Hovered;
         }
@@ -110,7 +110,7 @@ public class BaseScrollBarWidget : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
+        if (!obj.Handled && IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
         {
             obj.Handled = true;
 
@@ -123,7 +123,7 @@ public class BaseScrollBarWidget : Widget
     {
         if (barState != ButtonState.Active) return;
 
-        if (bounds.IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
+        if (IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
         {
             barState = ButtonState.Hovered;
         }
@@ -138,7 +138,7 @@ public class BaseScrollBarWidget : Widget
     /// </summary>
     protected float GetScrollBarRatio()
     {
-        return Math.Clamp((float)bounds.Height / scrollBounds.Height, 0, 1);
+        return Math.Clamp((float)Height / scrollWidget.Height, 0, 1);
     }
 
     /// <summary>
@@ -146,7 +146,7 @@ public class BaseScrollBarWidget : Widget
     /// </summary>
     protected int GetScrollBarSize(float scrollBarRatio)
     {
-        return (int)MathF.Round(bounds.Height * scrollBarRatio);
+        return (int)MathF.Round(Height * scrollBarRatio);
     }
 
     /// <summary>
@@ -154,7 +154,7 @@ public class BaseScrollBarWidget : Widget
     /// </summary>
     protected int GetScrollBarOffset(float scrollBarSize)
     {
-        return (int)MathF.Round((bounds.Height - scrollBarSize) * scrollProgress);
+        return (int)MathF.Round((Height - scrollBarSize) * scrollProgress);
     }
 
     protected bool IsMouseOnScrollBar(int x, int y)
@@ -163,7 +163,7 @@ public class BaseScrollBarWidget : Widget
         int size = GetScrollBarSize(ratio);
         int offset = GetScrollBarOffset(size);
 
-        return x >= bounds.X && x <= bounds.X + bounds.Width && y >= bounds.Y + offset && y <= bounds.Y + offset + size;
+        return x >= X && x <= X + Width && y >= Y + offset && y <= Y + offset + size;
     }
 
     /// <summary>
@@ -175,8 +175,8 @@ public class BaseScrollBarWidget : Widget
         int size = GetScrollBarSize(ratio);
         int offset = GetScrollBarOffset(size);
 
-        float startY = bounds.Y + offset;
-        float endY = bounds.Y + offset + size;
+        float startY = Y + offset;
+        float endY = Y + offset + size;
 
         barGrabRatio = (mouseY - startY) / (endY - startY);
         barGrabRatio = MathF.Round(Math.Clamp(barGrabRatio, 0, 1), 1);
@@ -191,9 +191,9 @@ public class BaseScrollBarWidget : Widget
         int size = GetScrollBarSize(ratio);
 
         // Offset mouse position up to simulate grabbing the bar at that position.
-        float relativePosition = mouseY - bounds.Y - (barGrabRatio * size);
+        float relativePosition = mouseY - Y - (barGrabRatio * size);
 
-        scrollProgress = relativePosition / (bounds.Height - size);
+        scrollProgress = relativePosition / (Height - size);
 
         if (stepsPerPage > 0)
         {
@@ -211,13 +211,13 @@ public class BaseScrollBarWidget : Widget
     /// </summary>
     protected void SetOffset()
     {
-        float offset = (scrollBounds.Height - bounds.Height) * scrollProgress;
+        float offset = (scrollWidget.Height - Height) * scrollProgress;
 
         // Prevent scroll bar bigger than bounds from going up, probably a bigger issue.
         if (offset < 0) offset = 0;
 
-        scrollBounds.FixedPos(0, -(int)offset / scrollBounds.Scale);
-        scrollBounds.SetBounds();
+        scrollWidget.FixedPos(0, -(int)offset / scrollWidget.Scale);
+        scrollWidget.SetBounds();
     }
 
     /// <summary>

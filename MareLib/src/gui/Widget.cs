@@ -2,78 +2,44 @@
 
 namespace MareLib;
 
-public abstract class Widget
+public abstract partial class Widget
 {
-    public readonly Gui gui;
-    public Bounds bounds;
-
-    public List<Widget>? children;
-
-    public bool enabled = true;
+    public Widget? Parent { get; private set; }
+    public readonly List<Widget> children = new();
 
     /// <summary>
     /// When elements are sorted, this element and it's children will be prioritized by sort priority.
     /// </summary>
     public virtual int SortPriority => 0;
 
-    public Widget(Gui gui, Bounds bounds)
+    public Widget(Widget? parent = null)
     {
-        this.gui = gui;
-        this.bounds = bounds;
+        parent?.AddChild(this);
     }
 
     public Widget AddChild(Widget child)
     {
-        children ??= new List<Widget>();
         children.Add(child);
+        child.SetParent(this);
         return this;
     }
 
-    /// <summary>
-    /// Removes all children of a type.
-    /// Also removes the bounds from it's parent if possible. (Most times a bounds is only made once for a child element).
-    /// </summary>
-    public void RemoveChildAndBoundsFromParent<T>()
+    public Widget SetParent(Widget? parent)
     {
-        children?.RemoveAll(children =>
-        {
-            if (children is T)
-            {
-                children.bounds.parentBounds?.children?.Remove(children.bounds);
-                return true;
-            }
-            return false;
-        });
+        Parent = parent;
+        return this;
     }
 
-    public void ClearChildren()
+    public Widget NoScaling(bool noScale = true)
     {
-        children?.Clear();
-    }
-
-    public void AddClip(Bounds bounds)
-    {
-        AddChild(new ClipWidget(gui, true, bounds));
-    }
-
-    public void EndClip(Bounds bounds)
-    {
-        AddChild(new ClipWidget(gui, false, bounds));
+        NoScale = noScale;
+        return this;
     }
 
     /// <summary>
     /// Shader assumed to already be in use.
     /// </summary>
     public virtual void OnRender(float dt, MareShader shader)
-    {
-
-    }
-
-    /// <summary>
-    /// Called after bounds initialized.
-    /// Make textures here.
-    /// </summary>
-    public virtual void Initialize()
     {
 
     }
@@ -86,6 +52,9 @@ public abstract class Widget
 
     }
 
+    /// <summary>
+    /// Called when the gui is closed or when the widgets are set with PopulateWidgets.
+    /// </summary>
     public virtual void Dispose()
     {
 

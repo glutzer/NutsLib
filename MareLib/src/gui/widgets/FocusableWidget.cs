@@ -19,9 +19,11 @@ public interface IFocusable
 public class FocusableWidget : Widget, IFocusable
 {
     public bool Focused { get; set; }
+    public Gui gui;
 
-    public FocusableWidget(Gui gui, Bounds bounds) : base(gui, bounds)
+    public FocusableWidget(Widget? parent, Gui gui) : base(parent)
     {
+        this.gui = gui;
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)

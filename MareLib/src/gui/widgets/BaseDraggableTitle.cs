@@ -8,15 +8,15 @@ namespace MareLib;
 /// </summary>
 public class BaseDraggableTitle : Widget
 {
-    public Bounds draggableBounds;
+    public Widget draggableWidget;
     private bool held;
 
     private Vector2i startedDraggingFixed;
     private Vector2i startedDraggingMouse;
 
-    public BaseDraggableTitle(Gui gui, Bounds bounds, Bounds draggableBounds) : base(gui, bounds)
+    public BaseDraggableTitle(Widget? parent, Widget draggableWidget) : base(parent)
     {
-        this.draggableBounds = draggableBounds;
+        this.draggableWidget = draggableWidget;
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
@@ -33,10 +33,10 @@ public class BaseDraggableTitle : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInAllBounds(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             held = true;
-            startedDraggingFixed = draggableBounds.GetFixedPos();
+            startedDraggingFixed = draggableWidget.GetFixedPos();
             startedDraggingMouse = new Vector2i(obj.X, obj.Y);
             obj.Handled = true;
         }
@@ -44,16 +44,15 @@ public class BaseDraggableTitle : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (bounds.IsInAllBounds(obj)) obj.Handled = true;
+        if (IsInAllBounds(obj)) obj.Handled = true;
 
         if (!held) return;
 
         Vector2i offset = new(obj.X - startedDraggingMouse.X, obj.Y - startedDraggingMouse.Y);
-        offset /= bounds.Scale;
+        offset /= Scale;
 
         Vector2i newFixed = startedDraggingFixed + offset;
 
-        draggableBounds.FixedPos(newFixed.X, newFixed.Y);
-        draggableBounds.SetBounds();
+        draggableWidget.Move(newFixed.X, newFixed.Y);
     }
 }

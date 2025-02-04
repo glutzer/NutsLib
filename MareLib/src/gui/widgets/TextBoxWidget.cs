@@ -38,6 +38,8 @@ public class TextBoxWidget : Widget
     private readonly bool limitTextToBox;
     private readonly int maxLines;
 
+    private Gui gui;
+
     public void ClearSelection()
     {
         selectStart = Vector2i.Zero;
@@ -49,8 +51,8 @@ public class TextBoxWidget : Widget
         float lineHeight = font.LineHeight * fontScale;
 
         // Normalize position.
-        x -= bounds.X;
-        y -= bounds.Y;
+        x -= X;
+        y -= Y;
 
         int lineIndex = (int)(y / lineHeight);
 
@@ -71,11 +73,13 @@ public class TextBoxWidget : Widget
         return new Vector2i(index, lineIndex);
     }
 
-    public TextBoxWidget(Gui gui, Bounds bounds, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, int maxLines = 1000) : base(gui, bounds)
+    public TextBoxWidget(Widget? parent, Gui gui, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, int maxLines = 1000) : base(parent)
     {
         this.font = font;
         this.fontScale = fontScale;
         this.color = color;
+
+        this.gui = gui;
 
         this.limitTextToBox = limitTextToBox;
         this.maxLines = maxLines;
@@ -177,15 +181,15 @@ public class TextBoxWidget : Widget
 
     public override void OnRender(float dt, MareShader shader)
     {
-        RenderTools.PushScissor(bounds);
+        RenderTools.PushScissor(this);
 
         float lineHeight = font.LineHeight * fontScale;
 
         // Render every lines from top to bottom.
         for (int i = 0; i < lines.Count; i++)
         {
-            float y = bounds.Y + (i * lineHeight) + lineHeight;
-            font.RenderLine(bounds.X, y, lines[i], fontScale, shader, color);
+            float y = Y + (i * lineHeight) + lineHeight;
+            font.RenderLine(X, y, lines[i], fontScale, shader, color);
         }
 
         // Render cursor.
@@ -197,11 +201,11 @@ public class TextBoxWidget : Widget
             {
                 char charAtIndex = lines[cursorYIndex][cursorXIndex];
                 float charWidth = font.fontCharData[charAtIndex].xAdvance * fontScale;
-                RenderTools.RenderQuad(shader, bounds.X + cursorRelativePosition.X, bounds.Y + cursorRelativePosition.Y + (lineHeight / 4), charWidth, -lineHeight);
+                RenderTools.RenderQuad(shader, X + cursorRelativePosition.X, Y + cursorRelativePosition.Y + (lineHeight / 4), charWidth, -lineHeight);
             }
             else if (MainAPI.Capi.World.ElapsedMilliseconds / 1000f % 1 < 0.5f) // Blink.
             {
-                RenderTools.RenderQuad(shader, bounds.X + cursorRelativePosition.X, bounds.Y + cursorRelativePosition.Y, lineHeight / 2, 4); // Magic numbers.
+                RenderTools.RenderQuad(shader, X + cursorRelativePosition.X, Y + cursorRelativePosition.Y, lineHeight / 2, 4); // Magic numbers.
             }
 
             // Selection is assumed not to be out of the bounds here.
@@ -222,8 +226,8 @@ public class TextBoxWidget : Widget
                     float xStart = (int)(i == startLine ? font.GetLineWidthUpToIndex(line, fontScale, minSelection.X) : 0);
                     float xEnd = (int)(i == endLine ? font.GetLineWidthUpToIndex(line, fontScale, maxSelection.X) : font.GetLineWidthUpToIndex(line, fontScale, line.Length));
 
-                    float y = bounds.Y + (i * lineHeight) + lineHeight;
-                    RenderTools.RenderQuad(shader, bounds.X + xStart, y, xEnd - xStart, -lineHeight);
+                    float y = Y + (i * lineHeight) + lineHeight;
+                    RenderTools.RenderQuad(shader, X + xStart, y, xEnd - xStart, -lineHeight);
                 }
             }
         }
@@ -242,7 +246,7 @@ public class TextBoxWidget : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInAllBounds(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
 
@@ -269,7 +273,7 @@ public class TextBoxWidget : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInAllBounds(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             // Set cursor.
             gui.MouseOverCursor = "textselect";
@@ -505,7 +509,7 @@ public class TextBoxWidget : Widget
 
         char character = obj.KeyChar;
 
-        if (limitTextToBox && font.GetLineWidth(currentLine, fontScale) + (font.fontCharData[character].xAdvance * fontScale) > bounds.Width)
+        if (limitTextToBox && font.GetLineWidth(currentLine, fontScale) + (font.fontCharData[character].xAdvance * fontScale) > Width)
         {
             // If the new character would exceed the bounds, skip.
             return;

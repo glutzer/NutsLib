@@ -5,6 +5,8 @@ namespace MareLib;
 
 public class GuiEvents
 {
+    public readonly Gui gui;
+
     public event Action<MouseEvent>? MouseDown;
     public event Action<MouseEvent>? MouseUp;
     public event Action<MouseEvent>? MouseMove;
@@ -19,6 +21,11 @@ public class GuiEvents
 
     public event Action<float>? BeforeRender;
     public event Action<float>? AfterRender;
+
+    public GuiEvents(Gui gui)
+    {
+        this.gui = gui;
+    }
 
     public void ClearEvents()
     {

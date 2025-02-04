@@ -9,8 +9,6 @@ public abstract class Gui : GuiDialog
     // This is broken in vanilla, input will be passed to this one even if it's drawn last.
     public override double DrawOrder => 0.2;
 
-    public Bounds? MainBounds { get; private set; }
-
     private bool shouldRepartition;
 
     /// <summary>
@@ -22,11 +20,11 @@ public abstract class Gui : GuiDialog
     private readonly List<Widget> widgets = new();
     private Widget[] widgetsBackToFront = Array.Empty<Widget>();
 
-    public readonly GuiEvents guiEvents = new();
+    public readonly GuiEvents guiEvents;
 
     public Gui() : base(MainAPI.Capi)
     {
-
+        guiEvents = new(this);
     }
 
     public static int Scaled(int value)
@@ -75,9 +73,8 @@ public abstract class Gui : GuiDialog
 
     /// <summary>
     /// Add every widget to the gui here.
-    /// Returns the main bounds of the gui.
     /// </summary>
-    public abstract void PopulateWidgets(out Bounds mainBounds);
+    public abstract void PopulateWidgets();
 
     /// <summary>
     /// Remakes all widgets using PopulateWidgets.
@@ -87,13 +84,12 @@ public abstract class Gui : GuiDialog
         Dispose();
 
         widgets.Clear();
-        PopulateWidgets(out Bounds mainBounds);
-        MainBounds = mainBounds;
+        PopulateWidgets();
 
         PartitionWidgets();
-        MainBounds.SetBounds();
 
-        foreach (Widget widget in widgetsBackToFront) widget.Initialize();
+        // Set all top level widgets.
+        foreach (Widget widget in widgets) widget.SetBounds();
     }
 
     /// <summary>

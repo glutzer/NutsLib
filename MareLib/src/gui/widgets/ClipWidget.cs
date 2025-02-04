@@ -8,7 +8,7 @@ public class ClipWidget : Widget
 {
     public bool clip;
 
-    public ClipWidget(Gui gui, bool clip, Bounds bounds) : base(gui, bounds)
+    public ClipWidget(bool clip, Widget? parent) : base(parent)
     {
         this.clip = clip;
     }
@@ -17,7 +17,7 @@ public class ClipWidget : Widget
     {
         if (clip)
         {
-            RenderTools.PushScissor(bounds);
+            RenderTools.PushScissor(this);
         }
         else
         {
@@ -46,7 +46,7 @@ public class ClipWidget : Widget
         }
         else
         {
-            RenderTools.PushScissor(bounds);
+            RenderTools.PushScissor(this);
         }
     }
 }

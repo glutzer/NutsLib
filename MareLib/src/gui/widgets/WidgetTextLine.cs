@@ -7,7 +7,7 @@ public class WidgetTextLine : Widget
     private readonly TextObject textObject;
     private readonly bool center;
 
-    public WidgetTextLine(Gui gui, Bounds bounds, Font font, string text, int fontSize, Vector4 color, bool center = true) : base(gui, bounds)
+    public WidgetTextLine(Widget? parent, Font font, string text, int fontSize, Vector4 color, bool center = true) : base(parent)
     {
         this.center = center;
         textObject = new TextObject(text, font, fontSize, color);
@@ -17,11 +17,11 @@ public class WidgetTextLine : Widget
     {
         if (center)
         {
-            textObject.RenderCenteredLine(bounds.X + (bounds.Width / 2), bounds.Y + (bounds.Height / 2), shader, true);
+            textObject.RenderCenteredLine(X + (Width / 2), Y + (Height / 2), shader, true);
         }
         else
         {
-            textObject.RenderLine(bounds.X, bounds.Y + (bounds.Height / 2), shader, 0, true);
+            textObject.RenderLine(X, Y + (Height / 2), shader, 0, true);
         }
     }
 

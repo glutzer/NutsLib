@@ -17,12 +17,12 @@ public class BaseItemGridWidget : Widget
     protected int height;
 
     private readonly int slotSize;
-    protected virtual int SlotSize => slotSize * bounds.Scale;
+    protected virtual int SlotSize => slotSize * Scale;
 
     // Index of currently moused over slot, or -1 if no slot.
     private int mousedSlotIndex = -1;
 
-    public BaseItemGridWidget(ItemSlot[] slots, int width, int height, int slotSize, Gui gui, Bounds bounds) : base(gui, bounds)
+    public BaseItemGridWidget(ItemSlot[] slots, int width, int height, int slotSize, Widget? parent) : base(parent)
     {
         this.slots = slots;
         this.width = width;
@@ -38,8 +38,8 @@ public class BaseItemGridWidget : Widget
         {
             Vector2 offset = GetOffsetOfSlot(i % width, i / width, SlotSize);
 
-            offset.X += bounds.X;
-            offset.Y += bounds.Y;
+            offset.X += X;
+            offset.Y += Y;
             offset.X = (int)offset.X;
             offset.Y = (int)offset.Y;
 
@@ -85,7 +85,7 @@ public class BaseItemGridWidget : Widget
 
     private void GuiEvents_MouseUp(MouseEvent obj)
     {
-        if (bounds.IsInAllBounds(obj) && mousedSlotIndex != -1)
+        if (IsInAllBounds(obj) && mousedSlotIndex != -1)
         {
             obj.Handled = true;
         }
@@ -93,7 +93,7 @@ public class BaseItemGridWidget : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!bounds.IsInAllBounds(obj) || obj.Handled) return;
+        if (!IsInAllBounds(obj) || obj.Handled) return;
 
         mousedSlotIndex = GetMousedIndex(obj.X, obj.Y);
 
@@ -106,7 +106,7 @@ public class BaseItemGridWidget : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (!bounds.IsInAllBounds(obj))
+        if (!IsInAllBounds(obj))
         {
             if (mousedSlotIndex != -1)
             {
@@ -136,8 +136,8 @@ public class BaseItemGridWidget : Widget
     /// </summary>
     protected Vector2 GetOffsetOfSlot(int indexX, int indexY, int size)
     {
-        int maxWidth = bounds.Width - size;
-        int maxHeight = bounds.Height - size;
+        int maxWidth = Width - size;
+        int maxHeight = Height - size;
 
         float xRatio = width == 1 ? 0.5f : (float)indexX / (width - 1);
         float yRatio = height == 1 ? 0.5f : (float)indexY / (height - 1);
@@ -156,7 +156,7 @@ public class BaseItemGridWidget : Widget
         {
             Vector2 offset = GetOffsetOfSlot(i % width, i / width, size);
 
-            if (Bounds.IsInAllBounds(x, y, bounds.X + (int)offset.X, bounds.Y + (int)offset.Y, size, size))
+            if (IsInAllBounds(x, y, X + (int)offset.X, Y + (int)offset.Y, size, size))
             {
                 return i;
             }

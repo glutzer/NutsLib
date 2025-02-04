@@ -35,18 +35,18 @@ public class SingleTextBoxWidget : FocusableWidget
     {
         get
         {
-            int center = centerValues ? (bounds.Width / 2) - (text.PixelLength / 2) : 0;
+            int center = centerValues ? (Width / 2) - (text.PixelLength / 2) : 0;
 
-            if (!centerValues && cursorRelativePos > bounds.Width)
+            if (!centerValues && cursorRelativePos > Width)
             {
-                center -= (int)(cursorRelativePos - bounds.Width);
+                center -= (int)(cursorRelativePos - Width);
             }
 
             return center;
         }
     }
 
-    public SingleTextBoxWidget(Gui gui, Bounds bounds, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null) : base(gui, bounds)
+    public SingleTextBoxWidget(Widget? parent, Gui gui, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null) : base(parent, gui)
     {
         this.limitTextToBox = limitTextToBox;
         this.centerValues = centerValues;
@@ -68,25 +68,25 @@ public class SingleTextBoxWidget : FocusableWidget
 
     public override void OnRender(float dt, MareShader shader)
     {
-        RenderTools.PushScissor(bounds);
+        RenderTools.PushScissor(this);
 
         float lineHeight = text.font.LineHeight * text.fontScale;
         float centerOffset = CenterOffset;
 
         if (centerValues)
         {
-            text.RenderCenteredLine(bounds.X + (bounds.Width / 2), bounds.Y + lineHeight, shader);
+            text.RenderCenteredLine(X + (Width / 2), Y + lineHeight, shader);
         }
         else
         {
-            int x = bounds.X;
+            int x = X;
 
-            if (cursorRelativePos > bounds.Width)
+            if (cursorRelativePos > Width)
             {
-                x -= (int)(cursorRelativePos - bounds.Width);
+                x -= (int)(cursorRelativePos - Width);
             }
 
-            text.RenderLine(x, bounds.Y + lineHeight, shader, 0);
+            text.RenderLine(x, Y + lineHeight, shader, 0);
         }
 
         if (Focused)
@@ -97,11 +97,11 @@ public class SingleTextBoxWidget : FocusableWidget
             {
                 char charAtIndex = text.Text[cursorIndex];
                 float charWidth = text.font.fontCharData[charAtIndex].xAdvance * text.fontScale;
-                RenderTools.RenderQuad(shader, bounds.X + cursorRelativePos + centerOffset, bounds.Y + lineHeight + (lineHeight / 4), charWidth, -lineHeight);
+                RenderTools.RenderQuad(shader, X + cursorRelativePos + centerOffset, Y + lineHeight + (lineHeight / 4), charWidth, -lineHeight);
             }
             else if (MainAPI.Capi.World.ElapsedMilliseconds / 1000f % 1 < 0.5f) // Blink.
             {
-                RenderTools.RenderQuad(shader, bounds.X + cursorRelativePos + centerOffset, bounds.Y + lineHeight, lineHeight / 2, 4); // Magic numbers.
+                RenderTools.RenderQuad(shader, X + cursorRelativePos + centerOffset, Y + lineHeight, lineHeight / 2, 4); // Magic numbers.
             }
 
             // Selection is assumed not to be out of the bounds here.
@@ -115,8 +115,8 @@ public class SingleTextBoxWidget : FocusableWidget
 
                 float start = (int)text.font.GetLineWidthUpToIndex(line, text.fontScale, minSelection);
                 float end = (int)text.font.GetLineWidthUpToIndex(line, text.fontScale, maxSelection);
-                float y = bounds.Y + lineHeight;
-                RenderTools.RenderQuad(shader, bounds.X + start + centerOffset, y, end - start, -lineHeight);
+                float y = Y + lineHeight;
+                RenderTools.RenderQuad(shader, X + start + centerOffset, y, end - start, -lineHeight);
             }
         }
 
@@ -154,7 +154,7 @@ public class SingleTextBoxWidget : FocusableWidget
 
         char character = obj.KeyChar;
 
-        if (limitTextToBox && text.font.GetLineWidth(currentLine, text.fontScale) + (text.font.fontCharData[character].xAdvance * text.fontScale) > bounds.Width)
+        if (limitTextToBox && text.font.GetLineWidth(currentLine, text.fontScale) + (text.font.fontCharData[character].xAdvance * text.fontScale) > Width)
         {
             // If the new character would exceed the bounds, skip.
             return;
@@ -188,7 +188,7 @@ public class SingleTextBoxWidget : FocusableWidget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInAllBounds(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
 
@@ -215,7 +215,7 @@ public class SingleTextBoxWidget : FocusableWidget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInAllBounds(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             // Set cursor.
             gui.MouseOverCursor = "textselect";
@@ -230,7 +230,7 @@ public class SingleTextBoxWidget : FocusableWidget
 
     private int GetIndexAtMousePos(int x)
     {
-        x -= bounds.X;
+        x -= X;
         int index = text.font.GetIndexAtAdvance(text.Text, text.fontScale, x);
         return index;
     }

@@ -11,7 +11,7 @@ public class BaseButtonWidget : Widget
     protected ButtonState state = ButtonState.Normal;
     protected Action onClick;
 
-    public BaseButtonWidget(Gui gui, Bounds bounds, Action onClick) : base(gui, bounds)
+    public BaseButtonWidget(Widget? parent, Action onClick) : base(parent)
     {
         this.onClick = onClick;
     }
@@ -31,12 +31,12 @@ public class BaseButtonWidget : Widget
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
         if (state == ButtonState.Active) return;
-        state = bounds.IsInsideAndClip(obj) ? ButtonState.Hovered : ButtonState.Normal;
+        state = IsInsideAndClip(obj) ? ButtonState.Hovered : ButtonState.Normal;
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInsideAndClip(obj))
+        if (!obj.Handled && IsInsideAndClip(obj))
         {
             obj.Handled = true;
             state = ButtonState.Active;
@@ -47,7 +47,7 @@ public class BaseButtonWidget : Widget
     {
         if (state != ButtonState.Active) return;
 
-        if (bounds.IsInsideAndClip(obj))
+        if (IsInsideAndClip(obj))
         {
             onClick();
             state = ButtonState.Hovered;
