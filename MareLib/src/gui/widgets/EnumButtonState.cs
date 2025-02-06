@@ -1,6 +1,6 @@
 ﻿namespace MareLib;
 
-public enum ButtonState
+public enum EnumButtonState
 {
     Normal,
     Hovered,

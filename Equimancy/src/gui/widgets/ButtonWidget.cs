@@ -4,7 +4,7 @@ using System;
 
 namespace Equimancy;
 
-public class ButtonWidget : BaseButtonWidget
+public class ButtonWidget : WidgetBaseButton
 {
     private readonly NineSliceTexture texture;
     private readonly NineSliceTexture pressedTexture;
@@ -23,13 +23,13 @@ public class ButtonWidget : BaseButtonWidget
     {
         switch (state)
         {
-            case ButtonState.Normal:
+            case EnumButtonState.Normal:
                 RenderTools.RenderNineSlice(texture, shader, bounds.X, bounds.Y, bounds.Width, bounds.Height);
                 break;
-            case ButtonState.Active:
+            case EnumButtonState.Active:
                 RenderTools.RenderNineSlice(pressedTexture, shader, bounds.X, bounds.Y, bounds.Width, bounds.Height);
                 break;
-            case ButtonState.Hovered:
+            case EnumButtonState.Hovered:
                 RenderTools.RenderNineSlice(hoveredTexture, shader, bounds.X, bounds.Y, bounds.Width, bounds.Height);
                 break;
         }

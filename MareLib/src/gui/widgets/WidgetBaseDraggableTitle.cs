@@ -6,7 +6,7 @@ namespace MareLib;
 /// <summary>
 /// Draggable title that moves the passed in bounds to that fixed point.
 /// </summary>
-public class BaseDraggableTitle : Widget
+public class WidgetBaseDraggableTitle : Widget
 {
     public Widget draggableWidget;
     private bool held;
@@ -14,7 +14,7 @@ public class BaseDraggableTitle : Widget
     private Vector2i startedDraggingFixed;
     private Vector2i startedDraggingMouse;
 
-    public BaseDraggableTitle(Widget? parent, Widget draggableWidget) : base(parent)
+    public WidgetBaseDraggableTitle(Widget? parent, Widget draggableWidget) : base(parent)
     {
         this.draggableWidget = draggableWidget;
     }

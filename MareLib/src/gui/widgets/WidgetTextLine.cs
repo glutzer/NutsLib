@@ -2,15 +2,23 @@
 
 namespace MareLib;
 
+/// <summary>
+/// Text line which fits within the bounds.
+/// </summary>
 public class WidgetTextLine : Widget
 {
     private readonly TextObject textObject;
     private readonly bool center;
 
-    public WidgetTextLine(Widget? parent, Font font, string text, int fontSize, Vector4 color, bool center = true) : base(parent)
+    public WidgetTextLine(Widget? parent, Font font, string text, Vector4 color, bool center = true) : base(parent)
     {
         this.center = center;
-        textObject = new TextObject(text, font, fontSize, color);
+        textObject = new TextObject(text, font, 50, color);
+
+        OnResize += () =>
+        {
+            textObject.SetScaleFromWidget(this, 0.9f, 0.7f);
+        };
     }
 
     public override void OnRender(float dt, MareShader shader)

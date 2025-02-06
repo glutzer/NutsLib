@@ -2,7 +2,7 @@
 
 namespace Equimancy;
 
-internal class ScrollBarWidget : BaseScrollBarWidget
+internal class ScrollBarWidget : WidgetBaseScrollBar
 {
     private readonly NineSliceTexture background;
     private readonly NineSliceTexture cursor;
@@ -22,17 +22,17 @@ internal class ScrollBarWidget : BaseScrollBarWidget
         RenderTools.RenderNineSlice(background, shader, x, y, width, height);
     }
 
-    protected override void RenderCursor(int x, int y, int width, int height, MareShader shader, ButtonState barState)
+    protected override void RenderCursor(int x, int y, int width, int height, MareShader shader, EnumButtonState barState)
     {
         switch (barState)
         {
-            case ButtonState.Normal:
+            case EnumButtonState.Normal:
                 RenderTools.RenderNineSlice(cursor, shader, x, y, width, height);
                 break;
-            case ButtonState.Active:
+            case EnumButtonState.Active:
                 RenderTools.RenderNineSlice(pressedCursor, shader, x, y, width, height);
                 break;
-            case ButtonState.Hovered:
+            case EnumButtonState.Hovered:
                 RenderTools.RenderNineSlice(hoveredCursor, shader, x, y, width, height);
                 break;
         }

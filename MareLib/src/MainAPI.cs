@@ -266,14 +266,8 @@ public class MainAPI : ModSystem, IRenderer
         foreach (GameSystem system in gameSystems) system.OnAssetsLoaded();
     }
 
-    private bool disposed;
-
-    public override void Dispose()
+    ~MainAPI()
     {
-        if (disposed) return;
-
-        disposed = true;
-
         if (isServer)
         {
             Server = null!;
@@ -282,10 +276,28 @@ public class MainAPI : ModSystem, IRenderer
         }
         else
         {
-            renderGlobalsUbo.Dispose();
             Client = null!;
             Capi = null!;
             ClientHook = null!;
+        }
+    }
+
+    public override void Dispose()
+    {
+        if (isServer && Sapi != null)
+        {
+            foreach (GameSystem system in gameSystems) system.OnClose();
+            //Server = null!;
+            //Sapi = null!;
+            //ServerHook = null!;
+        }
+        else if (Capi != null)
+        {
+            foreach (GameSystem system in gameSystems) system.OnClose();
+            renderGlobalsUbo.Dispose();
+            //Client = null!;
+            //Capi = null!;
+            //ClientHook = null!;
             OnWindowResize = null;
             OnGuiRescale = null;
             FontRegistry.Dispose();
@@ -305,8 +317,6 @@ public class MainAPI : ModSystem, IRenderer
 
         // Clear attributes.
         AttributeUtilities.ReloadAttributes();
-
-        foreach (GameSystem system in gameSystems) system.OnClose();
     }
 
     public static void Patch()

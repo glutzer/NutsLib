@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MareLib;
 
@@ -12,27 +13,72 @@ public abstract partial class Widget
     /// </summary>
     public virtual int SortPriority => 0;
 
-    public Widget(Widget? parent = null)
+    public Widget(Widget? parent)
     {
         parent?.AddChild(this);
     }
 
+    /// <summary>
+    /// Add a child and set the parent.
+    /// </summary>
     public Widget AddChild(Widget child)
     {
         children.Add(child);
-        child.SetParent(this);
+        child.Parent?.children.Remove(child);
+        child.Parent = this;
         return this;
+    }
+
+    public Widget RemoveSelf()
+    {
+        Parent?.children.Remove(this);
+        Parent = null;
+        return this;
+    }
+
+    /// <summary>
+    /// Clear all children and remove parent.
+    /// </summary>
+    public Widget ClearChildren(bool dispose = true)
+    {
+        foreach (Widget child in children)
+        {
+            child.Parent = null;
+
+            if (dispose)
+            {
+                child.DisposeAndChildren();
+            }
+        }
+        children.Clear();
+        return this;
+    }
+
+    public Widget RemoveChild(Widget widget, bool dispose = true)
+    {
+        widget.Parent = null;
+        if (dispose) widget.DisposeAndChildren();
+        children.Remove(widget);
+        return this;
+    }
+
+    /// <summary>
+    /// Dispose this widget and all it's children.
+    /// </summary>
+    public void DisposeAndChildren()
+    {
+        Dispose();
+        foreach (Widget child in children)
+        {
+            child.DisposeAndChildren();
+        }
     }
 
     public Widget SetParent(Widget? parent)
     {
+        Parent?.children.Remove(this);
         Parent = parent;
-        return this;
-    }
-
-    public Widget NoScaling(bool noScale = true)
-    {
-        NoScale = noScale;
+        Parent?.children.Add(this);
         return this;
     }
 
@@ -42,6 +88,17 @@ public abstract partial class Widget
     public virtual void OnRender(float dt, MareShader shader)
     {
 
+    }
+
+    public void ForEachChild<T>(Action<T> action) where T : Widget
+    {
+        foreach (Widget child in children)
+        {
+            if (child is T t)
+            {
+                action(t);
+            }
+        }
     }
 
     /// <summary>

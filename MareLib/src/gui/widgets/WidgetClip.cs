@@ -4,11 +4,11 @@
 /// Widget for both clipping the rendering and clipping mouse interactions with the ui.
 /// Check RenderTools.IsPointInside or a static helper in widget.
 /// </summary>
-public class ClipWidget : Widget
+public class WidgetClip : Widget
 {
     public bool clip;
 
-    public ClipWidget(bool clip, Widget? parent) : base(parent)
+    public WidgetClip(bool clip, Widget? parent) : base(parent)
     {
         this.clip = clip;
     }

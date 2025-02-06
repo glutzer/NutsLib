@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Client;
+﻿using OpenTK.Mathematics;
+using Vintagestory.API.Client;
 
 namespace MareLib;
 
@@ -6,19 +7,23 @@ namespace MareLib;
 /// Provides a simple background, captures mouse events.
 /// Does not dispose textures.
 /// </summary>
-public class SliceBackground : Widget
+public class WidgetSliceBackground : Widget
 {
     private readonly NineSliceTexture texture;
     public override int SortPriority => 1; // Sort above.
+    private Vector4 color;
 
-    public SliceBackground(Widget? parent, NineSliceTexture texture) : base(parent)
+    public WidgetSliceBackground(Widget? parent, NineSliceTexture texture, Vector4 color) : base(parent)
     {
         this.texture = texture;
+        this.color = color;
     }
 
     public override void OnRender(float dt, MareShader shader)
     {
+        shader.Uniform("color", color);
         RenderTools.RenderNineSlice(texture, shader, X, Y, Width, Height);
+        shader.Uniform("color", Vector4.One);
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)

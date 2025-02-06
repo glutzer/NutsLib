@@ -9,9 +9,9 @@ namespace MareLib;
 /// Similar to the text box, but only for a single line.
 /// A lot of code duplication.
 /// </summary>
-public class SingleTextBoxWidget : FocusableWidget
+public class WidgetTextBoxSingle : FocusableWidget
 {
-    private readonly TextObject text;
+    public readonly TextObject text;
 
     private readonly bool limitTextToBox;
     private readonly bool centerValues;
@@ -46,14 +46,19 @@ public class SingleTextBoxWidget : FocusableWidget
         }
     }
 
-    public SingleTextBoxWidget(Widget? parent, Gui gui, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null) : base(parent, gui)
+    public WidgetTextBoxSingle(Widget? parent, Font font, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null) : base(parent)
     {
         this.limitTextToBox = limitTextToBox;
         this.centerValues = centerValues;
         this.onNewText = onNewText;
 
         defaultText ??= "";
-        text = new TextObject(defaultText, font, fontScale, color);
+        text = new TextObject(defaultText, font, 50, color);
+
+        OnResize += () =>
+        {
+            text.SetScaleFromWidget(this, 0.9f, 0.7f);
+        };
 
         cursorTexture = TextureBuilder.Begin(64, 64)
             .SetColor(SkiaThemes.White.WithAlpha(100))

@@ -10,7 +10,7 @@ namespace Equimancy;
 /// </summary>
 public class InputBox : Widget
 {
-    public readonly List<SingleTextBoxWidget> textBoxes = new();
+    public readonly List<WidgetTextBoxSingle> textBoxes = new();
     private readonly NineSliceTexture background;
 
     public InputBox(Gui gui, Bounds bounds, int boxes, int fontScale, Action<int, string> onNewBoxValue, bool center, params string[] defaultValues) : base(gui, bounds)
@@ -31,7 +31,7 @@ public class InputBox : Widget
                 float boundsStart = i * (boxWidth + padding);
                 Bounds boxBounds = Bounds.CreateFrom(bounds).Percent(boundsStart, 0f, boxWidth, 1f);
 
-                SingleTextBoxWidget textBox = new(gui, boxBounds, font, fontScale, Vector4.One, false, center, str =>
+                WidgetTextBoxSingle textBox = new(gui, boxBounds, font, fontScale, Vector4.One, false, center, str =>
                 {
                     onNewBoxValue(c, str);
                 }, defaultValues[i]);
@@ -42,7 +42,7 @@ public class InputBox : Widget
         }
         else
         {
-            SingleTextBoxWidget textBox = new(gui, bounds, font, fontScale, Vector4.One, false, center, str =>
+            WidgetTextBoxSingle textBox = new(gui, bounds, font, fontScale, Vector4.One, false, center, str =>
             {
                 onNewBoxValue(0, str);
             }, defaultValues[0]);
@@ -54,7 +54,7 @@ public class InputBox : Widget
 
     public override void OnRender(float dt, MareShader shader)
     {
-        foreach (SingleTextBoxWidget widget in textBoxes)
+        foreach (WidgetTextBoxSingle widget in textBoxes)
         {
             RenderTools.RenderNineSlice(background, shader, widget.bounds.X, widget.bounds.Y, widget.bounds.Width, widget.bounds.Height);
         }

@@ -15,11 +15,11 @@ public class PageData
 
 public class PipeDebugGui : Gui
 {
-    private TextBoxWidget? leftPageBack;
-    private TextBoxWidget? rightPageBack;
+    private WidgetTextBox? leftPageBack;
+    private WidgetTextBox? rightPageBack;
 
-    private TextBoxWidget? leftPage;
-    private TextBoxWidget? rightPage;
+    private WidgetTextBox? leftPage;
+    private WidgetTextBox? rightPage;
 
     private readonly List<PageData> pages = new();
     private int leftPageIndex; // Index of the left page. The right page is 1 higher.
@@ -39,7 +39,7 @@ public class PipeDebugGui : Gui
         capi.Gui.PlaySound(new AssetLocation("equimancy:sounds/flippage"));
     }
 
-    public void AddPage(Bounds pageBounds, System.Func<float, Matrix4>? transformDelegate, bool forwardTab, out TextBoxWidget page)
+    public void AddPage(Bounds pageBounds, System.Func<float, Matrix4>? transformDelegate, bool forwardTab, out WidgetTextBox page)
     {
         if (transformDelegate != null) AddWidget(new TransformWidget(this, pageBounds, transformDelegate, true));
 

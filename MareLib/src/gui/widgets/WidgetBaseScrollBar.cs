@@ -7,13 +7,13 @@ namespace MareLib;
 /// Implementation of a scroll bar missing: rendering, textures.
 /// At 0 steps per page it will not step at all.
 /// </summary>
-public class BaseScrollBarWidget : Widget
+public class WidgetBaseScrollBar : Widget
 {
     // Progress from top (0) to bottom (1).
     protected float scrollProgress = 0;
 
     // Active = dragging.
-    protected ButtonState barState = ButtonState.Normal;
+    protected EnumButtonState barState = EnumButtonState.Normal;
 
     protected bool fullBarHovered;
     protected bool hoveringScrollArea;
@@ -25,7 +25,7 @@ public class BaseScrollBarWidget : Widget
     protected Widget scrollWidget;
     protected int stepsPerPage;
 
-    public BaseScrollBarWidget(Widget? parent, Widget scrollWidget, int stepsPerPage = 10) : base(parent)
+    public WidgetBaseScrollBar(Widget? parent, Widget scrollWidget, int stepsPerPage = 10) : base(parent)
     {
         this.scrollWidget = scrollWidget;
         this.stepsPerPage = stepsPerPage;
@@ -46,7 +46,7 @@ public class BaseScrollBarWidget : Widget
 
     }
 
-    protected virtual void RenderCursor(int x, int y, int width, int height, MareShader shader, ButtonState barState)
+    protected virtual void RenderCursor(int x, int y, int width, int height, MareShader shader, EnumButtonState barState)
     {
 
     }
@@ -87,7 +87,7 @@ public class BaseScrollBarWidget : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (barState == ButtonState.Active)
+        if (barState == EnumButtonState.Active)
         {
             MoveBar(obj.Y);
             return;
@@ -100,11 +100,11 @@ public class BaseScrollBarWidget : Widget
 
         if (IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
         {
-            barState = ButtonState.Hovered;
+            barState = EnumButtonState.Hovered;
         }
         else
         {
-            barState = ButtonState.Normal;
+            barState = EnumButtonState.Normal;
         }
     }
 
@@ -114,22 +114,22 @@ public class BaseScrollBarWidget : Widget
         {
             obj.Handled = true;
 
-            barState = ButtonState.Active;
+            barState = EnumButtonState.Active;
             SetScrollBarGrabRatio(obj.Y);
         }
     }
 
     private void GuiEvents_MouseUp(MouseEvent obj)
     {
-        if (barState != ButtonState.Active) return;
+        if (barState != EnumButtonState.Active) return;
 
         if (IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
         {
-            barState = ButtonState.Hovered;
+            barState = EnumButtonState.Hovered;
         }
         else
         {
-            barState = ButtonState.Normal;
+            barState = EnumButtonState.Normal;
         }
     }
 

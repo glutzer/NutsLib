@@ -81,6 +81,12 @@ public abstract partial class Widget
 
     public event Action? OnResize;
 
+    public Widget NoScaling(bool noScale = true)
+    {
+        NoScale = noScale;
+        return this;
+    }
+
     // Topmost widget.
     public Widget MainWidget
     {
@@ -122,7 +128,7 @@ public abstract partial class Widget
         float scaledWidth = sizingH switch
         {
             BoundsSizing.FixedSize => xWidth * guiScale,
-            _ => Parent == null ? (int)(xWidth * MainAPI.RenderWidth) : (int)(xPos * Parent.Width)
+            _ => Parent == null ? (int)(xWidth * MainAPI.RenderWidth) : (int)(xWidth * Parent.Width)
         };
 
         float scaledHeight = sizingV switch
@@ -137,6 +143,12 @@ public abstract partial class Widget
             Vector4 scaledScreen = new(scaledX, scaledY, scaledWidth, scaledHeight);
             scaledScreen = SetAlignments(MainAPI.RenderWidth, MainAPI.RenderHeight, scaledScreen);
             SetRenderPos(0, 0, scaledScreen);
+        }
+        else
+        {
+            Vector4 scaledParent = new(scaledX, scaledY, scaledWidth, scaledHeight);
+            scaledParent = SetAlignments(Parent.Width, Parent.Height, scaledParent);
+            SetRenderPos(Parent.X, Parent.Y, scaledParent);
         }
 
         // Initialize children.
@@ -163,9 +175,9 @@ public abstract partial class Widget
                 if ((childSizing & ChildSizing.Width) != 0) maxX = Math.Max(boundsToCheck.X + boundsToCheck.Width, maxX);
                 if ((childSizing & ChildSizing.Height) != 0) maxY = Math.Max(boundsToCheck.Y + boundsToCheck.Height, maxY);
 
-                if ((childSizing & ChildSizing.Once) == 0 && boundsToCheck.children != null)
+                if ((childSizing & ChildSizing.Once) == 0)
                 {
-                    foreach (Widget child in children)
+                    foreach (Widget child in boundsToCheck.children)
                     {
                         toCheck.Enqueue(child);
                     }
@@ -395,10 +407,30 @@ public abstract partial class Widget
         return this;
     }
 
+    public Widget Fill()
+    {
+        positioningH = BoundsSizing.PercentSize;
+        positioningV = BoundsSizing.PercentSize;
+        sizingH = BoundsSizing.PercentSize;
+        sizingV = BoundsSizing.PercentSize;
+
+        xPos = 0;
+        yPos = 0;
+        xWidth = 1;
+        yHeight = 1;
+        return this;
+    }
+
     public Widget Alignment(Align boundsAlignment, AlignFlags flags = 0)
     {
         alignment = boundsAlignment;
         alignmentFlags = flags;
+        return this;
+    }
+
+    public Widget SetChildSizing(ChildSizing sizing)
+    {
+        childSizing = sizing;
         return this;
     }
 

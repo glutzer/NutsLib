@@ -22,6 +22,10 @@ public abstract class Gui : GuiDialog
 
     public readonly GuiEvents guiEvents;
 
+    // Set after events.
+    public static int MouseX { get; set; }
+    public static int MouseY { get; set; }
+
     public Gui() : base(MainAPI.Capi)
     {
         guiEvents = new(this);
@@ -189,16 +193,22 @@ public abstract class Gui : GuiDialog
 
     public override void OnMouseDown(MouseEvent args)
     {
+        MouseX = args.X;
+        MouseY = args.Y;
         guiEvents.TriggerMouseDown(args);
     }
 
     public override void OnMouseUp(MouseEvent args)
     {
+        MouseX = args.X;
+        MouseY = args.Y;
         guiEvents.TriggerMouseUp(args);
     }
 
     public override void OnMouseMove(MouseEvent args)
     {
+        MouseX = args.X;
+        MouseY = args.Y;
         MouseOverCursor = null;
         guiEvents.TriggerMouseMove(args);
     }

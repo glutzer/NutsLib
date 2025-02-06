@@ -10,7 +10,7 @@ namespace MareLib;
 /// 
 /// Needs implementation: rendering, textures.
 /// </summary>
-public class BaseItemGridWidget : Widget
+public class WidgetBaseItemGrid : Widget
 {
     protected ItemSlot[] slots;
     protected int width;
@@ -22,7 +22,7 @@ public class BaseItemGridWidget : Widget
     // Index of currently moused over slot, or -1 if no slot.
     private int mousedSlotIndex = -1;
 
-    public BaseItemGridWidget(ItemSlot[] slots, int width, int height, int slotSize, Widget? parent) : base(parent)
+    public WidgetBaseItemGrid(ItemSlot[] slots, int width, int height, int slotSize, Widget? parent) : base(parent)
     {
         this.slots = slots;
         this.width = width;

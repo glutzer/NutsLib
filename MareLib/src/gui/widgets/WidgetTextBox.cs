@@ -10,7 +10,7 @@ namespace MareLib;
 /// <summary>
 /// Example of an editable text box, with 1 level of complexity.
 /// </summary>
-public class TextBoxWidget : Widget
+public class WidgetTextBox : Widget
 {
     private readonly List<string> lines = new();
     private readonly Font font;
@@ -38,7 +38,7 @@ public class TextBoxWidget : Widget
     private readonly bool limitTextToBox;
     private readonly int maxLines;
 
-    private Gui gui;
+    private Gui? gui;
 
     public void ClearSelection()
     {
@@ -73,13 +73,11 @@ public class TextBoxWidget : Widget
         return new Vector2i(index, lineIndex);
     }
 
-    public TextBoxWidget(Widget? parent, Gui gui, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, int maxLines = 1000) : base(parent)
+    public WidgetTextBox(Widget? parent, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, int maxLines = 1000) : base(parent)
     {
         this.font = font;
         this.fontScale = fontScale;
         this.color = color;
-
-        this.gui = gui;
 
         this.limitTextToBox = limitTextToBox;
         this.maxLines = maxLines;
@@ -101,7 +99,7 @@ public class TextBoxWidget : Widget
     /// <summary>
     /// Sets the color of the cursor.
     /// </summary>
-    public TextBoxWidget CursorColor(Vector4 color)
+    public WidgetTextBox CursorColor(Vector4 color)
     {
         cursorTexture.Dispose();
 
@@ -118,7 +116,7 @@ public class TextBoxWidget : Widget
     /// <summary>
     /// Sets the color of the selection.
     /// </summary>
-    public TextBoxWidget SelectColor(Vector4 color)
+    public WidgetTextBox SelectColor(Vector4 color)
     {
         selectTexture.Dispose();
 
@@ -242,6 +240,8 @@ public class TextBoxWidget : Widget
         guiEvents.MouseDown += GuiEvents_MouseDown;
         guiEvents.MouseUp += GuiEvents_MouseUp;
         guiEvents.MouseMove += GuiEvents_MouseMove;
+
+        gui = guiEvents.gui;
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)

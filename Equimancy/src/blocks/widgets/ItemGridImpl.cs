@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 
 namespace Equimancy;
 
-public class ItemGridImpl : BaseItemGridWidget
+public class ItemGridImpl : WidgetBaseItemGrid
 {
     private readonly NineSliceTexture backgroundTexture;
 

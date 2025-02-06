@@ -48,7 +48,7 @@ float processAxis(float coord, vec2 textureBorder, vec2 windowBorder,
 
     float dist = (mappedValue - textureBorder.x) * scale;
 
-    dist = mod(dist, 1 - textureBorder.y * 2);
+    dist = mod(dist, 1 - (textureBorder.x + textureBorder.y));
 
     return textureBorder.x + dist;
   }
@@ -67,23 +67,28 @@ vec4 do9Slice() {
   return texture(tex2d, newUV);
 }
 
-void setDepth() {}
-
 void main() {
   if (shaderType == 0) { // Regular ui texture.
     fragColor = texture(tex2d, uv) * color;
   } else if (shaderType == 1) { // 9-slice ui texture.
     fragColor = do9Slice() * color;
   } else if (shaderType == 2) { // Msdf font.
+
     float sdPower = 0.5;
     if (bold == 1) {
-      sdPower -= 0.15;
+      sdPower -= 0.1;
     }
 
+    // 1 dist = in middle. 0 dist = edge.
     vec3 msd = texture(tex2d, uv).rgb;
-    float sd = median(msd.r, msd.g, msd.b);
-    float screenPxDistance = screenPxRange() * (sd - sdPower);
-    float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+    float dist = median(msd.r, msd.g, msd.b) - sdPower;
+
+    float pxDist = screenPxRange() * dist;
+
+    float edgeSmoothness = 0.1; // Adjust this for more/less smoothing.
+    float smoothOpacity = smoothstep(0.0, edgeSmoothness, pxDist);
+
+    float opacity = clamp(pxDist + (1.0 - sdPower), 0.0, 1.0);
     fragColor = vec4(fontColor.xyz, opacity * fontColor.w);
   }
 }
