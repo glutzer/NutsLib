@@ -19,14 +19,16 @@ public interface IFocusable
 public class FocusableWidget : Widget, IFocusable
 {
     public bool Focused { get; set; }
+    public Gui? gui;
 
-    public FocusableWidget(Gui gui, Bounds bounds) : base(gui, bounds)
+    public FocusableWidget(Widget? parent) : base(parent)
     {
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
     {
         guiEvents.KeyDown += FocusKeyDown;
+        gui = guiEvents.gui;
     }
 
     private void FocusKeyDown(KeyEvent obj)
@@ -40,6 +42,8 @@ public class FocusableWidget : Widget, IFocusable
 
     private void TransferFocus(bool backwards)
     {
+        if (gui == null) return;
+
         bool foundIndex = false;
 
         // Find first widget after this one, call focus on it.
@@ -83,6 +87,8 @@ public class FocusableWidget : Widget, IFocusable
 
     public virtual void Focus()
     {
+        if (gui == null) return;
+
         // Un-focus widgets in gui.
         foreach (IFocusable widget in gui.ForWidgetsReverse<IFocusable>())
         {

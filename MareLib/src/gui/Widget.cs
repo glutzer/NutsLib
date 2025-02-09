@@ -1,64 +1,86 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MareLib;
 
-public abstract class Widget
+public abstract partial class Widget
 {
-    public readonly Gui gui;
-    public Bounds bounds;
-
-    public List<Widget>? children;
-
-    public bool enabled = true;
+    public Widget? Parent { get; private set; }
+    public readonly List<Widget> children = new();
 
     /// <summary>
     /// When elements are sorted, this element and it's children will be prioritized by sort priority.
     /// </summary>
     public virtual int SortPriority => 0;
 
-    public Widget(Gui gui, Bounds bounds)
+    public Widget(Widget? parent)
     {
-        this.gui = gui;
-        this.bounds = bounds;
+        parent?.AddChild(this);
     }
 
+    /// <summary>
+    /// Add a child and set the parent.
+    /// </summary>
     public Widget AddChild(Widget child)
     {
-        children ??= new List<Widget>();
         children.Add(child);
+        child.Parent?.children.Remove(child);
+        child.Parent = this;
+        return this;
+    }
+
+    public Widget RemoveSelf(bool dispose = true)
+    {
+        Parent?.children.Remove(this);
+        Parent = null;
+        if (dispose) DisposeAndChildren();
         return this;
     }
 
     /// <summary>
-    /// Removes all children of a type.
-    /// Also removes the bounds from it's parent if possible. (Most times a bounds is only made once for a child element).
+    /// Clear all children and remove parent.
     /// </summary>
-    public void RemoveChildAndBoundsFromParent<T>()
+    public Widget ClearChildren(bool dispose = true)
     {
-        children?.RemoveAll(children =>
+        foreach (Widget child in children)
         {
-            if (children is T)
+            child.Parent = null;
+
+            if (dispose)
             {
-                children.bounds.parentBounds?.children?.Remove(children.bounds);
-                return true;
+                child.DisposeAndChildren();
             }
-            return false;
-        });
+        }
+        children.Clear();
+        return this;
     }
 
-    public void ClearChildren()
+    public Widget RemoveChild(Widget widget, bool dispose = true)
     {
-        children?.Clear();
+        widget.Parent = null;
+        if (dispose) widget.DisposeAndChildren();
+        children.Remove(widget);
+        return this;
     }
 
-    public void AddClip(Bounds bounds)
+    /// <summary>
+    /// Dispose this widget and all it's children.
+    /// </summary>
+    public void DisposeAndChildren()
     {
-        AddChild(new ClipWidget(gui, true, bounds));
+        Dispose();
+        foreach (Widget child in children)
+        {
+            child.DisposeAndChildren();
+        }
     }
 
-    public void EndClip(Bounds bounds)
+    public Widget SetParent(Widget? parent)
     {
-        AddChild(new ClipWidget(gui, false, bounds));
+        Parent?.children.Remove(this);
+        Parent = parent;
+        Parent?.children.Add(this);
+        return this;
     }
 
     /// <summary>
@@ -69,13 +91,15 @@ public abstract class Widget
 
     }
 
-    /// <summary>
-    /// Called after bounds initialized.
-    /// Make textures here.
-    /// </summary>
-    public virtual void Initialize()
+    public void ForEachChild<T>(Action<T> action) where T : Widget
     {
-
+        foreach (Widget child in children)
+        {
+            if (child is T t)
+            {
+                action(t);
+            }
+        }
     }
 
     /// <summary>
@@ -86,6 +110,9 @@ public abstract class Widget
 
     }
 
+    /// <summary>
+    /// Called when the gui is closed or when the widgets are set with PopulateWidgets.
+    /// </summary>
     public virtual void Dispose()
     {
 

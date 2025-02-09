@@ -1,4 +1,5 @@
 ﻿using OpenTK.Mathematics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -89,6 +90,21 @@ public class TextObject : IRenderableText
             text = value;
             PixelLength = GetLineLength(text);
         }
+    }
+
+    public void SetScaleFromWidget(Widget widget, float widthScale, float heightScale)
+    {
+        SetScale(50);
+
+        float width50 = PixelLength;
+        float widthMultiplier = (int)(widget.Width * widthScale) / width50;
+
+        float height50 = font.LineHeight * 50;
+        float heightMultiplier = (int)(widget.Height * heightScale) / height50;
+
+        int fontScale = (int)Math.Min(50 * widthMultiplier, 50 * heightMultiplier);
+
+        SetScale(fontScale);
     }
 
     public TextObject(string text, Font font, int fontScale, Vector4 color)

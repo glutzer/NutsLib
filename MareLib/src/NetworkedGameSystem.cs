@@ -17,15 +17,21 @@ public abstract class NetworkedGameSystem : GameSystem
         if (isServer)
         {
             serverChannel = (IServerNetworkChannel)api.Network.RegisterChannel(channelName);
+            RegisterMessages(serverChannel);
             RegisterServerMessages(serverChannel);
         }
         else
         {
             clientChannel = (IClientNetworkChannel)api.Network.RegisterChannel(channelName);
+            RegisterMessages(clientChannel);
             RegisterClientMessages(clientChannel);
         }
     }
 
+    protected virtual void RegisterMessages(INetworkChannel channel)
+    {
+
+    }
     protected abstract void RegisterClientMessages(IClientNetworkChannel channel);
     protected abstract void RegisterServerMessages(IServerNetworkChannel channel);
 

@@ -3,7 +3,7 @@ using OpenTK.Mathematics;
 
 namespace Equimancy;
 
-public class DraggableTitle : BaseDraggableTitle
+public class DraggableTitle : WidgetBaseDraggableTitle
 {
     public NineSliceTexture background;
     public TextObject text;

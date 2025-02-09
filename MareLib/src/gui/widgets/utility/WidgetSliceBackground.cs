@@ -1,23 +1,29 @@
-﻿using Vintagestory.API.Client;
+﻿using OpenTK.Mathematics;
+using Vintagestory.API.Client;
 
 namespace MareLib;
 
 /// <summary>
 /// Provides a simple background, captures mouse events.
+/// Does not dispose textures.
 /// </summary>
-public class BackgroundWidgetSkia : Widget
+public class WidgetSliceBackground : Widget
 {
     private readonly NineSliceTexture texture;
     public override int SortPriority => 1; // Sort above.
+    private Vector4 color;
 
-    public BackgroundWidgetSkia(Gui gui, Bounds bounds, NineSliceTexture texture) : base(gui, bounds)
+    public WidgetSliceBackground(Widget? parent, NineSliceTexture texture, Vector4 color) : base(parent)
     {
         this.texture = texture;
+        this.color = color;
     }
 
     public override void OnRender(float dt, MareShader shader)
     {
-        RenderTools.RenderNineSlice(texture, shader, bounds.X, bounds.Y, bounds.Width, bounds.Height);
+        shader.Uniform("color", color);
+        RenderTools.RenderNineSlice(texture, shader, X, Y, Width, Height);
+        shader.Uniform("color", Vector4.One);
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
@@ -28,7 +34,7 @@ public class BackgroundWidgetSkia : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (bounds.IsInAllBounds(obj))
+        if (IsInAllBounds(obj))
         {
             obj.Handled = true;
         }
@@ -36,7 +42,7 @@ public class BackgroundWidgetSkia : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && bounds.IsInAllBounds(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
         }

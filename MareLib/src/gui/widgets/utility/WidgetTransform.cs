@@ -10,12 +10,12 @@ namespace MareLib;
 /// Delta only supplied when rendering.
 /// Takes a delegate that has the delta time and outputs a mat4.
 /// </summary>
-public class TransformWidget : Widget
+public class WidgetTransform : Widget
 {
     private readonly Func<float, Matrix4> transformDelegate;
     private readonly bool entering;
 
-    public TransformWidget(Gui gui, Bounds bounds, Func<float, Matrix4> transformDelegate, bool entering) : base(gui, bounds)
+    public WidgetTransform(Widget? parent, Func<float, Matrix4> transformDelegate, bool entering) : base(parent)
     {
         this.transformDelegate = transformDelegate;
         this.entering = entering;

@@ -20,7 +20,7 @@ public class GuiAnimator
     private float accum;
     private float duration;
 
-    public GuiAnimator(Bounds currentState)
+    public GuiAnimator(Widget currentState)
     {
         lastPos = new Vector2(currentState.X, currentState.Y);
         lastSize = new Vector2(currentState.Width, currentState.Height);

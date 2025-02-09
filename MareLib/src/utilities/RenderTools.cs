@@ -357,9 +357,9 @@ public static unsafe class RenderTools
         }
     }
 
-    public static void PushScissor(Bounds bounds)
+    public static void PushScissor(Widget widget)
     {
-        PushScissor(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+        PushScissor(widget.X, widget.Y, widget.Width, widget.Height);
     }
 
     public static void PushScissor(int x, int y, int width, int height)
