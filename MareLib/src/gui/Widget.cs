@@ -29,10 +29,11 @@ public abstract partial class Widget
         return this;
     }
 
-    public Widget RemoveSelf()
+    public Widget RemoveSelf(bool dispose = true)
     {
         Parent?.children.Remove(this);
         Parent = null;
+        if (dispose) DisposeAndChildren();
         return this;
     }
 

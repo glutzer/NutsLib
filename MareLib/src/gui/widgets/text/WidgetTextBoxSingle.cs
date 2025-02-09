@@ -46,6 +46,15 @@ public class WidgetTextBoxSingle : FocusableWidget
         }
     }
 
+    public void SetTextNoEvent(string text)
+    {
+        SetText(text);
+        if (cursorIndex > text.Length)
+        {
+            MoveCursor(text.Length);
+        }
+    }
+
     public WidgetTextBoxSingle(Widget? parent, Font font, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null) : base(parent)
     {
         this.limitTextToBox = limitTextToBox;
@@ -80,7 +89,7 @@ public class WidgetTextBoxSingle : FocusableWidget
 
         if (centerValues)
         {
-            text.RenderCenteredLine(X + (Width / 2), Y + lineHeight, shader);
+            text.RenderCenteredLine(X + (Width / 2), Y + (Height / 2), shader, true);
         }
         else
         {
@@ -91,7 +100,7 @@ public class WidgetTextBoxSingle : FocusableWidget
                 x -= (int)(cursorRelativePos - Width);
             }
 
-            text.RenderLine(x, Y + lineHeight, shader, 0);
+            text.RenderLine(x, Y + (Height / 2), shader, 0, true);
         }
 
         if (Focused)
@@ -102,11 +111,11 @@ public class WidgetTextBoxSingle : FocusableWidget
             {
                 char charAtIndex = text.Text[cursorIndex];
                 float charWidth = text.font.fontCharData[charAtIndex].xAdvance * text.fontScale;
-                RenderTools.RenderQuad(shader, X + cursorRelativePos + centerOffset, Y + lineHeight + (lineHeight / 4), charWidth, -lineHeight);
+                RenderTools.RenderQuad(shader, X + cursorRelativePos + centerOffset, Y + (Height / 2) + (lineHeight / 4), charWidth, -lineHeight);
             }
             else if (MainAPI.Capi.World.ElapsedMilliseconds / 1000f % 1 < 0.5f) // Blink.
             {
-                RenderTools.RenderQuad(shader, X + cursorRelativePos + centerOffset, Y + lineHeight, lineHeight / 2, 4); // Magic numbers.
+                RenderTools.RenderQuad(shader, X + cursorRelativePos + centerOffset, Y + (Height / 2) + (lineHeight / 4), lineHeight / 2, 4); // Magic numbers.
             }
 
             // Selection is assumed not to be out of the bounds here.
@@ -120,7 +129,7 @@ public class WidgetTextBoxSingle : FocusableWidget
 
                 float start = (int)text.font.GetLineWidthUpToIndex(line, text.fontScale, minSelection);
                 float end = (int)text.font.GetLineWidthUpToIndex(line, text.fontScale, maxSelection);
-                float y = Y + lineHeight;
+                float y = Y + (Height / 2) + (lineHeight / 2);
                 RenderTools.RenderQuad(shader, X + start + centerOffset, y, end - start, -lineHeight);
             }
         }
@@ -184,11 +193,11 @@ public class WidgetTextBoxSingle : FocusableWidget
             currentLine = currentLine.Insert(cursorIndex, character.ToString());
         }
 
-        text.Text = currentLine;
-
-        if (lastText != text.Text) onNewText?.Invoke(text.Text);
+        SetText(currentLine);
 
         MoveCursor(cursorIndex + 1);
+
+        if (lastText != text.Text) onNewText?.Invoke(text.Text);
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)
@@ -268,7 +277,7 @@ public class WidgetTextBoxSingle : FocusableWidget
             if (cursorIndex == text.Text.Length) return; // Nothing to delete.
 
             string currentLine = text.Text;
-            text.Text = currentLine.Remove(cursorIndex, 1);
+            SetText(currentLine.Remove(cursorIndex, 1));
 
             return;
         }
@@ -300,7 +309,7 @@ public class WidgetTextBoxSingle : FocusableWidget
             string currentLine = text.Text;
 
             // Remove character behind index and move cursor backwards.
-            text.Text = currentLine.Remove(cursorIndex - 1, 1);
+            SetText(currentLine.Remove(cursorIndex - 1, 1));
             MoveCursor(cursorIndex - 1);
         }
 
@@ -352,10 +361,16 @@ public class WidgetTextBoxSingle : FocusableWidget
 
                 // Insert text at cursor pos.
                 string currentLine = text.Text;
-                text.Text = currentLine.Insert(cursorIndex, sb.ToString());
+                SetText(currentLine.Insert(cursorIndex, sb.ToString()));
                 MoveCursor(cursorIndex + sb.Length);
             }
         }
+    }
+
+    private void SetText(string text)
+    {
+        this.text.Text = text;
+        this.text.SetScaleFromWidget(this, 0.9f, 0.7f);
     }
 
     /// <summary>
@@ -368,7 +383,7 @@ public class WidgetTextBoxSingle : FocusableWidget
         MinAndMaxSelection(out int minSelection, out int maxSelection);
 
         string line = text.Text;
-        text.Text = line.Remove(minSelection, maxSelection - minSelection);
+        SetText(line.Remove(minSelection, maxSelection - minSelection));
         MoveCursor(minSelection);
 
         ClearSelection();

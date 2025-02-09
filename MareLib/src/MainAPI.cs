@@ -86,9 +86,16 @@ public class MainAPI : ModSystem, IRenderer
 
         void RegisterGameSystem(Type type)
         {
-            GameSystem? system = Activator.CreateInstance(type, isServer, api) as GameSystem ?? throw new Exception($"{type} must inherit from GameSystem!");
-            gameSystems.Add(system);
-            gameSystemsDictionary.Add(type.Name, system);
+            try
+            {
+                GameSystem? system = Activator.CreateInstance(type, isServer, api) as GameSystem ?? throw new Exception($"{type} must inherit from GameSystem!");
+                gameSystems.Add(system);
+                gameSystemsDictionary.Add(type.Name, system);
+            }
+            catch
+            {
+                Console.WriteLine($"Error loading {type}");
+            }
         }
 
         // Order systems by stage, by load order, and then alphabetically.
@@ -241,6 +248,7 @@ public class MainAPI : ModSystem, IRenderer
         });
 
         MareShaderRegistry.AddShader("marelib:gui", "marelib:gui", "gui");
+        MareShaderRegistry.AddShader("marelib:gui", "marelib:colorwheelgui", "colorwheelgui");
 
         foreach (GameSystem sys in gameSystems)
         {
@@ -266,50 +274,33 @@ public class MainAPI : ModSystem, IRenderer
         foreach (GameSystem system in gameSystems) system.OnAssetsLoaded();
     }
 
-    ~MainAPI()
-    {
-        if (isServer)
-        {
-            Server = null!;
-            Sapi = null!;
-            ServerHook = null!;
-        }
-        else
-        {
-            Client = null!;
-            Capi = null!;
-            ClientHook = null!;
-        }
-    }
-
     public override void Dispose()
     {
         if (isServer && Sapi != null)
         {
             foreach (GameSystem system in gameSystems) system.OnClose();
-            //Server = null!;
-            //Sapi = null!;
-            //ServerHook = null!;
+            Server = null!;
+            Sapi = null!;
+            ServerHook = null!;
         }
         else if (Capi != null)
         {
             foreach (GameSystem system in gameSystems) system.OnClose();
             renderGlobalsUbo.Dispose();
-            //Client = null!;
-            //Capi = null!;
-            //ClientHook = null!;
+
             OnWindowResize = null;
             OnGuiRescale = null;
             FontRegistry.Dispose();
             GuiQuad?.Dispose();
             GuiQuad = null!;
             UboRegistry.Dispose();
-
             RenderTools.OnStop();
-
             MareShaderRegistry.Dispose();
-
             ClientCache.Dispose();
+
+            Client = null!;
+            Capi = null!;
+            ClientHook = null!;
         }
 
         // Might need to be careful on client/server...

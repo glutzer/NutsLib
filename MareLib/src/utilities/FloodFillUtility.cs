@@ -12,6 +12,44 @@ public static class FloodFillUtility
     /// Flood fills blocks of the same type.
     /// Returns visited locations.
     /// </summary>
+    public static Cuboidd GetExtents(BlockPos pos, Action<GridPos> forEachUniqueBlock, System.Func<Block, bool> isBlockValid, ICoreAPI api)
+    {
+        Cuboidd cuboid = new();
+
+        HashSet<GridPos> visited = new();
+        Queue<GridPos> queue = new();
+        queue.Enqueue(new GridPos(pos));
+
+        BlockPos tempPos = pos.Copy();
+
+        while (queue.Count > 0)
+        {
+            GridPos current = queue.Dequeue();
+
+            if (visited.Contains(current)) continue;
+            visited.Add(current);
+
+            forEachUniqueBlock(current);
+            cuboid.X1 = Math.Min(cuboid.X1, current.X);
+            cuboid.X2 = Math.Max(cuboid.X2, current.X);
+            cuboid.Y1 = Math.Min(cuboid.Y1, current.Y);
+            cuboid.Y2 = Math.Max(cuboid.Y2, current.Y);
+            cuboid.Z1 = Math.Min(cuboid.Z1, current.Z);
+            cuboid.Z2 = Math.Max(cuboid.Z2, current.Z);
+
+            tempPos.Set(current.X, current.Y, current.Z);
+            BlockFaces.IterateBlocksAtFaces(tempPos, api.World.BlockAccessor, (face, block, blockPos) =>
+            {
+                if (isBlockValid(block))
+                {
+                    queue.Enqueue(new GridPos(blockPos));
+                }
+            });
+        }
+
+        return cuboid;
+    }
+
     public static HashSet<GridPos> FloodFillBlocks(BlockPos pos, Action<GridPos> forEachUniqueBlock, System.Func<Block, bool> isBlockValid, ICoreAPI api)
     {
         HashSet<GridPos> visited = new();
@@ -44,8 +82,6 @@ public static class FloodFillUtility
 
     /// <summary>
     /// Tessellates a mesh of every location as a cube.
-    /// Good for x-ray or visualizing paths.
-    /// Uses a standard vertex.
     /// Skips inside faces.
     /// </summary>
     public static void CreateFloodFillMesh(HashSet<GridPos> positions, GridPos basePos, Vector4 color, out MeshHandle handle)

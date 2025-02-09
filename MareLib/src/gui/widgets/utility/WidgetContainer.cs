@@ -3,9 +3,9 @@
 /// <summary>
 /// Widget for things like scrolling.
 /// </summary>
-public class WidgetDummy : Widget
+public class WidgetContainer : Widget
 {
-    public WidgetDummy(Widget? parent) : base(parent)
+    public WidgetContainer(Widget? parent) : base(parent)
     {
     }
 }

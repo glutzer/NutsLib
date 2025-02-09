@@ -18,7 +18,6 @@ public interface IMeshInfo
 
 /// <summary>
 /// Turns a struct into a mesh data object. Order determines order used in the shader.
-/// Must use [StructLayout(LayoutKind.Sequential)]. (This might be the default layout?).
 /// </summary>
 public class MeshInfo<T> : IMeshInfo where T : unmanaged
 {
