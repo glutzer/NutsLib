@@ -18,9 +18,6 @@ public abstract partial class Widget
         parent?.AddChild(this);
     }
 
-    /// <summary>
-    /// Add a child and set the parent.
-    /// </summary>
     public Widget AddChild(Widget child)
     {
         children.Add(child);
@@ -37,9 +34,6 @@ public abstract partial class Widget
         return this;
     }
 
-    /// <summary>
-    /// Clear all children and remove parent.
-    /// </summary>
     public Widget ClearChildren(bool dispose = true)
     {
         foreach (Widget child in children)
@@ -100,6 +94,11 @@ public abstract partial class Widget
                 action(t);
             }
         }
+    }
+
+    public void As<T>(out T widget) where T : Widget
+    {
+        widget = (T)this;
     }
 
     /// <summary>

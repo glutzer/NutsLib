@@ -179,6 +179,31 @@ public class MareShader
         GL.Uniform1(uniformLocations[samplerName.ToString()], id);
     }
 
+    public void SkyColor()
+    {
+        DefaultShaderUniforms shaderUniforms = ScreenManager.Platform.ShaderUniforms;
+
+        Uniform("fogWaveCounter", shaderUniforms.FogWaveCounter);
+        BindTexture(shaderUniforms.SkyTextureId, "sky");
+        BindTexture(shaderUniforms.GlowTextureId, "glow");
+        Uniform("sunsetMod", shaderUniforms.SunsetMod);
+        Uniform("ditherSeed", shaderUniforms.DitherSeed);
+        Uniform("horizontalResolution", shaderUniforms.FrameWidth);
+        Uniform("playerToSealevelOffset", shaderUniforms.PlayerToSealevelOffset);
+    }
+
+    public void UnderwaterEffects()
+    {
+        DefaultShaderUniforms shaderUniforms = ScreenManager.Platform.ShaderUniforms;
+
+        FrameBufferRef frameBufferRef3 = ScreenManager.Platform.FrameBuffers[5];
+        BindTexture(frameBufferRef3.DepthTextureId, "liquidDepth");
+        Uniform("cameraUnderwater", shaderUniforms.CameraUnderwater);
+        ObsoleteUniform("waterMurkColor", shaderUniforms.WaterMurkColor);
+        FrameBufferRef frameBufferRef4 = ScreenManager.Platform.FrameBuffers[0];
+        ObsoleteUniform("frameSize", new Vec2f(frameBufferRef4.Width, frameBufferRef4.Height));
+    }
+
     /// <summary>
     /// Uniforms vanilla sets through shaders for lighting.
     /// Also fog/ambient, as these are needed for lighting.
@@ -251,6 +276,11 @@ public class MareShader
     private void ObsoleteUniform(string uniformName, int count, float[] value)
     {
         GL.Uniform1(uniformLocations[uniformName], count, value);
+    }
+
+    private void ObsoleteUniform(string uniformName, Vec2f value)
+    {
+        GL.Uniform2(uniformLocations[uniformName], value.X, value.Y);
     }
 
     private void ObsoleteUniform(string uniformName, Vec3f value)
