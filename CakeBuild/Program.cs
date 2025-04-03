@@ -120,6 +120,7 @@ public sealed class PackageTask : FrostingTask<BuildContext>
         {
             context.CopyDirectory($"../{context.ProjectName}/assets", $"../Releases/{context.Name}/assets");
         }
+
         context.CopyFile($"../{context.ProjectName}/modinfo.json", $"../Releases/{context.Name}/modinfo.json");
         if (context.FileExists($"../{context.ProjectName}/modicon.png"))
         {

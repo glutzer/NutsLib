@@ -145,6 +145,6 @@ public class Levitate : Spell, IPhysicsTickable
 
     public void AfterPhysicsTick(float dt)
     {
-        GenRockStrataNew
+
     }
 }

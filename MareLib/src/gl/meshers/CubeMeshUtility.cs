@@ -152,6 +152,26 @@ public static class CubeMeshUtility
         }
     }
 
+    public static void AddRangeFaceData<T>(MeshInfo<T> meshData, MeshDelegate<T> meshDelegate, Vector3 from, Vector3 to, EnumFaceFlags faceFlags) where T : unmanaged
+    {
+        meshData.AddIndicesFromLastVertex(faceIndices);
+
+        for (int i = 0; i < 6; i++)
+        {
+            if ((faceFlags & (EnumFaceFlags)(1 << i)) == 0)
+                continue;
+            int faceStart = i * 4;
+            for (int j = faceStart; j < faceStart + 4; j++)
+            {
+                MeshVertexData vertex = gridAlignedVertices[j];
+                vertex.position.X = MathHelper.Lerp(from.X, to.X, vertex.position.X);
+                vertex.position.Y = MathHelper.Lerp(from.Y, to.Y, vertex.position.Y);
+                vertex.position.Z = MathHelper.Lerp(from.Z, to.Z, vertex.position.Z);
+                meshData.AddVertex(meshDelegate(vertex));
+            }
+        }
+    }
+
     /// <summary>
     /// Create and upload a centered cube.
     /// </summary>

@@ -65,7 +65,11 @@
 
 <ItemGroup>
   <Content Include="assets\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </Content>
+  <None Remove="OpenTK.Core.dll" />
+  <Content Include="csogg.dll">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
   <Content Include="genfontpacks.cmd">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -74,6 +78,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
   <Content Include="msdf-atlas-gen.exe">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </Content>
+  <Content Include="OpenTK.Core.dll">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </Content>
+  <Content Include="OpenTK.Graphics.dll">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
 </ItemGroup>

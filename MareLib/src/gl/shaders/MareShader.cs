@@ -86,97 +86,97 @@ public class MareShader
         }
     }
 
-    public void Uniform(ReadOnlySpan<char> name, int value)
+    public void Uniform(string name, int value)
     {
-        GL.Uniform1(uniformLocations[name.ToString()], value);
+        GL.Uniform1(uniformLocations[name], value);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, float value)
+    public void Uniform(string name, float value)
     {
-        GL.Uniform1(uniformLocations[name.ToString()], value);
+        GL.Uniform1(uniformLocations[name], value);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, int[] value)
+    public void Uniform(string name, int[] value)
     {
-        GL.Uniform1(uniformLocations[name.ToString()], value.Length, value);
+        GL.Uniform1(uniformLocations[name], value.Length, value);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, float[] value)
+    public void Uniform(string name, float[] value)
     {
-        GL.Uniform1(uniformLocations[name.ToString()], value.Length, value);
+        GL.Uniform1(uniformLocations[name], value.Length, value);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, Vector2 value)
+    public void Uniform(string name, Vector2 value)
     {
-        GL.Uniform2(uniformLocations[name.ToString()], value.X, value.Y);
+        GL.Uniform2(uniformLocations[name], value.X, value.Y);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, Vector3 value)
+    public void Uniform(string name, Vector3 value)
     {
-        GL.Uniform3(uniformLocations[name.ToString()], value.X, value.Y, value.Z);
+        GL.Uniform3(uniformLocations[name], value.X, value.Y, value.Z);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, Vector4 value)
+    public void Uniform(string name, Vector4 value)
     {
-        GL.Uniform4(uniformLocations[name.ToString()], value.X, value.Y, value.Z, value.W);
+        GL.Uniform4(uniformLocations[name], value.X, value.Y, value.Z, value.W);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, Matrix4 value)
+    public void Uniform(string name, Matrix4 value)
     {
-        GL.UniformMatrix4(uniformLocations[name.ToString()], false, ref value);
+        GL.UniformMatrix4(uniformLocations[name], false, ref value);
     }
 
-    public void Uniform(ReadOnlySpan<char> name, Matrix3x4 value)
+    public void Uniform(string name, Matrix3x4 value)
     {
-        GL.UniformMatrix3x4(uniformLocations[name.ToString()], false, ref value);
+        GL.UniformMatrix3x4(uniformLocations[name], false, ref value);
     }
 
-    public unsafe void UniformMatrix(ReadOnlySpan<char> name, float[] matrix)
+    public unsafe void UniformMatrix(string name, float[] matrix)
     {
         fixed (float* ptr = matrix)
         {
-            GL.UniformMatrix4(uniformLocations[name.ToString()], 1, false, ptr);
+            GL.UniformMatrix4(uniformLocations[name], 1, false, ptr);
         }
     }
 
-    public void BindTexture(int textureId, ReadOnlySpan<char> samplerName, int unit)
+    public void BindTexture(int textureId, string samplerName, int unit)
     {
         GL.ActiveTexture(TextureUnit.Texture0 + unit);
         GL.BindTexture(TextureTarget.Texture2D, textureId);
 
         // Tell uniform sampler to use that texture slot.
-        GL.Uniform1(uniformLocations[samplerName.ToString()], unit);
+        GL.Uniform1(uniformLocations[samplerName], unit);
     }
 
-    public void BindTexture(int textureId, ReadOnlySpan<char> samplerName)
+    public void BindTexture(int textureId, string samplerName)
     {
-        int id = textureLocations[samplerName.ToString()];
+        int id = textureLocations[samplerName];
 
         GL.ActiveTexture(TextureUnit.Texture0 + id);
         GL.BindTexture(TextureTarget.Texture2D, textureId);
 
         // Tell uniform sampler to use that texture slot.
-        GL.Uniform1(uniformLocations[samplerName.ToString()], id);
+        GL.Uniform1(uniformLocations[samplerName], id);
     }
 
-    public void BindTexture(Texture texture, ReadOnlySpan<char> samplerName, int unit)
+    public void BindTexture(Texture texture, string samplerName, int unit)
     {
         GL.ActiveTexture(TextureUnit.Texture0 + unit);
         GL.BindTexture(TextureTarget.Texture2D, texture.Handle);
 
         // Tell uniform sampler to use that texture slot.
-        GL.Uniform1(uniformLocations[samplerName.ToString()], unit);
+        GL.Uniform1(uniformLocations[samplerName], unit);
     }
 
-    public void BindTexture(Texture texture, ReadOnlySpan<char> samplerName)
+    public void BindTexture(Texture texture, string samplerName)
     {
-        int id = textureLocations[samplerName.ToString()];
+        int id = textureLocations[samplerName];
 
         GL.ActiveTexture(TextureUnit.Texture0 + id);
         GL.BindTexture(TextureTarget.Texture2D, texture.Handle);
 
         // Tell uniform sampler to use that texture slot.
-        GL.Uniform1(uniformLocations[samplerName.ToString()], id);
+        GL.Uniform1(uniformLocations[samplerName], id);
     }
 
     public void SkyColor()
@@ -278,17 +278,17 @@ public class MareShader
         GL.Uniform1(uniformLocations[uniformName], count, value);
     }
 
-    private void ObsoleteUniform(string uniformName, Vec2f value)
+    public void ObsoleteUniform(string uniformName, Vec2f value)
     {
         GL.Uniform2(uniformLocations[uniformName], value.X, value.Y);
     }
 
-    private void ObsoleteUniform(string uniformName, Vec3f value)
+    public void ObsoleteUniform(string uniformName, Vec3f value)
     {
         GL.Uniform3(uniformLocations[uniformName], value.X, value.Y, value.Z);
     }
 
-    private void ObsoleteUniform(string uniformName, Vec4f value)
+    public void ObsoleteUniform(string uniformName, Vec4f value)
     {
         GL.Uniform4(uniformLocations[uniformName], value.X, value.Y, value.Z, value.W);
     }

@@ -241,6 +241,8 @@ public abstract class Gui : GuiDialog
             widget.Dispose();
         }
 
+        widgetsBackToFront = Array.Empty<Widget>();
+
         // Might be some "composers" in there.
         base.Dispose();
 

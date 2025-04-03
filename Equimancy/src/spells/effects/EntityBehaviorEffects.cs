@@ -112,7 +112,8 @@ public class EntityBehaviorEffects : EntityBehavior
         {
             deadEffects.Foreach(effectCode => activeEffects.Remove(effectCode));
             deadEffects.Clear();
-        };
+        }
+        ;
 
         SaveEffectData();
     }
@@ -226,7 +227,8 @@ public class EntityBehaviorEffects : EntityBehavior
             {
                 Effect deserializedEffect = (Effect)JsonConvert.DeserializeObject(effect.Value, type)!;
                 deserialized.Add(effect.Key, deserializedEffect);
-            };
+            }
+            ;
         }
 
         // Reload and re-initialize all effects.
@@ -236,7 +238,8 @@ public class EntityBehaviorEffects : EntityBehavior
         {
             effect.Initialize(entity, this);
             effect.OnLoaded();
-        };
+        }
+        ;
     }
 
     public float accum;
@@ -246,6 +249,8 @@ public class EntityBehaviorEffects : EntityBehavior
     /// </summary>
     public override void OnGameTick(float dt)
     {
+        if (activeEffects.Count == 0) return;
+
         const float interval = 1 / 10f;
 
         accum += dt;
@@ -279,7 +284,8 @@ public class EntityBehaviorEffects : EntityBehavior
                     activeEffects.Remove(effectCode);
                 });
                 deadEffects.Clear();
-            };
+            }
+            ;
         }
     }
 }

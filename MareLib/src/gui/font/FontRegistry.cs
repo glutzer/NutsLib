@@ -117,6 +117,9 @@ public static class FontRegistry
 
         foreach (IAsset font in capi.Assets.GetMany("fonts"))
         {
+            string fileName = font.Name;
+            if (!fileName.EndsWith(".zip")) continue;
+
             File.WriteAllBytes(dataPath + "/FontCache/font.zip", font.Data);
             ZipFile.ExtractToDirectory(dataPath + "/FontCache/font.zip", dataPath + "/FontCache");
 

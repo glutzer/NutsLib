@@ -14,9 +14,36 @@ namespace MareLib;
 public static class JsonUtilities
 {
     /// <summary>
-    /// Checks for "variants" and "variantOverrides" keys in a JsonObject.
+    /// Do a full copy of a node, as a new object.
+    /// </summary>
+    public static JsonNode Copy(this JsonNode node)
+    {
+        // https://stackoverflow.com/questions/71000221/how-to-duplicate-a-jsonnode-jsonobject-jsonarray
+        return JsonNode.Parse(node.ToJsonString())!;
+    }
+
+    /// <summary>
+    /// Do a full copy of a node, as a new object.
+    /// </summary>
+    public static JsonObject Copy(this JsonObject node)
+    {
+        // https://stackoverflow.com/questions/71000221/how-to-duplicate-a-jsonnode-jsonobject-jsonarray
+        return (JsonObject)JsonNode.Parse(node.ToJsonString())!;
+    }
+
+    /// <summary>
+    /// Do a full copy of a node, as a new object.
+    /// </summary>
+    public static JsonArray Copy(this JsonArray node)
+    {
+        // https://stackoverflow.com/questions/71000221/how-to-duplicate-a-jsonnode-jsonobject-jsonarray
+        return (JsonArray)JsonNode.Parse(node.ToJsonString())!;
+    }
+
+    /// <summary>
+    /// Checks for "Variants" and "VariantOverrides" keys in a JsonObject.
     /// Replaces the "code" with it's new code. Merges every variant override that matches regex onto the variant.
-    /// Executes a delegate for each new JsonObject, with "variants" and "variantOverrides" removed.
+    /// Executes a delegate for each new JsonObject, with "Variants" and "VariantOverrides" removed.
     /// variants: {
     ///     "color": [ "red", "green", "blue" ],
     ///     "weight": [ "1", "2", "3" ]
@@ -52,9 +79,9 @@ public static class JsonUtilities
 
             foreach (string variant in combinations)
             {
-                JsonObject newObject = jsonObject.DeepClone();
+                JsonObject newObject = jsonObject.Copy();
 
-                string newCode = $"{originalCode}-{variant}";
+                string newCode = $"{originalCode}{variant}";
                 newObject["Code"] = newCode;
 
                 // For each variant override, if the new code matches the regex, merge it onto the json.
@@ -64,7 +91,7 @@ public static class JsonUtilities
                     if (variantOverride.Value is not JsonObject variantObject) continue;
 
                     // By default merge arrays
-                    bool mergeArrays = variantObject["MergeArrays"]?.GetValue<bool>() ?? true;
+                    bool mergeArrays = variantObject["MergeArrays"]?.GetValue<bool>() ?? false;
 
                     if (Regex.IsMatch(newCode, GetSpecialRegex(variantOverride.Key)))
                     {
@@ -153,7 +180,7 @@ public static class JsonUtilities
                         {
                             JsonObject jsonBaseChildObj when prop.Value is JsonObject jsonMergeChildObj => jsonBaseChildObj.Merge(jsonMergeChildObj, combineArrays),
                             JsonArray jsonBaseChildArray when prop.Value is JsonArray jsonMergeChildArray => jsonBaseChildArray.Merge(jsonMergeChildArray, combineArrays),
-                            _ => prop.Value
+                            _ => prop.Value!.Copy()
                         };
                     }
                     break;
@@ -166,7 +193,9 @@ public static class JsonUtilities
                         jsonBaseArray.Clear();
                     }
 
-                    JsonNode?[] mergeNodesArray = jsonMergeArray.ToArray();
+                    JsonArray copiedArray = jsonMergeArray.Copy();
+
+                    JsonNode?[] mergeNodesArray = copiedArray.ToArray();
 
                     foreach (JsonNode? mergeNode in mergeNodesArray) jsonBaseArray.Add(mergeNode);
                     break;

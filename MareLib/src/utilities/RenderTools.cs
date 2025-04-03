@@ -8,6 +8,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.Client.NoObf;
+using Vintagestory.GameContent;
 
 namespace MareLib;
 
@@ -109,6 +110,12 @@ public static unsafe class RenderTools
         return (Vector3)position;
     }
 
+    public static Vector3 PlayerRelativePosition(Vector3d position)
+    {
+        position -= MainAPI.Capi.World.Player.Entity.Pos.ToVector();
+        return (Vector3)position;
+    }
+
     /// <summary>
     /// Everything is rendered relative to the camera to avoid precision errors.
     /// </summary>
@@ -203,7 +210,7 @@ public static unsafe class RenderTools
 
         if (itemStackRenderInfo.OverlayTexture != null && itemStackRenderInfo.OverlayOpacity > 0f)
         {
-            guiItemShader.Uniform("tex2dOverlay", itemStackRenderInfo.OverlayTexture.TextureId);
+            guiItemShader.BindTexture(itemStackRenderInfo.OverlayTexture.TextureId, "tex2dOverlay");
             guiItemShader.Uniform("overlayTextureSize", new Vector2(itemStackRenderInfo.OverlayTexture.Width, itemStackRenderInfo.OverlayTexture.Height));
             guiItemShader.Uniform("baseTextureSize", new Vector2(itemStackRenderInfo.TextureSize.Width, itemStackRenderInfo.TextureSize.Height));
             TextureAtlasPosition textureAtlasPosition = MainAPI.Capi.Render.GetTextureAtlasPosition(itemStack);
@@ -241,11 +248,24 @@ public static unsafe class RenderTools
         originalGuiShader.Use();
     }
 
+    public static void RenderQuadInstanced(MareShader guiShader, float x, float y, float width, float height, int instances)
+    {
+        // Round everything to prevent sub-pixel rendering.
+        x = (int)x;
+        y = (int)y;
+        width = (int)width;
+        height = (int)height;
+
+        Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
+        guiShader.Uniform("modelMatrix", translation);
+        RenderMeshInstanced(MainAPI.GuiQuad, instances);
+    }
+
     /// <summary>
     /// Renders a nine-slice texture. Scale with scale the size of the texture that is repeated and the border.
     /// This should be an integer amount for the texture to render correctly, like the gui scale (1-4x).
     /// </summary>
-    public static void RenderNineSlice(NineSliceTexture texture, MareShader guiShader, float x, float y, float width, float height, float scale = 1)
+    public static void RenderNineSlice(NineSliceTexture texture, MareShader guiShader, float x, float y, float width, float height, float scale = 1f)
     {
         // Round everything to prevent sub-pixel rendering.
         x = (int)x;
@@ -258,6 +278,35 @@ public static unsafe class RenderTools
         guiShader.Uniform("border", texture.Border);
         guiShader.Uniform("dimensions", texture.GetDimensions(width / scale, height / scale));
         guiShader.Uniform("centerScale", texture.GetCenterScale(width / scale, height / scale));
+
+        guiShader.Uniform("shaderType", 1);
+
+        Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
+
+        guiShader.Uniform("modelMatrix", translation);
+
+        RenderMesh(MainAPI.GuiQuad);
+
+        guiShader.Uniform("shaderType", 0);
+    }
+
+    /// <summary>
+    /// Renders a nine-slice texture. Scale with scale the size of the texture that is repeated and the border.
+    /// This should be an integer amount for the texture to render correctly, like the gui scale (1-4x).
+    /// </summary>
+    public static void RenderNineSliceSplit(NineSliceTexture texture, MareShader guiShader, float x, float y, float width, float height, float scaleX = 1f, float scaleY = 1f)
+    {
+        // Round everything to prevent sub-pixel rendering.
+        x = (int)x;
+        y = (int)y;
+        width = (int)width;
+        height = (int)height;
+
+        guiShader.BindTexture(texture.texture.Handle, "tex2d", 0);
+
+        guiShader.Uniform("border", texture.Border);
+        guiShader.Uniform("dimensions", texture.GetDimensions(width / scaleX, height / scaleY));
+        guiShader.Uniform("centerScale", texture.GetCenterScale(width / scaleX, height / scaleY));
 
         guiShader.Uniform("shaderType", 1);
 
@@ -347,7 +396,7 @@ public static unsafe class RenderTools
     /// <summary>
     /// Render a mesh with multiple meshes and textures from the base game.
     /// </summary>
-    public static void RenderMultiTextureMesh(MareShader shader, MultiTextureMeshRef mmr, ReadOnlySpan<char> samplerName, int textureUnit = 0)
+    public static void RenderMultiTextureMesh(MareShader shader, MultiTextureMeshRef mmr, string samplerName, int textureUnit = 0)
     {
         for (int i = 0; i < mmr.meshrefs.Length; i++)
         {

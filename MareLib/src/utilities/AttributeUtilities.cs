@@ -26,17 +26,24 @@ public static class AttributeUtilities
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (Type type in assembly.GetTypes())
+                try
                 {
-                    ClassAttribute[] classAttributes = (ClassAttribute[])type.GetCustomAttributes(typeof(ClassAttribute), false);
-
-                    if (classAttributes.Length > 0)
+                    foreach (Type type in assembly.GetTypes())
                     {
-                        foreach (ClassAttribute attribute in classAttributes)
+                        ClassAttribute[] classAttributes = (ClassAttribute[])type.GetCustomAttributes(typeof(ClassAttribute), false);
+
+                        if (classAttributes.Length > 0)
                         {
-                            AddType(type, attribute.GetType());
+                            foreach (ClassAttribute attribute in classAttributes)
+                            {
+                                AddType(type, attribute.GetType());
+                            }
                         }
                     }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error loading types from assembly {assembly.FullName}. {e}");
                 }
             }
 
