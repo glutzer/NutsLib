@@ -17,6 +17,6 @@ public class DraggableTitle : WidgetBaseDraggableTitle
     public override void OnRender(float dt, MareShader shader)
     {
         RenderTools.RenderNineSlice(background, shader, bounds.X, bounds.Y, bounds.Width, bounds.Height);
-        text.RenderCenteredLine(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2, shader, true);
+        text.RenderCenteredLine(bounds.X + (bounds.Width / 2), bounds.Y + (bounds.Height / 2), shader, true);
     }
 }

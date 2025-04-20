@@ -14,7 +14,7 @@ public class SimpleTextWidget : Widget
 
     public override void OnRender(float dt, MareShader shader)
     {
-        textObject.RenderLine(bounds.X, bounds.Y + bounds.Height / 2, shader, 0, true);
+        textObject.RenderLine(bounds.X, bounds.Y + (bounds.Height / 2), shader, 0, true);
     }
 
     public void SetText(string text)
