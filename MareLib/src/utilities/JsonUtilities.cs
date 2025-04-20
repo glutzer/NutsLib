@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Vintagestory.API.Common;
@@ -13,6 +14,32 @@ namespace MareLib;
 /// </summary>
 public static class JsonUtilities
 {
+    /// <summary>
+    /// Attempt to deserialize a type from a json object.
+    /// </summary>
+    public static T? Get<T>(this JsonObject jObject, string path, T? defaultValue = default)
+    {
+        if (jObject.TryGetPropertyValue(path, out JsonNode? node) && node != null)
+        {
+            if (node is JsonObject obj)
+            {
+                T? objectValue = obj.Deserialize<T>() ?? defaultValue;
+                return objectValue;
+            }
+
+            if (node is JsonArray arr)
+            {
+                T? arrayValue = arr.Deserialize<T>() ?? defaultValue;
+                return arrayValue;
+            }
+
+            T desValue = node.GetValue<T>();
+            return desValue;
+        }
+
+        return defaultValue;
+    }
+
     /// <summary>
     /// Do a full copy of a node, as a new object.
     /// </summary>
@@ -70,19 +97,131 @@ public static class JsonUtilities
                 index++;
             }
 
-            string[] combinations = variantGroups.Aggregate(
+            string[] variantNames = variants
+                .Select(kvp => kvp.Key)
+                .ToArray();
+
+            string[][] combinations = variantGroups.Aggregate(
                 Enumerable.Repeat(new string[] { "" }, 1), // Start with a single empty combination.
                 (acc, current) => acc.SelectMany(a => current, (a, c) => a.Append(c).ToArray()) // Combine each element of the previous result with the current array.
             )
-            .Select(combination => string.Join("-", combination)) // Join each combination with a dash.
             .ToArray();
 
-            foreach (string variant in combinations)
-            {
-                JsonObject newObject = jsonObject.Copy();
+            // Instead create an array of arrays of strings.
 
-                string newCode = $"{originalCode}{variant}";
+            foreach (string[] variant in combinations)
+            {
+                //JsonObject newObject = jsonObject.Copy();
+                string jsonCode = jsonObject.ToJsonString();
+
+                string variantString = string.Join("-", variant);
+
+                // Replace all variant wild cards.
+                for (int i = 0; i < variantNames.Length; i++)
+                {
+                    string variantName = variantNames[i];
+                    string variantValue = variant[i + 1];
+                    jsonCode = jsonCode.Replace($"{{{variantName}}}", variantValue);
+                }
+
+                // Parse back into new object.
+                JsonObject newObject = (JsonObject)JsonNode.Parse(jsonCode)!;
+
+                string newCode = $"{originalCode}{variantString}";
                 newObject["Code"] = newCode;
+
+                // For each variant override, if the new code matches the regex, merge it onto the json.
+                foreach (KeyValuePair<string, JsonNode?> variantOverride in variantOverrides)
+                {
+                    // Only merge objects.
+                    if (variantOverride.Value is not JsonObject variantObject) continue;
+
+                    // By default merge arrays
+                    bool mergeArrays = variantObject["MergeArrays"]?.GetValue<bool>() ?? false;
+
+                    if (Regex.IsMatch(newCode, GetSpecialRegex(variantOverride.Key)))
+                    {
+                        Merge(newObject, variantOverride.Value!, mergeArrays);
+                    }
+                }
+
+                // Remove this key if it was merged onto the new object.
+                newObject.Remove("MergeArrays");
+
+                list.Add(newObject);
+            }
+        }
+        else
+        {
+            jsonObject.Remove("Variants");
+            jsonObject.Remove("VariantOverrides");
+
+            list.Add(jsonObject);
+        }
+
+        // Execute delegate.
+        foreach (JsonObject objectVariant in list)
+        {
+            action(objectVariant);
+        }
+    }
+
+    /// <summary>
+    /// Same as ForEachVariant but does not set the Code.
+    /// </summary>
+    public static void ForEachVariantNoCode(JsonObject jsonObject, Action<JsonObject> action)
+    {
+        List<JsonObject> list = new();
+
+        if (jsonObject["Variants"] is JsonObject variants)
+        {
+            JsonObject variantOverrides = jsonObject["VariantOverrides"] as JsonObject ?? new JsonObject();
+            jsonObject.Remove("Variants");
+            jsonObject.Remove("VariantOverrides");
+
+            string[][] variantGroups = new string[variants.Count][];
+            int index = 0;
+            foreach (KeyValuePair<string, JsonNode?> group in variants)
+            {
+                if (group.Value is not JsonArray array) throw new Exception($"Expected variant array!");
+                variantGroups[index] = array.Select(x => x?.GetValue<string>() ?? throw new Exception($"Unknown variant string!")).ToArray();
+                index++;
+            }
+
+            string[] variantNames = variants
+                .Select(kvp => kvp.Key)
+                .ToArray();
+
+            string[][] combinations = variantGroups.Aggregate(
+                Enumerable.Repeat(new string[] { "" }, 1), // Start with a single empty combination.
+                (acc, current) => acc.SelectMany(a => current, (a, c) => a.Append(c).ToArray()) // Combine each element of the previous result with the current array.
+            )
+            .ToArray();
+
+            // Instead create an array of arrays of strings.
+
+            foreach (string[] variant in combinations)
+            {
+                //JsonObject newObject = jsonObject.Copy();
+                string jsonCode = jsonObject.ToJsonString();
+
+                string variantString = string.Join("-", variant);
+
+                // Replace all variant wild cards.
+                for (int i = 0; i < variantNames.Length; i++)
+                {
+                    string variantName = variantNames[i];
+                    string variantValue = variant[i + 1];
+                    jsonCode = jsonCode.Replace($"{{{variantName}}}", variantValue);
+                }
+
+                // Parse back into new object.
+                JsonObject newObject = (JsonObject)JsonNode.Parse(jsonCode)!;
+
+                string newCode = $"{variantString}";
+
+                // Remove dash at beginning of newCode if present.
+                if (newCode.StartsWith("-")) newCode = newCode[1..];
 
                 // For each variant override, if the new code matches the regex, merge it onto the json.
                 foreach (KeyValuePair<string, JsonNode?> variantOverride in variantOverrides)
@@ -193,11 +332,13 @@ public static class JsonUtilities
                         jsonBaseArray.Clear();
                     }
 
-                    JsonArray copiedArray = jsonMergeArray.Copy();
+                    JsonNode?[] mergeNodesArray = jsonMergeArray.ToArray();
 
-                    JsonNode?[] mergeNodesArray = copiedArray.ToArray();
-
-                    foreach (JsonNode? mergeNode in mergeNodesArray) jsonBaseArray.Add(mergeNode);
+                    foreach (JsonNode? mergeNode in mergeNodesArray)
+                    {
+                        if (mergeNode == null) continue;
+                        jsonBaseArray.Add(mergeNode.Copy());
+                    }
                     break;
                 }
             default:

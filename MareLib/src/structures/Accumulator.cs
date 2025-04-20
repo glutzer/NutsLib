@@ -5,7 +5,7 @@ namespace MareLib;
 public struct Accumulator
 {
     private float accum;
-    private float interval = 1f;
+    public float interval = 1f;
     private float max = float.MaxValue;
 
     public static Accumulator WithInterval(float interval)
@@ -45,9 +45,10 @@ public struct Accumulator
         accum = Math.Clamp(accum, 0, max);
     }
 
-    public void Max(float value)
+    public Accumulator Max(float value)
     {
         max = value;
+        return this;
     }
 
     public void SetInterval(float value)

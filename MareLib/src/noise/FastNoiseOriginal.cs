@@ -9,7 +9,7 @@ using FNLfloat = System.Double;
 
 namespace MareLib;
 
-public class FastNoise
+public class FastNoiseOriginal
 {
     private const short INLINE = 256; // MethodImplOptions.AggressiveInlining;
     private const short OPTIMISE = 512; // MethodImplOptions.AggressiveOptimization;
@@ -101,7 +101,7 @@ public class FastNoise
     /// <summary>
     /// Create new FastNoise object with optional seed
     /// </summary>
-    public FastNoise(int seed = 1337)
+    public FastNoiseOriginal(int seed = 1337)
     {
         SetSeed(seed);
     }

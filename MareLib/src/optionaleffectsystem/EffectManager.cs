@@ -94,11 +94,14 @@ public class EffectManager : NetworkedGameSystem
                     Array.Copy(entityType.Server.BehaviorsAsJsonObj, 0, newBehaviors, 1, entityType.Server.BehaviorsAsJsonObj.Length);
                     newBehaviors[0] = effectObject;
                     entityType.Server.BehaviorsAsJsonObj = newBehaviors;
+
+                    entityType.Attributes ??= new JsonObject(new JObject());
+                    entityType.Attributes.Token["mareEff"] = new JValue(true);
                 }
             }
             else
             {
-                if (entityType.Client.BehaviorsAsJsonObj.FirstOrDefault(x => x.ToString().ToLower().Contains("health")) != null)
+                if (entityType.Attributes?.KeyExists("mareEff") == true)
                 {
                     JsonObject[] newBehaviors = new JsonObject[entityType.Client.BehaviorsAsJsonObj.Length + 1];
                     Array.Copy(entityType.Client.BehaviorsAsJsonObj, 0, newBehaviors, 1, entityType.Client.BehaviorsAsJsonObj.Length);

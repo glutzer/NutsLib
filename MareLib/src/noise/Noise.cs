@@ -5,13 +5,13 @@
 /// </summary>
 public class Noise
 {
-    public FastNoise noise;
+    public FastNoiseOriginal noise;
 
     public Noise(int seed, float frequency, int octaves, float gain = 0.5f, float lacunarity = 2)
     {
-        noise = new FastNoise(seed);
-        noise.SetNoiseType(FastNoise.NoiseType.OpenSimplex2);
-        noise.SetFractalType(FastNoise.FractalType.FBm);
+        noise = new FastNoiseOriginal(seed);
+        noise.SetNoiseType(FastNoiseOriginal.NoiseType.OpenSimplex2);
+        noise.SetFractalType(FastNoiseOriginal.FractalType.FBm);
 
         noise.SetFrequency(frequency);
         noise.SetFractalOctaves(octaves);
@@ -20,8 +20,8 @@ public class Noise
 
         noise.SetFractalWeightedStrength(-0.2f); // Achieves values closer to 0.
 
-        noise.SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Euclidean); // Euclidean default.
-        noise.SetCellularReturnType(FastNoise.CellularReturnType.Distance); // F1 default.
+        noise.SetCellularDistanceFunction(FastNoiseOriginal.CellularDistanceFunction.Euclidean); // Euclidean default.
+        noise.SetCellularReturnType(FastNoiseOriginal.CellularReturnType.Distance); // F1 default.
     }
 
     public Noise Jitter(float value)
@@ -32,61 +32,61 @@ public class Noise
 
     public Noise Ridged()
     {
-        noise.SetFractalType(FastNoise.FractalType.Ridged);
+        noise.SetFractalType(FastNoiseOriginal.FractalType.Ridged);
         return this;
     }
 
     public Noise OpenSimplex2S()
     {
-        noise.SetNoiseType(FastNoise.NoiseType.OpenSimplex2S);
+        noise.SetNoiseType(FastNoiseOriginal.NoiseType.OpenSimplex2S);
         return this;
     }
 
     public Noise Cellular()
     {
-        noise.SetNoiseType(FastNoise.NoiseType.Cellular);
+        noise.SetNoiseType(FastNoiseOriginal.NoiseType.Cellular);
         return this;
     }
 
     public Noise Perlin()
     {
-        noise.SetNoiseType(FastNoise.NoiseType.Perlin);
+        noise.SetNoiseType(FastNoiseOriginal.NoiseType.Perlin);
         return this;
     }
 
     public Noise EuclideanSq()
     {
-        noise.SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.EuclideanSq);
+        noise.SetCellularDistanceFunction(FastNoiseOriginal.CellularDistanceFunction.EuclideanSq);
         return this;
     }
 
     public Noise Dist2()
     {
-        noise.SetCellularReturnType(FastNoise.CellularReturnType.Distance2);
+        noise.SetCellularReturnType(FastNoiseOriginal.CellularReturnType.Distance2);
         return this;
     }
 
     public Noise Dist2Add()
     {
-        noise.SetCellularReturnType(FastNoise.CellularReturnType.Distance2Add);
+        noise.SetCellularReturnType(FastNoiseOriginal.CellularReturnType.Distance2Add);
         return this;
     }
 
     public Noise Dist2Sub()
     {
-        noise.SetCellularReturnType(FastNoise.CellularReturnType.Distance2Sub);
+        noise.SetCellularReturnType(FastNoiseOriginal.CellularReturnType.Distance2Sub);
         return this;
     }
 
     public Noise Dist2Mul()
     {
-        noise.SetCellularReturnType(FastNoise.CellularReturnType.Distance2Mul);
+        noise.SetCellularReturnType(FastNoiseOriginal.CellularReturnType.Distance2Mul);
         return this;
     }
 
     public Noise CellValue()
     {
-        noise.SetCellularReturnType(FastNoise.CellularReturnType.CellValue);
+        noise.SetCellularReturnType(FastNoiseOriginal.CellularReturnType.CellValue);
         return this;
     }
 

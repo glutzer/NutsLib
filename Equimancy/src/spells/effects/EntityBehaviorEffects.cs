@@ -89,9 +89,6 @@ public class EntityBehaviorEffects : EntityBehavior
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         if (entity.Api.Side == EnumAppSide.Client) entity.WatchedAttributes.RegisterModifiedListener("activeEffects", LoadEffectData);
-
-        // Register a type of stat here.
-        //entity.Stats.Register("flaskEffect", EnumStatBlendType.FlatSum);
     }
 
     public override void OnEntityDespawn(EntityDespawnData despawn)
@@ -228,7 +225,6 @@ public class EntityBehaviorEffects : EntityBehavior
                 Effect deserializedEffect = (Effect)JsonConvert.DeserializeObject(effect.Value, type)!;
                 deserialized.Add(effect.Key, deserializedEffect);
             }
-            ;
         }
 
         // Reload and re-initialize all effects.
@@ -239,7 +235,6 @@ public class EntityBehaviorEffects : EntityBehavior
             effect.Initialize(entity, this);
             effect.OnLoaded();
         }
-        ;
     }
 
     public float accum;
@@ -284,8 +279,9 @@ public class EntityBehaviorEffects : EntityBehavior
                     activeEffects.Remove(effectCode);
                 });
                 deadEffects.Clear();
+
+                if (entity.Api.Side == EnumAppSide.Server) SaveEffectData();
             }
-            ;
         }
     }
 }

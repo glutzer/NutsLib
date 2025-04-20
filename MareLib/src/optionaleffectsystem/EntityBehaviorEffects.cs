@@ -90,12 +90,25 @@ public class EntityBehaviorEffects : EntityBehavior
 
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
-        if (entity.Api.Side == EnumAppSide.Client) entity.WatchedAttributes.RegisterModifiedListener("activeEffects", LoadEffectData);
+        if (entity.Api.Side == EnumAppSide.Client)
+        {
+            entity.WatchedAttributes.RegisterModifiedListener("activeEffects", LoadEffectData);
+        }
+
+        LoadEffectData();
     }
 
     public override void OnEntityDespawn(EntityDespawnData despawn)
     {
-        if (entity.Api.Side == EnumAppSide.Client) entity.WatchedAttributes.UnregisterListener(LoadEffectData);
+        if (entity.Api.Side == EnumAppSide.Client)
+        {
+            entity.WatchedAttributes.UnregisterListener(LoadEffectData);
+        }
+        else
+        {
+            SaveEffectData();
+        }
+
         activeEffects.Values.Foreach(effect => effect.OnUnloaded());
     }
 
@@ -159,15 +172,16 @@ public class EntityBehaviorEffects : EntityBehavior
             {
                 if (existingEffect.MergeEffects(effect))
                 {
+                    // Effect has not been marged, replace it.
                     existingEffect.OnUnloaded();
                     activeEffects[effect.Code] = effect;
                     effect.OnLoaded();
                 }
                 else
                 {
-                    // After merge, reload.
+                    // Effect has been merged, reload.
                     existingEffect.OnUnloaded();
-                    effect.OnLoaded();
+                    existingEffect.OnLoaded();
                 }
             }
             else
@@ -214,7 +228,7 @@ public class EntityBehaviorEffects : EntityBehavior
     }
 
     /// <summary>
-    /// When saved, disposes all active effects and re-initializes them on the client only.
+    /// When saved, disposes all active effects and re-initializes them.
     /// </summary>
     private void LoadEffectData()
     {
@@ -223,15 +237,20 @@ public class EntityBehaviorEffects : EntityBehavior
         if (bytes == null) return;
 
         // Load json.
-        string json = SerializerUtil.Deserialize<string>(bytes);
+        string? json = SerializerUtil.Deserialize<string>(bytes);
+        if (json == null) return;
+
         Dictionary<string, string>? container = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
         if (container == null) return;
 
         // Attempt to deserialize every json entry into a type.
         SortedDictionary<string, Effect> deserialized = new();
+
+        EffectManager effectManager = MainAPI.GetGameSystem<EffectManager>(entity.Api.Side);
+
         foreach (KeyValuePair<string, string> effect in container)
         {
-            if (MainAPI.GetGameSystem<EffectManager>(entity.Api.Side).effectTypes.TryGetValue(effect.Key, out Type? type))
+            if (effectManager.effectTypes.TryGetValue(effect.Key, out Type? type))
             {
                 Effect deserializedEffect = (Effect)JsonConvert.DeserializeObject(effect.Value, type)!;
                 deserialized.Add(effect.Key, deserializedEffect);
@@ -262,21 +281,21 @@ public class EntityBehaviorEffects : EntityBehavior
         {
             accum -= interval;
 
-            foreach (KeyValuePair<string, Effect> effect in activeEffects)
+            foreach (Effect effect in activeEffects.Values)
             {
-                effect.Value.Duration -= interval;
-                if (effect.Value.Duration <= 0)
+                effect.Duration -= interval;
+                if (effect.Duration <= 0)
                 {
                     if (entity.Api.Side == EnumAppSide.Server)
                     {
-                        effect.Value.OnDurationExpired(); // Only play expiry effects on server to avoid desync.
+                        effect.OnDurationExpired(); // Only play expiry effects on server to avoid desync.
                     }
 
-                    deadEffects.Add(effect.Key);
+                    deadEffects.Add(effect.Code);
                 }
                 else
                 {
-                    effect.Value.OnTick(interval);
+                    effect.OnTick(interval);
                 }
             }
 
@@ -287,7 +306,9 @@ public class EntityBehaviorEffects : EntityBehavior
                     activeEffects[effectCode].OnUnloaded();
                     activeEffects.Remove(effectCode);
                 });
+
                 deadEffects.Clear();
+                SaveEffectData();
             }
         }
     }
