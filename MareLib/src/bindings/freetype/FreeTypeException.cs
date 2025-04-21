@@ -10,8 +10,7 @@ public sealed class FreeTypeException : Exception
     /// <summary>
     /// Initializes a new instance of the <see cref="FreeTypeException"/> class.
     /// </summary>
-    public FreeTypeException(FT_Error err)
-        : base(GetErrorString(err))
+    public FreeTypeException(FT_Error err) : base(GetErrorString(err))
     {
 
     }

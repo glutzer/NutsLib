@@ -15,6 +15,11 @@ public sealed unsafe class FreeTypeLibrary : IDisposable
     public bool Disposed => disposed;
 
     /// <summary>
+    /// Gets the native pointer to the FreeType2 library object.
+    /// </summary>
+    public FT_LibraryRec_* Native { get; private set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="FreeTypeLibrary"/> class.
     /// </summary>
     public FreeTypeLibrary()
@@ -27,19 +32,7 @@ public sealed unsafe class FreeTypeLibrary : IDisposable
         Native = lib;
     }
 
-    /// <summary>
-    /// Gets the native pointer to the FreeType2 library object.
-    /// </summary>
-    public FT_LibraryRec_* Native { get; private set; }
-
     public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <inheritdoc/>
-    private void Dispose(bool disposing)
     {
         if (Native != default)
         {
@@ -51,5 +44,7 @@ public sealed unsafe class FreeTypeLibrary : IDisposable
         }
 
         disposed = true;
+
+        GC.SuppressFinalize(this);
     }
 }

@@ -36,8 +36,6 @@ public unsafe class FreeTypeFaceFacade
         _FaceRec = face;
     }
 
-    #region Properties
-
     public FT_FaceRec_* FaceRec => _FaceRec;
 
     /// <summary>
@@ -129,10 +127,6 @@ public unsafe class FreeTypeFaceFacade
     /// Gets a pointer to the face's glyph slot.
     /// </summary>
     public FT_GlyphSlotRec_* GlyphSlot => _FaceRec->glyph;
-
-    #endregion
-
-    #region Methods
 
     /// <summary>
     /// Gets a value indicating whether the face has the specified flag defined.
@@ -251,6 +245,4 @@ public unsafe class FreeTypeFaceFacade
 
         return true;
     }
-
-    #endregion
 }
