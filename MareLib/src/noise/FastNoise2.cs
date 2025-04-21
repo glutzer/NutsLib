@@ -355,7 +355,7 @@ public class FastNoise
         }
     }
 
-    // Append dimension char where neccessary .
+    // Append dimension char where neccessary.
     private static string FormatDimensionMember(string name, int dimIdx)
     {
         if (dimIdx >= 0)

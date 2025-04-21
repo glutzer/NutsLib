@@ -258,6 +258,8 @@ public class MainAPI : ModSystem, IRenderer
         // Set initial fov.
         Client.CallMethod("OnFowChanged", 1);
 
+        DynamicFontAtlas.Initialize();
+
         api.Event.RegisterRenderer(this, EnumRenderStage.Before);
 
         GuiQuad = QuadMeshUtility.CreateGuiQuadMesh(vertex =>
@@ -305,6 +307,8 @@ public class MainAPI : ModSystem, IRenderer
         }
         else if (Capi != null)
         {
+            DynamicFontAtlas.OnClosing();
+
             foreach (GameSystem system in gameSystems) system.OnClose();
             renderGlobalsUbo.Dispose();
 
