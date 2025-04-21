@@ -88,7 +88,7 @@ internal abstract class DllLoader
 internal partial class WindowsDllLoader : DllLoader
 {
     [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
-    static extern IntPtr LoadLibrary(string fileName);
+    private static extern IntPtr LoadLibrary(string fileName);
 
     [DllImport("kernel32")]
     private static extern uint GetLastError();
@@ -100,19 +100,14 @@ internal partial class WindowsDllLoader : DllLoader
     {
         IntPtr handle = LoadLibrary(dllPath);
 
-        if (handle == IntPtr.Zero)
-        {
-            return false;
-        }
-
-        return true;
+        return handle != nint.Zero;
     }
 }
 
 internal partial class LinuxDllLoader : DllLoader
 {
     [DllImport("libdl.so.2", CharSet = CharSet.Unicode)]
-    static extern IntPtr dlopen(string fileName, int flags);
+    private static extern IntPtr dlopen(string fileName, int flags);
 
     [DllImport("libdl.so.2")]
     private static extern IntPtr dlerror();
@@ -121,12 +116,7 @@ internal partial class LinuxDllLoader : DllLoader
     {
         IntPtr? handle = dlopen(dllPath, 1);
 
-        if (handle == IntPtr.Zero)
-        {
-            return false;
-        }
-
-        return true;
+        return handle != nint.Zero;
     }
 }
 
@@ -142,11 +132,6 @@ internal class MacDllLoader : DllLoader
     {
         IntPtr? handle = dlopen(dllPath, 1);
 
-        if (handle == IntPtr.Zero)
-        {
-            return false;
-        }
-
-        return true;
+        return handle != nint.Zero;
     }
 }

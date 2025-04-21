@@ -134,12 +134,9 @@ public static unsafe class RenderTools
 
     public static Vector4 GetIncandescenceColor(int temperature)
     {
-        if (temperature < 500)
-        {
-            return new Vector4(0);
-        }
-
-        return new Vector4(Math.Max(0f, Math.Min(1f, (temperature - 500) / 400f)),
+        return temperature < 500
+            ? new Vector4(0)
+            : new Vector4(Math.Max(0f, Math.Min(1f, (temperature - 500) / 400f)),
             Math.Max(0f, Math.Min(1f, (temperature - 900) / 200f)),
             Math.Max(0f, Math.Min(1f, (temperature - 1100) / 200f)),
             Math.Max(0f, Math.Min(1f, (temperature - 525) / 2f))
@@ -486,9 +483,7 @@ public static unsafe class RenderTools
         if (ScissorStack.Count == 0) return true;
 
         ScissorBounds bounds = ScissorStack.Peek();
-        if (x < bounds.x || x > bounds.x + bounds.width || y < bounds.y || y > bounds.y + bounds.height) return false;
-
-        return true;
+        return x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height;
     }
 
     public static MeshHandle UploadMesh<T>(MeshInfo<T> meshData) where T : unmanaged

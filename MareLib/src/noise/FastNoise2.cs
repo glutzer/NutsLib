@@ -55,12 +55,7 @@ public class FastNoise
     {
         IntPtr nodeHandle = fnNewFromEncodedNodeTree(encodedNodeTree);
 
-        if (nodeHandle == IntPtr.Zero)
-        {
-            return null;
-        }
-
-        return new FastNoise(nodeHandle);
+        return nodeHandle == IntPtr.Zero ? null : new FastNoise(nodeHandle);
     }
 
     public uint GetSIMDLevel()

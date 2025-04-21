@@ -39,7 +39,7 @@ public sealed unsafe class FreeTypeLibrary : IDisposable
     }
 
     /// <inheritdoc/>
-    void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (Native != default)
         {

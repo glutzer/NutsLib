@@ -13,5 +13,5 @@ public interface IRenderableItem
     /// Returns if the base item should be rendered.
     /// This is an opaque pass, model matrix should already be setup.
     /// </summary>
-    public bool OnItemRender(EntityShapeRenderer instance, float dt, bool isShadowPass, ItemStack stack, AttachmentPointAndPose apap, ItemRenderInfo renderInfo);
+    bool OnItemRender(EntityShapeRenderer instance, float dt, bool isShadowPass, ItemStack stack, AttachmentPointAndPose apap, ItemRenderInfo renderInfo);
 }

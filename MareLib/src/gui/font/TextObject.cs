@@ -7,11 +7,11 @@ namespace MareLib;
 
 public interface IRenderableText
 {
-    public float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false);
-    public void RenderCenteredLine(float x, float y, MareShader guiShader, bool centerVertically = false);
-    public void RenderLeftAlignedLine(float x, float y, MareShader guiShader, bool centerVertically = false);
-    public int PixelLength { get; }
-    public float LineHeight { get; }
+    float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false);
+    void RenderCenteredLine(float x, float y, MareShader guiShader, bool centerVertically = false);
+    void RenderLeftAlignedLine(float x, float y, MareShader guiShader, bool centerVertically = false);
+    int PixelLength { get; }
+    float LineHeight { get; }
 }
 
 public class TextObjectGroup : IRenderableText

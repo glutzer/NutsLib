@@ -28,12 +28,7 @@ public class AttributeTree
             return default;
         }
 
-        if (value is T tValue)
-        {
-            return tValue;
-        }
-
-        return default;
+        return value is T tValue ? tValue : default;
     }
 
     /// <summary>

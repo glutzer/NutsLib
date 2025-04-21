@@ -5,6 +5,8 @@ namespace FreeTypeSharp;
 
 public static unsafe partial class FT
 {
+    public const string LibName = "freetype";
+
     [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
     public static extern FT_Error FT_Init_FreeType(FT_LibraryRec_** alibrary);
     [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]

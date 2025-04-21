@@ -38,12 +38,7 @@ public class EffectManager : NetworkedGameSystem
     /// </summary>
     public Effect? CreateEffect(string effectName)
     {
-        if (effectTypes.TryGetValue(effectName, out Type? effectType))
-        {
-            return Activator.CreateInstance(effectType) as Effect;
-        }
-
-        return null;
+        return effectTypes.TryGetValue(effectName, out Type? effectType) ? Activator.CreateInstance(effectType) as Effect : null;
     }
 
     /// <summary>

@@ -89,13 +89,6 @@ public class WidgetBaseSlider : Widget
             onNewValue(cursorStep);
         }
 
-        if (IsInsideAndClip(obj))
-        {
-            state = EnumButtonState.Hovered;
-        }
-        else
-        {
-            state = EnumButtonState.Normal;
-        }
+        state = IsInsideAndClip(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 }

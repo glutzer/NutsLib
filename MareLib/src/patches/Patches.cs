@@ -34,11 +34,6 @@ public class ItemRenderingPatch
     [HarmonyPrefix]
     public static bool Prefix(EntityShapeRenderer __instance, float dt, bool isShadowPass, ItemStack stack, AttachmentPointAndPose apap, ItemRenderInfo renderInfo)
     {
-        if (stack.Item is IRenderableItem renderableItem)
-        {
-            return renderableItem.OnItemRender(__instance, dt, isShadowPass, stack, apap, renderInfo);
-        }
-
-        return true;
+        return stack.Item is not IRenderableItem renderableItem || renderableItem.OnItemRender(__instance, dt, isShadowPass, stack, apap, renderInfo);
     }
 }

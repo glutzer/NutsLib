@@ -67,7 +67,9 @@
   <Content Include="assets\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
-  <None Remove="OpenTK.Core.dll" />
+  <Content Include="native\**">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </Content>
   <Content Include="csogg.dll">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>

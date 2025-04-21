@@ -7,9 +7,9 @@ namespace MareLib;
 /// </summary>
 public interface IFocusable
 {
-    public bool Focused { get; set; }
-    public void Focus();
-    public void Unfocus();
+    bool Focused { get; set; }
+    void Focus();
+    void Unfocus();
 }
 
 /// <summary>

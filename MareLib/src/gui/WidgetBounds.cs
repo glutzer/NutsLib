@@ -88,18 +88,7 @@ public abstract partial class Widget
     }
 
     // Topmost widget.
-    public Widget MainWidget
-    {
-        get
-        {
-            if (Parent != null)
-            {
-                return Parent;
-            }
-
-            return this;
-        }
-    }
+    public Widget MainWidget => Parent != null ? Parent : this;
 
     // Bounds setting.
     public void SetBounds()

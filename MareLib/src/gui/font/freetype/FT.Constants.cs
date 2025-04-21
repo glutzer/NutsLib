@@ -1,6 +1,6 @@
 namespace FreeTypeSharp;
 
-static partial class FT
+public static partial class FT
 {
     // glyph load target flags
     public const int FT_LOAD_TARGET_NORMAL = (0 & 15) << 16;

@@ -224,10 +224,9 @@ public unsafe class FreeTypeFaceFacade
             }
         }
 
-        if (bestMatchDiff != 0 && requireExactMatch)
-            throw new InvalidOperationException(string.Format("NO_MATCHING_PIXEL_SIZE: {0}", sizeInPixels));
-
-        return bestMatchIx;
+        return bestMatchDiff != 0 && requireExactMatch
+            ? throw new InvalidOperationException(string.Format("NO_MATCHING_PIXEL_SIZE: {0}", sizeInPixels))
+            : bestMatchIx;
     }
 
     public bool EmboldenGlyphBitmap(int xStrength, int yStrength)

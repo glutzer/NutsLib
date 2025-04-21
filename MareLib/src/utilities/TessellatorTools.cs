@@ -56,36 +56,15 @@ public static class TessellatorTools
 
             if (vertex.normal.X != 0)
             {
-                if (vertex.normal.X > 0)
-                {
-                    face = 2;
-                }
-                else
-                {
-                    face = 4;
-                }
+                face = vertex.normal.X > 0 ? (byte)2 : (byte)4;
             }
             else if (vertex.normal.Y != 0)
             {
-                if (vertex.normal.Y > 0)
-                {
-                    face = 5;
-                }
-                else
-                {
-                    face = 6;
-                }
+                face = vertex.normal.Y > 0 ? (byte)5 : (byte)6;
             }
             else if (vertex.normal.Z != 0)
             {
-                if (vertex.normal.Z > 0)
-                {
-                    face = 3;
-                }
-                else
-                {
-                    face = 1;
-                }
+                face = vertex.normal.Z > 0 ? (byte)3 : (byte)1;
             }
 
             // Once every 4 vertices, and also the first one.

@@ -8,12 +8,12 @@ public interface IMeshInfo
     /// <summary>
     /// Uploads the mesh data through the RenderEngine.
     /// </summary>
-    public MeshHandle Upload();
+    MeshHandle Upload();
 
     /// <summary>
     /// Casts this interface to a mesh data object of struct T.
     /// </summary>
-    public MeshInfo<T> Get<T>() where T : unmanaged;
+    MeshInfo<T> Get<T>() where T : unmanaged;
 }
 
 /// <summary>
