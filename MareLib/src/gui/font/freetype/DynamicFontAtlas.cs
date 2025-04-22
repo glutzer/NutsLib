@@ -5,7 +5,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using Vintagestory.API.Common;
@@ -151,6 +150,13 @@ public struct GlyphRenderInfo
     }
 }
 
+public enum FontStatus
+{
+    Success,
+    ZeroSize,
+    NotFound
+}
+
 /// <summary>
 /// Static font atlas.
 /// </summary>
@@ -161,7 +167,8 @@ public static unsafe class DynamicFontAtlas
     // Fonts in order that will be looked through for fallback glyphs.
     private static readonly string[] fallbackFonts = new string[]
     {
-        "arial"
+        "ptserif",
+        "yaheibold"
     };
 
     private static TextureNode rootNode = null!;
@@ -172,6 +179,9 @@ public static unsafe class DynamicFontAtlas
 
     private static readonly List<MeshHandle> glyphMeshes = new();
 
+    // Cache of all glyphs loaded.
+    private static readonly Dictionary<string, GlyphRenderInfo> glyphCache = new();
+
     private struct FTGlyphMeshInfo
     {
         public float width;
@@ -181,56 +191,104 @@ public static unsafe class DynamicFontAtlas
         public float yBearing;
     }
 
-    public static void Initialize()
+    public static void AssetsLoaded()
     {
-        freetype = new FreeTypeLibrary();
-
-        // Red greyscale texture.
-        AtlasTexture = Texture.CreateEmpty(2048, 2048, false, false, PixelInternalFormat.R8, PixelFormat.Red, PixelType.UnsignedByte);
-        rootNode = new(new Vector2i(0, 0), new Vector2i(2048, 2048));
-
-        TextureNode emptyNode = rootNode.FindFirstSuitableNode(new Vector2i(32, 32))!;
-        emptyHandle = CreateGlyphMesh(emptyNode, 0, 0, 32, 32);
-        glyphMeshes.Add(emptyHandle);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        for (int i = 34; i < 256; i++)
+        // Extract all ttf files.
+        List<IAsset> assets = MainAPI.Capi.Assets.GetMany("config/freetypefonts/");
+        string extractFolder = Path.Combine(GamePaths.DataPath, "ttf");
+        if (!Directory.Exists(extractFolder)) Directory.CreateDirectory(extractFolder);
+        foreach (IAsset asset in assets)
         {
-            char iToChar = (char)i;
-            LoadFontChar(iToChar, out TextureNode? texNode, out FTGlyphMeshInfo glyphInfo);
+            string fileName = asset.Name;
+            if (!fileName.EndsWith(".ttf")) continue;
+            File.WriteAllBytes(Path.Combine(extractFolder, asset.Name), asset.Data);
         }
     }
 
-    /// <summary>
-    /// Makes a new glyph mesh for a character.
-    /// </summary>
-    public static GlyphRenderInfo GetGlyphMesh(char character)
+    public static void GetMetrics(string fontName, out float lineHeight, out float centerOffset)
     {
-        if (LoadFontChar(character, out TextureNode? texNode, out FTGlyphMeshInfo glyphInfo))
+        string fontPath = Path.Combine(GamePaths.DataPath, "ttf", $"{fontName}.ttf");
+
+        // Init face.
+        FT_FaceRec_* face;
+        FT_New_Face(freetype.Native, (byte*)Marshal.StringToHGlobalAnsi(fontPath), 0, &face);
+
+        FT_Set_Pixel_Sizes(face, 0, FONT_SCALE);
+
+        // Placeholder test.
+        lineHeight = 1f;
+        centerOffset = 0.5f;
+
+        //// How much the font must be translated downward to center it, * scale.
+        //float centerOffset = (fontJson.metrics.ascender + fontJson.metrics.descender) / 2;
+
+        //// Offset to new line.
+        //float lineHeight = fontJson.metrics.lineHeight;
+
+        FT_Done_Face(face);
+    }
+
+    public static void Initialize()
+    {
+        freetype = new FreeTypeLibrary();
+        // Red greyscale texture.
+        AtlasTexture = Texture.CreateEmpty(2048, 2048, false, false, PixelInternalFormat.R8, PixelFormat.Red, PixelType.UnsignedByte);
+        rootNode = new(new Vector2i(0, 0), new Vector2i(2048, 2048));
+        TextureNode emptyNode = rootNode.FindFirstSuitableNode(new Vector2i(32, 32))!;
+        emptyHandle = CreateGlyphMesh(emptyNode, 0, 0, 32, 32);
+        glyphMeshes.Add(emptyHandle);
+    }
+
+    /// <summary>
+    /// Makes a new glyph mesh for a character, or returns a cached one.
+    /// </summary>
+    public static GlyphRenderInfo GetGlyphMesh(char character, string fontName)
+    {
+        if (glyphCache.TryGetValue($"{character}@{fontName}", out GlyphRenderInfo cachedInfo)) return cachedInfo;
+
+        FontStatus status = LoadFontChar(fontName, character, out TextureNode? texNode, out FTGlyphMeshInfo glyphInfo);
+
+        if (status == FontStatus.Success && texNode != null)
         {
             MeshHandle mesh = CreateGlyphMesh(texNode, glyphInfo.xBearing, glyphInfo.yBearing, glyphInfo.width, glyphInfo.height);
             glyphMeshes.Add(mesh);
 
-            return new GlyphRenderInfo(mesh.vaoId, glyphInfo.advance);
+            GlyphRenderInfo renderInfo = new(mesh.vaoId, glyphInfo.advance);
+            glyphCache.Add($"{character}@{fontName}", renderInfo);
+
+            return renderInfo;
         }
 
-        // All invisible glyphs have 0.2f? But spaces do vary between fonts.
-        return new GlyphRenderInfo(emptyHandle.vaoId, 0.2f);
+        if (status == FontStatus.ZeroSize)
+        {
+            return new GlyphRenderInfo(emptyHandle.vaoId, glyphInfo.advance);
+        }
+
+        // Problem: foster may be used multiple times, must be cached.
+
+        if (status == FontStatus.NotFound)
+        {
+            foreach (string fallback in fallbackFonts)
+            {
+                if (glyphCache.TryGetValue($"{character}@{fallback}", out GlyphRenderInfo cachedFallbackInfo)) return cachedFallbackInfo;
+
+                FontStatus fallbackStatus = LoadFontChar(fallback, character, out TextureNode? fallbackTexNode, out FTGlyphMeshInfo fallbackGlyphInfo);
+
+                if (fallbackStatus == FontStatus.Success && fallbackTexNode != null)
+                {
+                    MeshHandle mesh = CreateGlyphMesh(fallbackTexNode, fallbackGlyphInfo.xBearing, fallbackGlyphInfo.yBearing, fallbackGlyphInfo.width, fallbackGlyphInfo.height);
+                    glyphMeshes.Add(mesh);
+
+                    GlyphRenderInfo renderInfo = new(mesh.vaoId, fallbackGlyphInfo.advance);
+                    glyphCache.Add($"{character}@{fallback}", renderInfo);
+
+                    return new GlyphRenderInfo(mesh.vaoId, glyphInfo.advance);
+                }
+            }
+        }
+
+        // Not found in foster, return empty.
+        return new GlyphRenderInfo(emptyHandle.vaoId, glyphInfo.advance);
     }
 
     private static MeshHandle CreateGlyphMesh(TextureNode texNode, float xBearing, float yBearing, float width, float height)
@@ -239,10 +297,12 @@ public static unsafe class DynamicFontAtlas
         float yStart = -yBearing;
 
         float uvStartX = (texNode.Origin.X + 0.5f) / AtlasTexture.Width;
-        float uvStartY = (texNode.Origin.Y + 0.5f) / AtlasTexture.Height;
+        float uvStartY = (AtlasTexture.Height - texNode.Origin.Y + 0.5f) / AtlasTexture.Height;
 
-        float uvWidth = (texNode.Size.X - 1) / AtlasTexture.Width;
-        float uvHeight = (texNode.Size.Y - 1) / AtlasTexture.Height;
+        float uvWidth = (texNode.Size.X - 1f) / AtlasTexture.Width;
+        float uvHeight = (texNode.Size.Y - 1f) / -AtlasTexture.Height;
+
+        Console.WriteLine($"Creating glyph with {width} width, {height} height, {xBearing} xbearing, {yBearing} ybearing");
 
         return QuadMeshUtility.CreateGuiQuadMesh(vertex =>
         {
@@ -254,16 +314,11 @@ public static unsafe class DynamicFontAtlas
     }
 
     /// <summary>
-    /// Load a font char and return the node, returns false if it doesn't exist.
+    /// Load a font char and return the node, returns false if the glyph doesn't exist, or is 0 size.
     /// </summary>
-    private static bool LoadFontChar(char character, [NotNullWhen(true)] out TextureNode? texNode, out FTGlyphMeshInfo glyphInfo)
+    private static FontStatus LoadFontChar(string faceName, char character, out TextureNode? texNode, out FTGlyphMeshInfo glyphInfo)
     {
-        // Write to vintage story data folder.
-        IAsset asset = MainAPI.Capi.Assets.Get("marelib:config/freetypefonts/friz.ttf");
-        string dataPath = GamePaths.DataPath;
-        string fontPath = Path.Combine(dataPath, "fontscache", "friz.ttf");
-        Directory.CreateDirectory(Path.GetDirectoryName(fontPath)!);
-        File.WriteAllBytes(fontPath, asset.Data);
+        string fontPath = Path.Combine(GamePaths.DataPath, "ttf", $"{faceName}.ttf");
 
         // Init face.
         FT_FaceRec_* face;
@@ -272,6 +327,27 @@ public static unsafe class DynamicFontAtlas
         FT_Set_Pixel_Sizes(face, 0, FONT_SCALE);
 
         uint glyphIndex = FT_Get_Char_Index(face, character);
+
+        if (glyphIndex == 0)
+        {
+            texNode = null;
+            glyphInfo = default;
+
+            return FontStatus.NotFound;
+        }
+
+        // Attempt to fix SDF overlap issues, but the font was broken.
+        //byte[] moduleNameBytes = Encoding.ASCII.GetBytes("sdf\0");
+        //byte[] propertyNameBytes = Encoding.ASCII.GetBytes("overlaps\0");
+        //bool ftBool = false;
+        //fixed (byte* modulePtr = moduleNameBytes)
+        //fixed (byte* propertyPtr = propertyNameBytes)
+        //{
+        //    void* valuePtr = &ftBool;
+
+        //    FT_Error err = FT_Property_Set(freetype.Native, modulePtr, propertyPtr, valuePtr);
+        //}
+
         FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
         FT_Render_Glyph(face->glyph, FT_RENDER_MODE_SDF);
 
@@ -281,21 +357,21 @@ public static unsafe class DynamicFontAtlas
 
         if (bitmapWidth == 0 || bitmapHeight == 0)
         {
-            // Return an empty glyph.
+            // Return an empty glyph, but with the advance.
             texNode = null;
             glyphInfo = default;
+
+            glyphInfo.advance = (float)(face->glyph->metrics.horiAdvance.ToInt64() / (double)FONT_SCALE / 64.0);
 
             // Clean up freetype.
             FT_Done_Face(face);
 
-            return false;
+            return FontStatus.ZeroSize;
         }
 
-
-
         texNode = InsertData((int)bitmapWidth, (int)bitmapHeight, bitmapData);
-        glyphInfo.width = (int)(bitmapWidth / 64.0);
-        glyphInfo.height = (int)(bitmapHeight / 64.0);
+        glyphInfo.width = (float)(bitmapWidth / 64.0);
+        glyphInfo.height = (float)(bitmapHeight / 64.0);
 
         // Bitshift 6 for values in pixels (uses 1/64).
         glyphInfo.xBearing = (float)(face->glyph->metrics.horiBearingX.ToInt64() / (double)FONT_SCALE / 64.0);
@@ -305,7 +381,7 @@ public static unsafe class DynamicFontAtlas
         // Clean up freetype.
         FT_Done_Face(face);
 
-        return true;
+        return FontStatus.Success;
     }
 
     private static void PrintAtlasToPng(string name)
@@ -360,6 +436,8 @@ public static unsafe class DynamicFontAtlas
 
         freetype?.Dispose();
         freetype = null!;
+
+        glyphCache.Clear();
     }
 }
 

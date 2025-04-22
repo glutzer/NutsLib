@@ -198,7 +198,7 @@ public class WidgetTextBox : Widget
             if (insertMode && cursorXIndex != lines[cursorYIndex].Length)
             {
                 char charAtIndex = lines[cursorYIndex][cursorXIndex];
-                float charWidth = font.fontCharData[charAtIndex].xAdvance * fontScale;
+                float charWidth = font.GetGlyph(charAtIndex).xAdvance * fontScale;
                 RenderTools.RenderQuad(shader, X + cursorRelativePosition.X, Y + cursorRelativePosition.Y + (lineHeight / 4), charWidth, -lineHeight);
             }
             else if (MainAPI.Capi.World.ElapsedMilliseconds / 1000f % 1 < 0.5f) // Blink.
@@ -509,7 +509,7 @@ public class WidgetTextBox : Widget
 
         char character = obj.KeyChar;
 
-        if (limitTextToBox && font.GetLineWidth(currentLine, fontScale) + (font.fontCharData[character].xAdvance * fontScale) > Width)
+        if (limitTextToBox && font.GetLineWidth(currentLine, fontScale) + (font.GetGlyph(character).xAdvance * fontScale) > Width)
         {
             // If the new character would exceed the bounds, skip.
             return;

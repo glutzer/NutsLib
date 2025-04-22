@@ -73,15 +73,16 @@ void main() {
   } else if (shaderType == 1) { // 9-slice ui texture.
     fragColor = do9Slice() * color;
   } else if (shaderType == 2) { // Msdf font.
-
     float sdPower = 0.5;
     if (bold == 1) {
       sdPower -= 0.1;
     }
 
     // 1 dist = in middle. 0 dist = edge.
+
     vec3 msd = texture(tex2d, uv).rgb;
-    float dist = median(msd.r, msd.g, msd.b) - sdPower;
+    // float dist = median(msd.r, msd.g, msd.b) - sdPower;
+    float dist = msd.r - sdPower;
 
     float pxDist = screenPxRange() * dist;
 

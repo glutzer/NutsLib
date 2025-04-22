@@ -116,9 +116,15 @@ public sealed class PackageTask : FrostingTask<BuildContext>
         context.CleanDirectory("../Releases");
         context.EnsureDirectoryExists($"../Releases/{context.Name}");
         context.CopyFiles($"../{context.ProjectName}/bin/{context.BuildConfiguration}/Mods/mod/publish/*", $"../Releases/{context.Name}");
+
         if (context.DirectoryExists($"../{context.ProjectName}/assets"))
         {
             context.CopyDirectory($"../{context.ProjectName}/assets", $"../Releases/{context.Name}/assets");
+        }
+
+        if (context.DirectoryExists($"../{context.ProjectName}/native"))
+        {
+            context.CopyDirectory($"../{context.ProjectName}/native", $"../Releases/{context.Name}/native");
         }
 
         context.CopyFile($"../{context.ProjectName}/modinfo.json", $"../Releases/{context.Name}/modinfo.json");

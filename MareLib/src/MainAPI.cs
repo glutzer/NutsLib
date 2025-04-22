@@ -209,6 +209,8 @@ public class MainAPI : ModSystem, IRenderer
             UboRegistry.SetUbo("renderGlobals", renderGlobalsUbo.handle);
 
             RenderTools.OnStart();
+
+            DynamicFontAtlas.Initialize();
         }
         else if (api is ICoreServerAPI sapi)
         {
@@ -258,8 +260,6 @@ public class MainAPI : ModSystem, IRenderer
         // Set initial fov.
         Client.CallMethod("OnFowChanged", 1);
 
-        DynamicFontAtlas.Initialize();
-
         api.Event.RegisterRenderer(this, EnumRenderStage.Before);
 
         GuiQuad = QuadMeshUtility.CreateGuiQuadMesh(vertex =>
@@ -288,7 +288,7 @@ public class MainAPI : ModSystem, IRenderer
     {
         if (api is ICoreClientAPI)
         {
-            FontRegistry.LoadFonts();
+            DynamicFontAtlas.AssetsLoaded();
         }
 
         foreach (GameSystem system in gameSystems) system.OnAssetsLoaded();
@@ -308,13 +308,13 @@ public class MainAPI : ModSystem, IRenderer
         else if (Capi != null)
         {
             DynamicFontAtlas.OnClosing();
+            FontRegistry.Dispose();
 
             foreach (GameSystem system in gameSystems) system.OnClose();
             renderGlobalsUbo.Dispose();
 
             OnWindowResize = null;
             OnGuiRescale = null;
-            FontRegistry.Dispose();
             GuiQuad?.Dispose();
             GuiQuad = null!;
             UboRegistry.Dispose();
