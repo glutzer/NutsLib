@@ -73,14 +73,8 @@
   <Content Include="csogg.dll">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
-  <Content Include="genfontpacks.cmd">
-    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-  </Content>
   <Content Include="modinfo.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-  </Content>
-  <Content Include="msdf-atlas-gen.exe">
-    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
   <Content Include="OpenTK.Core.dll">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
