@@ -15,6 +15,18 @@ public class Font
     public Font(string name)
     {
         Name = name;
+
+        DynamicFontAtlas.GetMetrics(name, out float lineHeight, out float centerOffset);
+        LineHeight = lineHeight;
+        CenterOffset = centerOffset;
+
+        DynamicFontAtlas.OnAtlasResize += () =>
+        {
+            for (int i = 0; i < fontCharData.Length; i++)
+            {
+                fontCharData[i].vaoId = 0;
+            }
+        };
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

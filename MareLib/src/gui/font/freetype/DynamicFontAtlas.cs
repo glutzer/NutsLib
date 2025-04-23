@@ -177,10 +177,14 @@ public static unsafe class DynamicFontAtlas
 
     public const int FONT_SCALE = 64;
 
+    private static int currentAtlasSize = 256;
+
     private static readonly List<MeshHandle> glyphMeshes = new();
 
     // Cache of all glyphs loaded.
     private static readonly Dictionary<string, GlyphRenderInfo> glyphCache = new();
+
+    public static event Action? OnAtlasResize;
 
     private struct FTGlyphMeshInfo
     {
@@ -205,6 +209,44 @@ public static unsafe class DynamicFontAtlas
         }
     }
 
+    public static void Initialize()
+    {
+        freetype = new FreeTypeLibrary();
+
+        // Red greyscale texture.
+        currentAtlasSize = 128;
+        AtlasTexture = Texture.CreateEmpty(currentAtlasSize, currentAtlasSize, false, false, PixelInternalFormat.R8, PixelFormat.Red, PixelType.UnsignedByte);
+        AtlasTexture.ClampToEdge();
+
+        rootNode = new(new Vector2i(0, 0), new Vector2i(currentAtlasSize, currentAtlasSize));
+        TextureNode emptyNode = rootNode.FindFirstSuitableNode(new Vector2i(32, 32))!;
+        emptyHandle = CreateGlyphMesh(emptyNode, 0f, 0f, 0.01f, 0.01f);
+        glyphMeshes.Add(emptyHandle);
+    }
+
+    /// <summary>
+    /// Called when atlas is not large enough to hold fonts.
+    /// </summary>
+    private static void ResizeAtlas()
+    {
+        currentAtlasSize *= 2;
+
+        AtlasTexture.Dispose();
+        AtlasTexture = Texture.CreateEmpty(currentAtlasSize, currentAtlasSize, false, false, PixelInternalFormat.R8, PixelFormat.Red, PixelType.UnsignedByte);
+        AtlasTexture.ClampToEdge();
+
+        foreach (MeshHandle mesh in glyphMeshes) mesh.Dispose();
+        glyphMeshes.Clear();
+        glyphCache.Clear();
+
+        rootNode = new(new Vector2i(0, 0), new Vector2i(currentAtlasSize, currentAtlasSize));
+        TextureNode emptyNode = rootNode.FindFirstSuitableNode(new Vector2i(32, 32))!;
+        emptyHandle = CreateGlyphMesh(emptyNode, 0f, 0f, 0.01f, 0.01f);
+        glyphMeshes.Add(emptyHandle);
+
+        OnAtlasResize?.Invoke();
+    }
+
     public static void GetMetrics(string fontName, out float lineHeight, out float centerOffset)
     {
         string fontPath = Path.Combine(GamePaths.DataPath, "ttf", $"{fontName}.ttf");
@@ -215,28 +257,10 @@ public static unsafe class DynamicFontAtlas
 
         FT_Set_Pixel_Sizes(face, 0, FONT_SCALE);
 
-        // Placeholder test.
         lineHeight = 1f;
-        centerOffset = 0.5f;
-
-        //// How much the font must be translated downward to center it, * scale.
-        //float centerOffset = (fontJson.metrics.ascender + fontJson.metrics.descender) / 2;
-
-        //// Offset to new line.
-        //float lineHeight = fontJson.metrics.lineHeight;
+        centerOffset = 0.2f;
 
         FT_Done_Face(face);
-    }
-
-    public static void Initialize()
-    {
-        freetype = new FreeTypeLibrary();
-        // Red greyscale texture.
-        AtlasTexture = Texture.CreateEmpty(2048, 2048, false, false, PixelInternalFormat.R8, PixelFormat.Red, PixelType.UnsignedByte);
-        rootNode = new(new Vector2i(0, 0), new Vector2i(2048, 2048));
-        TextureNode emptyNode = rootNode.FindFirstSuitableNode(new Vector2i(32, 32))!;
-        emptyHandle = CreateGlyphMesh(emptyNode, 0, 0, 32, 32);
-        glyphMeshes.Add(emptyHandle);
     }
 
     /// <summary>
@@ -263,8 +287,6 @@ public static unsafe class DynamicFontAtlas
         {
             return new GlyphRenderInfo(emptyHandle.vaoId, glyphInfo.advance);
         }
-
-        // Problem: foster may be used multiple times, must be cached.
 
         if (status == FontStatus.NotFound)
         {
@@ -297,17 +319,15 @@ public static unsafe class DynamicFontAtlas
         float yStart = -yBearing;
 
         float uvStartX = (texNode.Origin.X + 0.5f) / AtlasTexture.Width;
-        float uvStartY = (AtlasTexture.Height - texNode.Origin.Y + 0.5f) / AtlasTexture.Height;
+        float uvStartY = (texNode.Origin.Y - 0.5f) / AtlasTexture.Height;
 
         float uvWidth = (texNode.Size.X - 1f) / AtlasTexture.Width;
-        float uvHeight = (texNode.Size.Y - 1f) / -AtlasTexture.Height;
-
-        Console.WriteLine($"Creating glyph with {width} width, {height} height, {xBearing} xbearing, {yBearing} ybearing");
+        float uvHeight = (texNode.Size.Y - 1f) / AtlasTexture.Height;
 
         return QuadMeshUtility.CreateGuiQuadMesh(vertex =>
         {
-            Vector3 position = new(xStart + (width * vertex.position.X), yStart + (yBearing * vertex.position.Y), 0f);
-            Vector2 uv = new(uvStartX + (uvWidth * vertex.uv.X), uvStartY - (uvHeight * vertex.uv.Y));
+            Vector3 position = new(xStart + (width * vertex.position.X), yStart + (height * vertex.position.Y), 0f);
+            Vector2 uv = new(uvStartX + (uvWidth * vertex.position.X), uvStartY + (uvHeight * vertex.position.Y));
 
             return new GuiVertex(position, uv);
         });
@@ -335,18 +355,6 @@ public static unsafe class DynamicFontAtlas
 
             return FontStatus.NotFound;
         }
-
-        // Attempt to fix SDF overlap issues, but the font was broken.
-        //byte[] moduleNameBytes = Encoding.ASCII.GetBytes("sdf\0");
-        //byte[] propertyNameBytes = Encoding.ASCII.GetBytes("overlaps\0");
-        //bool ftBool = false;
-        //fixed (byte* modulePtr = moduleNameBytes)
-        //fixed (byte* propertyPtr = propertyNameBytes)
-        //{
-        //    void* valuePtr = &ftBool;
-
-        //    FT_Error err = FT_Property_Set(freetype.Native, modulePtr, propertyPtr, valuePtr);
-        //}
 
         FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
         FT_Render_Glyph(face->glyph, FT_RENDER_MODE_SDF);
@@ -406,7 +414,13 @@ public static unsafe class DynamicFontAtlas
     /// </summary>
     private static TextureNode InsertData(int width, int height, byte* data)
     {
-        TextureNode? node = rootNode.FindFirstSuitableNode(new Vector2i(width, height)) ?? throw new Exception("Node needs to have resizing implemented, filled up atlas!");
+        TextureNode? node = rootNode.FindFirstSuitableNode(new Vector2i(width, height));
+
+        while (node == null)
+        {
+            ResizeAtlas();
+            node = rootNode.FindFirstSuitableNode(new Vector2i(width, height));
+        }
 
         GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
 
@@ -438,17 +452,7 @@ public static unsafe class DynamicFontAtlas
         freetype = null!;
 
         glyphCache.Clear();
+
+        OnAtlasResize = null;
     }
 }
-
-// Make white border around bitmap data.
-//for (int i = 0; i < bitmapWidth; i++)
-//{
-//    for (int j = 0; j < bitmapHeight; j++)
-//    {
-//        if (i == 0 || i == bitmapWidth - 1 || j == 0 || j == bitmapHeight - 1)
-//        {
-//            bitmapData[i + (j * bitmapWidth)] = 255;
-//        }
-//    }
-//}

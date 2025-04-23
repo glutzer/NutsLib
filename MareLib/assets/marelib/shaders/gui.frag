@@ -73,6 +73,7 @@ void main() {
   } else if (shaderType == 1) { // 9-slice ui texture.
     fragColor = do9Slice() * color;
   } else if (shaderType == 2) { // Msdf font.
+
     float sdPower = 0.5;
     if (bold == 1) {
       sdPower -= 0.1;

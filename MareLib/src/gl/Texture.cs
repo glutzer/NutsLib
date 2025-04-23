@@ -65,6 +65,10 @@ public unsafe class Texture : IDisposable
 
         GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, format, pixelType, IntPtr.Zero);
 
+        // Create an empty array of pixel data.
+        byte[] emptyData = new byte[width * height * 4];
+        GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, width, height, format, pixelType, emptyData);
+
         SetAliasing(aliased, mipmaps, TextureTarget.Texture2D);
         if (mipmaps) SetMipmaps(GetMaxMipmaps(width, height), TextureTarget.Texture2D);
 
@@ -99,6 +103,13 @@ public unsafe class Texture : IDisposable
         {
             SetMipmaps(GetMaxMipmaps(Width, Height), TextureTarget.Texture2D);
         }
+    }
+
+    public void ClampToEdge()
+    {
+        GL.BindTexture(TextureTarget.Texture2D, Handle);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
     }
 
     public static int GetMaxMipmaps(int width, int height)
