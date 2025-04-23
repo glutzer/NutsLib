@@ -196,7 +196,6 @@ public class MainAPI : ModSystem, IRenderer
         NativesLoader.Load(this);
 
         // Register new asset paths.
-        AssetCategory.categories["fonts"] = new AssetCategory("fonts", false, EnumAppSide.Client);
         AssetCategory.categories["objs"] = new AssetCategory("objs", false, EnumAppSide.Client);
 
         if (api is ICoreClientAPI capi)
