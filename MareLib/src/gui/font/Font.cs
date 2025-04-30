@@ -93,10 +93,6 @@ public class Font
     /// </summary>
     public float RenderLine(float x, float y, string text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
-        // Floor x/y.
-        x = (int)x;
-        y = (int)y;
-
         float xAdvance = 0;
 
         guiShader.Uniform("shaderType", 2);
@@ -130,10 +126,6 @@ public class Font
     /// </summary>
     public float RenderLine(float x, float y, StringBuilder text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
-        // Floor x/y.
-        x = (int)x;
-        y = (int)y;
-
         float xAdvance = 0;
 
         guiShader.Uniform("shaderType", 2);

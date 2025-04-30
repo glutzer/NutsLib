@@ -202,7 +202,7 @@ public class WidgetBaseScrollBar : Widget
         // Prevent scroll bar bigger than bounds from going up, probably a bigger issue.
         if (offset < 0) offset = 0;
 
-        scrollWidget.FixedPos(0, -(int)offset / scrollWidget.Scale);
+        scrollWidget.FixedPos(0, -(int)offset);
         scrollWidget.SetBounds();
     }
 

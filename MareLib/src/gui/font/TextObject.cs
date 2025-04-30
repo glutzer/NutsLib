@@ -55,6 +55,7 @@ public class TextObjectGroup : IRenderableText
 
 public class TextObject : IRenderableText
 {
+    public bool Shadow { get; set; }
     protected string text;
     public Font font;
     public int fontScale;
@@ -134,6 +135,14 @@ public class TextObject : IRenderableText
     public virtual float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
         if (centerVertically) y += CenterOffset;
+
+        if (Shadow)
+        {
+            Vector4 shadowed = color;
+            shadowed.Xyz *= 0.25f;
+            float shadowOffset = fontScale / 20f;
+            font.RenderLine(x + xAdvance + shadowOffset, y + shadowOffset, text, fontScale, guiShader, shadowed, italic, bold);
+        }
 
         xAdvance += font.RenderLine(x + xAdvance, y, text, fontScale, guiShader, color, italic, bold);
 

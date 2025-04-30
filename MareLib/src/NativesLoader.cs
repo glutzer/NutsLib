@@ -31,7 +31,8 @@ internal static class NativesLoader
 
     private static readonly HashSet<string> nativeLibraries = new()
     {
-        "freetype"
+        "freetype",
+        "FastNoise"
     };
 }
 

@@ -68,7 +68,7 @@ public class WidgetBaseItemGrid : Widget
     public virtual void RenderItem(Vector2 offset, int size, float dt, MareShader shader, ItemSlot slot, int slotIndex)
     {
         RenderTools.PushScissor((int)offset.X, (int)offset.Y, size, size);
-        RenderTools.RenderItemStackToGui(slot, shader, offset.X + (size / 2), offset.Y + (size / 2), size / 2, dt, true);
+        RenderTools.RenderItemStackToGui(slot, shader, offset.X + (size / 2), offset.Y + (size / 2), size / 2, dt, false);
         RenderTools.PopScissor();
     }
 

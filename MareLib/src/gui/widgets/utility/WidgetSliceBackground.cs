@@ -13,6 +13,8 @@ public class WidgetSliceBackground : Widget
     public override int SortPriority => 1; // Sort above.
     private Vector4 color;
 
+    public int SliceScale { get; set; } = 1;
+
     public WidgetSliceBackground(Widget? parent, NineSliceTexture texture, Vector4 color) : base(parent)
     {
         this.texture = texture;
@@ -22,7 +24,7 @@ public class WidgetSliceBackground : Widget
     public override void OnRender(float dt, MareShader shader)
     {
         shader.Uniform("color", color);
-        RenderTools.RenderNineSlice(texture, shader, X, Y, Width, Height);
+        RenderTools.RenderNineSlice(texture, shader, X, Y, Width, Height, SliceScale);
         shader.Uniform("color", Vector4.One);
     }
 

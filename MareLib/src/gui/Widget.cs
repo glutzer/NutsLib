@@ -49,6 +49,19 @@ public abstract partial class Widget
         return this;
     }
 
+    public void ClearChildren<T>(bool dispose = true) where T : Widget
+    {
+        for (int i = children.Count - 1; i >= 0; i--)
+        {
+            if (children[i] is T t)
+            {
+                t.Parent = null;
+                if (dispose) t.DisposeAndChildren();
+                children.RemoveAt(i);
+            }
+        }
+    }
+
     public Widget RemoveChild(Widget widget, bool dispose = true)
     {
         widget.Parent = null;

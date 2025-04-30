@@ -22,16 +22,22 @@ in vec4 rgbaFog;
 
 #include vertexflagbits.ash
 #include fogandlight.fsh
+#include underwatereffects.fsh
 
 void main() {
   vec4 texColor = texture(tex2d, uvOut) * colorOut;
   outColor = texColor;
+
   outColor = applyFogAndShadow(texColor, fogAmount);
+
+  float murkiness = getUnderwaterMurkiness();
+
+  outColor.rgb = applyUnderwaterEffects(outColor.rgb, murkiness);
+
   outGlow = vec4(0);
 
 #if SSAOLEVEL > 0
-  outGPosition =
-      vec4(cameraPos.xyz, fogAmount * 2 /*+ glowLevel*/ /*+ murkiness*/);
+  outGPosition = vec4(cameraPos.xyz, fogAmount * 2 /*+ murkiness*/);
   outGNormal = gNormal;
 #endif
 }

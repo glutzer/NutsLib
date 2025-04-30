@@ -60,7 +60,7 @@ public class EntityBehaviorEffects : EntityBehavior
         return "effects";
     }
 
-    private SortedDictionary<string, Effect> activeEffects = new();
+    public SortedDictionary<string, Effect> ActiveEffects { get; private set; } = new();
     private readonly List<string> deadEffects = new();
 
     public DamageModifierDelegate? onDamaged;
@@ -94,12 +94,12 @@ public class EntityBehaviorEffects : EntityBehavior
     public override void OnEntityDespawn(EntityDespawnData despawn)
     {
         if (entity.Api.Side == EnumAppSide.Client) entity.WatchedAttributes.UnregisterListener(LoadEffectData);
-        activeEffects.Values.Foreach(effect => effect.OnEntityUnloaded());
+        ActiveEffects.Values.Foreach(effect => effect.OnEntityUnloaded());
     }
 
     public override void OnEntityDeath(DamageSource damageSourceForDeath)
     {
-        foreach (KeyValuePair<string, Effect> effect in activeEffects)
+        foreach (KeyValuePair<string, Effect> effect in ActiveEffects)
         {
             if (effect.Value.PersistThroughDeath) continue;
             deadEffects.Add(effect.Key);
@@ -107,7 +107,7 @@ public class EntityBehaviorEffects : EntityBehavior
 
         if (deadEffects.Count > 0)
         {
-            deadEffects.Foreach(effectCode => activeEffects.Remove(effectCode));
+            deadEffects.Foreach(effectCode => ActiveEffects.Remove(effectCode));
             deadEffects.Clear();
         }
         ;
@@ -120,7 +120,7 @@ public class EntityBehaviorEffects : EntityBehavior
     /// </summary>
     public bool HasEffect<T>() where T : Effect
     {
-        return activeEffects.ContainsKey(InnerClass<T>.Name);
+        return ActiveEffects.ContainsKey(InnerClass<T>.Name);
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public class EntityBehaviorEffects : EntityBehavior
     /// </summary>
     public bool GetEffect<T>([NotNullWhen(true)] out T? effect) where T : Effect
     {
-        if (activeEffects.TryGetValue(InnerClass<T>.Name, out Effect? foundEffect))
+        if (ActiveEffects.TryGetValue(InnerClass<T>.Name, out Effect? foundEffect))
         {
             effect = (T)foundEffect;
             return true;
@@ -150,18 +150,18 @@ public class EntityBehaviorEffects : EntityBehavior
 
         if (effect.Type == EffectType.Duration)
         {
-            if (activeEffects.TryGetValue(code, out Effect? existingEffect))
+            if (ActiveEffects.TryGetValue(code, out Effect? existingEffect))
             {
                 if (existingEffect.MergeEffects(effect))
                 {
                     existingEffect.OnEntityUnloaded();
-                    activeEffects[code] = effect;
+                    ActiveEffects[code] = effect;
                     effect.OnLoaded();
                 }
             }
             else
             {
-                activeEffects[code] = effect;
+                ActiveEffects[code] = effect;
                 effect.OnLoaded();
             }
         }
@@ -177,9 +177,9 @@ public class EntityBehaviorEffects : EntityBehavior
     public void RemoveEffect<T>() where T : Effect
     {
         string code = InnerClass<T>.Name;
-        if (activeEffects.TryGetValue(code, out Effect? existingEffect))
+        if (ActiveEffects.TryGetValue(code, out Effect? existingEffect))
         {
-            activeEffects.Remove(code);
+            ActiveEffects.Remove(code);
             existingEffect.OnEntityUnloaded();
             // No duration expiry.
             SaveEffectData();
@@ -190,10 +190,10 @@ public class EntityBehaviorEffects : EntityBehavior
     /// Save all effects as json objects, then serialize the json as bytes.
     /// Effects will be moved to watched attributes -> sent to client -> and loaded.
     /// </summary>
-    private void SaveEffectData()
+    protected virtual void SaveEffectData()
     {
         Dictionary<string, string> container = new();
-        foreach (KeyValuePair<string, Effect> effect in activeEffects)
+        foreach (KeyValuePair<string, Effect> effect in ActiveEffects)
         {
             container.Add(effect.Key, JsonConvert.SerializeObject(effect.Value));
         }
@@ -205,7 +205,7 @@ public class EntityBehaviorEffects : EntityBehavior
     /// <summary>
     /// When saved, disposes all active effects and re-initializes them on the client only.
     /// </summary>
-    private void LoadEffectData()
+    public virtual void LoadEffectData()
     {
         // Load bytes.
         byte[] bytes = entity.WatchedAttributes.GetBytes("activeEffects");
@@ -228,9 +228,9 @@ public class EntityBehaviorEffects : EntityBehavior
         }
 
         // Reload and re-initialize all effects.
-        activeEffects.Values.Foreach(effect => effect.OnEntityUnloaded());
-        activeEffects = deserialized;
-        foreach (Effect effect in activeEffects.Values)
+        ActiveEffects.Values.Foreach(effect => effect.OnEntityUnloaded());
+        ActiveEffects = deserialized;
+        foreach (Effect effect in ActiveEffects.Values)
         {
             effect.Initialize(entity, this);
             effect.OnLoaded();
@@ -244,7 +244,7 @@ public class EntityBehaviorEffects : EntityBehavior
     /// </summary>
     public override void OnGameTick(float dt)
     {
-        if (activeEffects.Count == 0) return;
+        if (ActiveEffects.Count == 0) return;
 
         const float interval = 1 / 10f;
 
@@ -253,7 +253,7 @@ public class EntityBehaviorEffects : EntityBehavior
         {
             accum -= interval;
 
-            foreach (KeyValuePair<string, Effect> effect in activeEffects)
+            foreach (KeyValuePair<string, Effect> effect in ActiveEffects)
             {
                 effect.Value.Duration -= interval;
                 if (effect.Value.Duration <= 0)
@@ -275,8 +275,8 @@ public class EntityBehaviorEffects : EntityBehavior
             {
                 deadEffects.Foreach(effectCode =>
                 {
-                    activeEffects[effectCode].OnEntityUnloaded();
-                    activeEffects.Remove(effectCode);
+                    ActiveEffects[effectCode].OnEntityUnloaded();
+                    ActiveEffects.Remove(effectCode);
                 });
                 deadEffects.Clear();
 

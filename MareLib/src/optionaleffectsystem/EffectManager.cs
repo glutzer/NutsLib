@@ -19,6 +19,8 @@ public class EffectManager : NetworkedGameSystem
 {
     public readonly Dictionary<string, Type> effectTypes = new();
 
+    public Action<(int previousCount, int currentCount, EntityPlayer player)>? OnPlayerEffectCountChanged;
+
     public EffectManager(bool isServer, ICoreAPI api) : base(isServer, api, "effectmanager")
     {
     }
@@ -72,6 +74,13 @@ public class EffectManager : NetworkedGameSystem
     /// </summary>
     public void ReplaceBehaviors()
     {
+        JObject nuJObjectPlayer = new()
+        {
+            ["code"] = "EntityBehaviorPlayerEffects"
+        };
+
+        JsonObject effectObjectPlayer = new(nuJObjectPlayer);
+
         foreach (EntityProperties entityType in api.World.EntityTypes)
         {
             JObject nuJObject = new()
@@ -81,13 +90,15 @@ public class EffectManager : NetworkedGameSystem
 
             JsonObject effectObject = new(nuJObject);
 
+            bool player = entityType.Code.FirstCodePart() == "player";
+
             if (api.Side == EnumAppSide.Server)
             {
                 if (entityType.Server.BehaviorsAsJsonObj.FirstOrDefault(x => x.ToString().ToLower().Contains("health")) != null)
                 {
                     JsonObject[] newBehaviors = new JsonObject[entityType.Server.BehaviorsAsJsonObj.Length + 1];
                     Array.Copy(entityType.Server.BehaviorsAsJsonObj, 0, newBehaviors, 1, entityType.Server.BehaviorsAsJsonObj.Length);
-                    newBehaviors[0] = effectObject;
+                    newBehaviors[0] = player ? effectObjectPlayer : effectObject;
                     entityType.Server.BehaviorsAsJsonObj = newBehaviors;
 
                     entityType.Attributes ??= new JsonObject(new JObject());
@@ -100,7 +111,7 @@ public class EffectManager : NetworkedGameSystem
                 {
                     JsonObject[] newBehaviors = new JsonObject[entityType.Client.BehaviorsAsJsonObj.Length + 1];
                     Array.Copy(entityType.Client.BehaviorsAsJsonObj, 0, newBehaviors, 1, entityType.Client.BehaviorsAsJsonObj.Length);
-                    newBehaviors[0] = effectObject;
+                    newBehaviors[0] = player ? effectObjectPlayer : effectObject;
                     entityType.Client.BehaviorsAsJsonObj = newBehaviors;
                 }
             }
