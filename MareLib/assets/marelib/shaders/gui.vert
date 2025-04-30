@@ -14,10 +14,13 @@ layout(std140) uniform guiTransforms {
   int doTrans;
 };
 
-layout(std140, binding = 1) uniform renderGlobals {
+layout(std140) uniform renderGlobals {
   mat4 viewMatrix;
   mat4 perspectiveMatrix;
   mat4 orthographicMatrix;
+  mat4 perspectiveViewMatrix;
+  float zNear;
+  float zFar;
 };
 
 uniform int removeDepth;

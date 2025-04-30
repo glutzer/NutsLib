@@ -80,8 +80,10 @@ void main() {
     }
 
     // 1 dist = in middle. 0 dist = edge.
+
     vec3 msd = texture(tex2d, uv).rgb;
-    float dist = median(msd.r, msd.g, msd.b) - sdPower;
+    // float dist = median(msd.r, msd.g, msd.b) - sdPower;
+    float dist = msd.r - sdPower;
 
     float pxDist = screenPxRange() * dist;
 

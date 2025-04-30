@@ -1,5 +1,4 @@
-﻿using MareLib;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using System;
 using System.Text.Json.Nodes;
 using Vintagestory.API.Common;
@@ -18,7 +17,16 @@ public class Fluid
     /// Must extend FluidStack.
     /// StackTypes must use the same constructors.
     /// </summary>
-    protected virtual Type StackType => typeof(FluidContainer);
+    protected virtual Type StackType => typeof(FluidStack);
+
+    /// <summary>
+    /// Creates a fluid stack of this fluid with 0 units.
+    /// </summary>
+    public virtual FluidStack CreateFluidStack()
+    {
+        FluidStack fluidStack = (FluidStack)Activator.CreateInstance(StackType, this)!;
+        return fluidStack;
+    }
 
     public readonly string code;
     public readonly int id;
@@ -55,14 +63,5 @@ public class Fluid
     public virtual Vector4 GetColor(FluidStack fluidStack)
     {
         return color;
-    }
-
-    /// <summary>
-    /// Creates a fluid stack of this fluid with 0 units.
-    /// </summary>
-    public virtual FluidStack CreateFluidStack()
-    {
-        FluidStack fluidStack = (FluidStack)Activator.CreateInstance(StackType, this)!;
-        return fluidStack;
     }
 }

@@ -15,7 +15,7 @@ namespace Equimancy;
 /// Manages effects on entities, like buffs/debuffs or spells that can only affect once.
 /// Active effects are held in the entity behavior.
 /// </summary>
-[GameSystem]
+[GameSystem(0.5)] // Loads later.
 public class EffectManager : NetworkedGameSystem
 {
     public readonly Dictionary<string, Type> effectTypes = new();

@@ -1,42 +1,40 @@
 ﻿using OpenTK.Mathematics;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MareLib;
 
 public class Font
 {
-    // Dictionary of all chars in this font.
-    public readonly Dictionary<char, FontChar> fontChars;
-    public readonly FontCharData[] fontCharData = new FontCharData[ushort.MaxValue];
+    public string Name { get; private set; }
+    public readonly GlyphRenderInfo[] fontCharData = new GlyphRenderInfo[ushort.MaxValue];
 
     public float LineHeight { get; private set; }
     public float CenterOffset { get; private set; }
 
-    public readonly Texture fontAtlas;
-
-    public Font(Dictionary<char, FontChar> fontChars, float centerOffset, float lineHeight, Texture fontAtlas)
+    public Font(string name)
     {
-        this.fontChars = fontChars;
+        Name = name;
 
-        CenterOffset = centerOffset;
+        DynamicFontAtlas.GetMetrics(name, out float lineHeight, out float centerOffset);
         LineHeight = lineHeight;
+        CenterOffset = centerOffset;
 
-        this.fontAtlas = fontAtlas;
-
-        FontChar space = fontChars[' '];
-        FontCharData spaceData = new(space.meshHandle.vaoId, space.xAdvance);
-
-        foreach (FontChar fontChar in fontChars.Values)
+        DynamicFontAtlas.OnAtlasResize += () =>
         {
-            fontCharData[fontChar.unicode] = new FontCharData(fontChar.meshHandle.vaoId, fontChar.xAdvance);
-        }
+            for (int i = 0; i < fontCharData.Length; i++)
+            {
+                fontCharData[i].vaoId = 0;
+            }
+        };
+    }
 
-        for (int i = 0; i < ushort.MaxValue; i++)
-        {
-            // Unknown chars will have a space, which is guaranteed to exist.
-            if (fontCharData[i].meshHandle == 0) fontCharData[i] = spaceData;
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public GlyphRenderInfo GetGlyph(char c)
+    {
+        GlyphRenderInfo fontChar = fontCharData[c];
+        if (fontChar.vaoId == 0) fontChar = fontCharData[c] = DynamicFontAtlas.GetGlyphMesh(c, Name);
+        return fontChar;
     }
 
     /// <summary>
@@ -48,7 +46,7 @@ public class Font
 
         foreach (char c in text)
         {
-            xAdvance += (int)(fontCharData[c].xAdvance * fontScale);
+            xAdvance += (int)(GetGlyph(c).xAdvance * fontScale);
         }
 
         return (int)xAdvance;
@@ -62,7 +60,7 @@ public class Font
     {
         for (int i = 0; i < text.Length; i++)
         {
-            xAdvance -= (int)(fontCharData[text[i]].xAdvance * fontScale);
+            xAdvance -= (int)(GetGlyph(text[i]).xAdvance * fontScale);
 
             if (xAdvance <= 0)
             {
@@ -83,7 +81,7 @@ public class Font
 
         for (int i = 0; i < index; i++)
         {
-            xAdvance += (int)(fontCharData[text[i]].xAdvance * fontScale);
+            xAdvance += (int)(GetGlyph(text[i]).xAdvance * fontScale);
         }
 
         return xAdvance;
@@ -95,16 +93,12 @@ public class Font
     /// </summary>
     public float RenderLine(float x, float y, string text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
-        // Floor x/y.
-        x = (int)x;
-        y = (int)y;
-
         float xAdvance = 0;
 
         guiShader.Uniform("shaderType", 2);
         guiShader.Uniform("fontColor", color);
 
-        guiShader.BindTexture(fontAtlas, "tex2d", 0);
+        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d", 0);
 
         // Arbitrary value for italics.
         if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
@@ -112,10 +106,10 @@ public class Font
 
         foreach (char c in text)
         {
-            FontCharData fontChar = fontCharData[c];
+            GlyphRenderInfo fontChar = GetGlyph(c);
             guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
             xAdvance += (int)(fontChar.xAdvance * fontScale);
-            RenderTools.RenderSquareVao(fontChar.meshHandle);
+            RenderTools.RenderSquareVao(fontChar.vaoId);
         }
 
         if (italic) guiShader.Uniform("italicSlant", 0f);
@@ -132,16 +126,12 @@ public class Font
     /// </summary>
     public float RenderLine(float x, float y, StringBuilder text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
-        // Floor x/y.
-        x = (int)x;
-        y = (int)y;
-
         float xAdvance = 0;
 
         guiShader.Uniform("shaderType", 2);
         guiShader.Uniform("fontColor", color);
 
-        guiShader.BindTexture(fontAtlas, "tex2d", 0);
+        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d", 0);
 
         // Arbitrary value for italics.
         if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
@@ -150,10 +140,10 @@ public class Font
         for (int i = 0; i < text.Length; i++)
         {
             char c = text[i];
-            FontCharData fontChar = fontCharData[c];
+            GlyphRenderInfo fontChar = GetGlyph(c);
             guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
             xAdvance += (int)(fontChar.xAdvance * fontScale);
-            RenderTools.RenderSquareVao(fontChar.meshHandle);
+            RenderTools.RenderSquareVao(fontChar.vaoId);
         }
 
         if (italic) guiShader.Uniform("italicSlant", 0f);
@@ -162,15 +152,5 @@ public class Font
         guiShader.Uniform("shaderType", 0);
 
         return xAdvance;
-    }
-
-    public void Dispose()
-    {
-        foreach (FontChar fontChar in fontChars.Values)
-        {
-            fontChar.meshHandle.Dispose();
-        }
-
-        fontAtlas.Dispose();
     }
 }

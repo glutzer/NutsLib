@@ -133,14 +133,14 @@ public class StandardParticleSystem : ParticleSystem<StandardParticle, StandardP
 
         for (int i = 0; i < toEmit; i++)
         {
-            float addX = -1 + 2 * rand.NextSingle();
-            float addY = -1 + 2 * rand.NextSingle();
-            float addZ = -1 + 2 * rand.NextSingle();
+            float addX = -1 + (2 * rand.NextSingle());
+            float addY = -1 + (2 * rand.NextSingle());
+            float addZ = -1 + (2 * rand.NextSingle());
 
             StandardParticle particle = new()
             {
                 position = position,
-                velocity = config.startVelocity + new Vector3(addX, addY, addZ).Normalized() * config.startVelocityAdd,
+                velocity = config.startVelocity + (new Vector3(addX, addY, addZ).Normalized() * config.startVelocityAdd),
                 angularVelocity = config.angularVelocityStart + (-config.angularVelocityAdd + (config.angularVelocityAdd * 2 * rand.NextSingle())),
                 lifetime = config.particleLifetime
             };

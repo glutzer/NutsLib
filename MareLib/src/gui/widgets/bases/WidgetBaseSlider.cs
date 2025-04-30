@@ -13,20 +13,40 @@ public class WidgetBaseSlider : Widget
     protected Action<int> onNewValue;
     protected int steps;
     protected int cursorStep;
+    protected bool onlyCallOnRelease;
 
     public float Percentage => (float)cursorStep / steps;
 
-    public WidgetBaseSlider(Widget? parent, Action<int> onNewValue, int steps) : base(parent)
+    public WidgetBaseSlider(Widget? parent, Action<int> onNewValue, int steps, bool onlyCallOnRelease = false) : base(parent)
     {
         this.onNewValue = onNewValue;
         this.steps = steps;
+        this.onlyCallOnRelease = onlyCallOnRelease;
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
     {
+        guiEvents.MouseWheel += GuiEvents_MouseWheel;
         guiEvents.MouseMove += GuiEvents_MouseMove;
         guiEvents.MouseDown += GuiEvents_MouseDown;
         guiEvents.MouseUp += GuiEvents_MouseUp;
+    }
+
+    protected virtual void GuiEvents_MouseWheel(MouseWheelEventArgs obj)
+    {
+        if (IsInAllBounds(Gui.MouseX, Gui.MouseY) && !obj.IsHandled)
+        {
+            int oldCursorStep = cursorStep;
+            cursorStep += obj.delta;
+            cursorStep = Math.Clamp(cursorStep, 0, steps);
+
+            if (oldCursorStep != cursorStep)
+            {
+                onNewValue(cursorStep);
+            }
+
+            obj.SetHandled();
+        }
     }
 
     protected virtual void GuiEvents_MouseMove(MouseEvent obj)
@@ -35,7 +55,12 @@ public class WidgetBaseSlider : Widget
         {
             cursorStep = (int)Math.Round((obj.X - X) / (float)Width * steps);
             cursorStep = Math.Clamp(cursorStep, 0, steps);
-            onNewValue(cursorStep);
+
+            if (!onlyCallOnRelease)
+            {
+                onNewValue(cursorStep);
+            }
+
             return;
         }
 
@@ -59,13 +84,11 @@ public class WidgetBaseSlider : Widget
     {
         if (state != EnumButtonState.Active) return;
 
-        if (IsInsideAndClip(obj))
+        if (onlyCallOnRelease)
         {
-            state = EnumButtonState.Hovered;
+            onNewValue(cursorStep);
         }
-        else
-        {
-            state = EnumButtonState.Normal;
-        }
+
+        state = IsInsideAndClip(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 }

@@ -25,6 +25,13 @@ public class MainAPI : ModSystem, IRenderer
     private readonly List<GameSystem> gameSystems = new();
     private readonly Dictionary<string, GameSystem> gameSystemsDictionary = new();
 
+    private static readonly Queue<Action> beforeFrameTasks = new();
+
+    public static void EnqueueBeforeFrameTask(Action action)
+    {
+        beforeFrameTasks.Enqueue(action);
+    }
+
     public T GetGameSystem<T>() where T : GameSystem
     {
         return (T)gameSystemsDictionary[InnerClass<T>.Name];
@@ -46,6 +53,22 @@ public class MainAPI : ModSystem, IRenderer
     {
         // Problem - the game disposes game systems, THEN unloads blocks on the client. Maybe because blocks are a game system.
         return side == EnumAppSide.Client ? ClientHook.GetGameSystem<T>() : ServerHook.GetGameSystem<T>();
+    }
+
+    public static T GetGameSystem<T>(bool isServer) where T : GameSystem
+    {
+        // Problem - the game disposes game systems, THEN unloads blocks on the client. Maybe because blocks are a game system.
+        return !isServer ? ClientHook.GetGameSystem<T>() : ServerHook.GetGameSystem<T>();
+    }
+
+    public static T GetClientSystem<T>() where T : GameSystem
+    {
+        return ClientHook.GetGameSystem<T>();
+    }
+
+    public static T GetServerSystem<T>() where T : GameSystem
+    {
+        return ServerHook.GetGameSystem<T>();
     }
 
     public static bool TryGetGameSystem<T>(EnumAppSide side, [NotNullWhen(true)] out T? gameSystem) where T : GameSystem
@@ -103,9 +126,21 @@ public class MainAPI : ModSystem, IRenderer
         list.ForEach(item => RegisterGameSystem(item.type));
 
         // Initialize all systems.
-        foreach (GameSystem system in gameSystems) system.PreInitialize();
-        foreach (GameSystem system in gameSystems) system.Initialize();
-        foreach (GameSystem system in gameSystems) system.PostInitialize();
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting pre-init {system.GetType().Name}");
+            system.PreInitialize();
+        }
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting init {system.GetType().Name}");
+            system.Initialize();
+        }
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting post-init {system.GetType().Name}");
+            system.PostInitialize();
+        }
     }
 
     #endregion
@@ -135,25 +170,10 @@ public class MainAPI : ModSystem, IRenderer
     public static Matrix4 PerspectiveMatrix { get; private set; }
     public static Matrix4 OrthographicMatrix { get; private set; }
 
+    public static int FrameNumber { get; private set; }
+
     // Only initialized on client.
     private UboHandle<RenderGlobals> renderGlobalsUbo = null!;
-
-    /// <summary>
-    /// Used as a global ubo.
-    /// </summary>
-    public struct RenderGlobals
-    {
-        public Matrix4 originViewMatrix;
-        public Matrix4 perspectiveMatrix;
-        public Matrix4 orthographicMatrix;
-
-        public RenderGlobals(Matrix4 originViewMatrix, Matrix4 perspectiveMatrix, Matrix4 orthographicMatrix)
-        {
-            this.originViewMatrix = originViewMatrix;
-            this.perspectiveMatrix = perspectiveMatrix;
-            this.orthographicMatrix = orthographicMatrix;
-        }
-    }
 
     public static event Action<int, int>? OnWindowResize;
     public static event Action<int>? OnGuiRescale;
@@ -185,8 +205,9 @@ public class MainAPI : ModSystem, IRenderer
     /// </summary>
     public override void StartPre(ICoreAPI api)
     {
+        NativesLoader.Load(this);
+
         // Register new asset paths.
-        AssetCategory.categories["fonts"] = new AssetCategory("fonts", false, EnumAppSide.Client);
         AssetCategory.categories["objs"] = new AssetCategory("objs", false, EnumAppSide.Client);
 
         if (api is ICoreClientAPI capi)
@@ -199,6 +220,8 @@ public class MainAPI : ModSystem, IRenderer
             UboRegistry.SetUbo("renderGlobals", renderGlobalsUbo.handle);
 
             RenderTools.OnStart();
+
+            DynamicFontAtlas.Initialize();
         }
         else if (api is ICoreServerAPI sapi)
         {
@@ -236,10 +259,18 @@ public class MainAPI : ModSystem, IRenderer
         {
             api.RegisterEntityBehaviorClass(behavior.Item1.Name, behavior.Item1);
         }
+
+        foreach ((Type, EntityAttribute) entity in AttributeUtilities.GetAllAnnotatedClasses<EntityAttribute>())
+        {
+            api.RegisterEntity(entity.Item1.Name, entity.Item1);
+        }
     }
 
     public override void StartClientSide(ICoreClientAPI api)
     {
+        // Set initial fov.
+        Client.CallMethod("OnFowChanged", 1);
+
         api.Event.RegisterRenderer(this, EnumRenderStage.Before);
 
         GuiQuad = QuadMeshUtility.CreateGuiQuadMesh(vertex =>
@@ -268,14 +299,20 @@ public class MainAPI : ModSystem, IRenderer
     {
         if (api is ICoreClientAPI)
         {
-            FontRegistry.LoadFonts();
+            DynamicFontAtlas.AssetsLoaded();
         }
 
-        foreach (GameSystem system in gameSystems) system.OnAssetsLoaded();
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting assets loaded {system.GetType().Name}");
+            system.OnAssetsLoaded();
+        }
     }
 
     public override void Dispose()
     {
+        beforeFrameTasks.Clear();
+
         if (isServer && Sapi != null)
         {
             foreach (GameSystem system in gameSystems) system.OnClose();
@@ -285,12 +322,14 @@ public class MainAPI : ModSystem, IRenderer
         }
         else if (Capi != null)
         {
+            DynamicFontAtlas.OnClosing();
+            FontRegistry.Dispose();
+
             foreach (GameSystem system in gameSystems) system.OnClose();
             renderGlobalsUbo.Dispose();
 
             OnWindowResize = null;
             OnGuiRescale = null;
-            FontRegistry.Dispose();
             GuiQuad?.Dispose();
             GuiQuad = null!;
             UboRegistry.Dispose();
@@ -333,6 +372,8 @@ public class MainAPI : ModSystem, IRenderer
 
     public void OnRenderFrame(float dt, EnumRenderStage stage)
     {
+        FrameNumber++;
+
         int previousRenderWidth = RenderWidth;
         int previousRenderHeight = RenderHeight;
         float previousGuiScale = GuiScale;
@@ -357,8 +398,14 @@ public class MainAPI : ModSystem, IRenderer
         Vector3 up = Vector3.UnitY;
         OriginViewMatrix = Matrix4.LookAt(Vector3.Zero, front, up);
 
+        RenderGlobals globals = new(OriginViewMatrix, PerspectiveMatrix, OrthographicMatrix)
+        {
+            zNear = zNear,
+            zFar = zFar
+        };
+
         // Update global ubo.
-        renderGlobalsUbo.UpdateData(new RenderGlobals(OriginViewMatrix, PerspectiveMatrix, OrthographicMatrix));
+        renderGlobalsUbo.UpdateData(globals);
 
         Vec3d cameraPos = Client.MainCamera.CameraEyePos;
         OriginOffset = new Vector3d(cameraPos.X, cameraPos.Y, cameraPos.Z);
@@ -372,6 +419,11 @@ public class MainAPI : ModSystem, IRenderer
         if (previousGuiScale != GuiScale)
         {
             OnGuiRescale?.Invoke(GuiScale);
+        }
+
+        while (beforeFrameTasks.Count > 0)
+        {
+            beforeFrameTasks.Dequeue().Invoke();
         }
     }
 }

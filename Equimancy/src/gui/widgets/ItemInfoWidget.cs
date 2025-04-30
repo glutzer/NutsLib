@@ -34,7 +34,7 @@ public class TextDivider : IRenderableText
 
     public float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
-        RenderTools.RenderNineSlice(dividerTexture, guiShader, x, y - LineHeight / 2, dividerWidth, LineHeight / 2, Gui.Scaled(0.5f));
+        RenderTools.RenderNineSlice(dividerTexture, guiShader, x, y - (LineHeight / 2), dividerWidth, LineHeight / 2, Gui.Scaled(0.5f));
         return PixelLength;
     }
 }

@@ -23,17 +23,7 @@ public class AttributeTree
     /// </summary>
     public T? Get<T>(string key)
     {
-        if (!keyValues.TryGetValue(key, out object? value))
-        {
-            return default;
-        }
-
-        if (value is T tValue)
-        {
-            return tValue;
-        }
-
-        return default;
+        return !keyValues.TryGetValue(key, out object? value) ? default : value is T tValue ? tValue : default;
     }
 
     /// <summary>

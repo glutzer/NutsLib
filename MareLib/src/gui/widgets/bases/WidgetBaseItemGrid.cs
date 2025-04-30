@@ -20,7 +20,9 @@ public class WidgetBaseItemGrid : Widget
     protected virtual int SlotSize => slotSize * Scale;
 
     // Index of currently moused over slot, or -1 if no slot.
-    private int mousedSlotIndex = -1;
+    public int MousedSlotIndex { get; private set; }
+
+    protected virtual bool IsEnabled => true;
 
     public WidgetBaseItemGrid(ItemSlot[] slots, int width, int height, int slotSize, Widget? parent) : base(parent)
     {
@@ -32,6 +34,8 @@ public class WidgetBaseItemGrid : Widget
 
     public override void OnRender(float dt, MareShader shader)
     {
+        if (!IsEnabled) return;
+
         int slotRenderSize = SlotSize;
 
         for (int i = 0; i < slots.Length; i++)
@@ -45,25 +49,30 @@ public class WidgetBaseItemGrid : Widget
 
             ItemSlot slot = slots[i];
 
-            RenderBackground(offset, slotRenderSize, dt, shader, slot);
-            RenderItem(offset, slotRenderSize, dt, shader, slot);
-            RenderOverlay(offset, slotRenderSize, dt, shader, slot);
+            RenderBackground(offset, slotRenderSize, dt, shader, slot, i);
+            if (slot.Itemstack != null) RenderItem(offset, slotRenderSize, dt, shader, slot, i);
+            RenderOverlay(offset, slotRenderSize, dt, shader, slot, i);
         }
     }
 
-    public virtual void RenderBackground(Vector2 start, int size, float dt, MareShader shader, ItemSlot slot)
+    public virtual void OnSlotActivated(int slotIndex, ItemSlot slot)
     {
 
     }
 
-    public virtual void RenderItem(Vector2 offset, int size, float dt, MareShader shader, ItemSlot slot)
+    public virtual void RenderBackground(Vector2 start, int size, float dt, MareShader shader, ItemSlot slot, int slotIndex)
+    {
+
+    }
+
+    public virtual void RenderItem(Vector2 offset, int size, float dt, MareShader shader, ItemSlot slot, int slotIndex)
     {
         RenderTools.PushScissor((int)offset.X, (int)offset.Y, size, size);
-        RenderTools.RenderItemStackToGui(slot, shader, offset.X + (size / 2), offset.Y + (size / 2), size / 2, dt, true);
+        RenderTools.RenderItemStackToGui(slot, shader, offset.X + (size / 2), offset.Y + (size / 2), size / 2, dt, false);
         RenderTools.PopScissor();
     }
 
-    public virtual void RenderOverlay(Vector2 start, int size, float dt, MareShader shader, ItemSlot slot)
+    public virtual void RenderOverlay(Vector2 start, int size, float dt, MareShader shader, ItemSlot slot, int slotIndex)
     {
 
     }
@@ -78,14 +87,18 @@ public class WidgetBaseItemGrid : Widget
 
     private void GuiEvents_MouseWheel(MouseWheelEventArgs obj)
     {
-        if (mousedSlotIndex == -1 || obj.IsHandled) return;
-        WheelSlot(mousedSlotIndex, obj);
+        if (!IsEnabled) return;
+
+        if (MousedSlotIndex == -1 || obj.IsHandled) return;
+        WheelSlot(MousedSlotIndex, obj);
         obj.SetHandled();
     }
 
     private void GuiEvents_MouseUp(MouseEvent obj)
     {
-        if (IsInAllBounds(obj) && mousedSlotIndex != -1)
+        if (!IsEnabled) return;
+
+        if (IsInAllBounds(obj) && MousedSlotIndex != -1)
         {
             obj.Handled = true;
         }
@@ -93,39 +106,62 @@ public class WidgetBaseItemGrid : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
+        if (!IsEnabled) return;
+
         if (!IsInAllBounds(obj) || obj.Handled) return;
 
-        mousedSlotIndex = GetMousedIndex(obj.X, obj.Y);
+        MousedSlotIndex = GetMousedIndex(obj.X, obj.Y);
 
-        if (mousedSlotIndex != -1)
+        if (MousedSlotIndex != -1)
         {
-            ClickSlot(mousedSlotIndex, obj.Button);
+            ClickSlot(MousedSlotIndex, obj.Button);
             obj.Handled = true;
         }
     }
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (!IsInAllBounds(obj))
+        if (!IsEnabled) return;
+
+        //if (!IsInAllBounds(obj))
+        //{
+        //    if (mousedSlotIndex != -1)
+        //    {
+        //        MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[mousedSlotIndex]);
+        //    }
+
+        //    mousedSlotIndex = -1;
+        //    return;
+        //}
+
+        int newIndex = GetMousedIndex(obj.X, obj.Y);
+        if (newIndex == -1)
         {
-            if (mousedSlotIndex != -1)
+            if (MousedSlotIndex != -1)
             {
-                MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[mousedSlotIndex]);
+                MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[MousedSlotIndex]);
             }
 
-            mousedSlotIndex = -1;
+            MousedSlotIndex = -1;
             return;
         }
 
-        int oldIndex = mousedSlotIndex;
-        mousedSlotIndex = GetMousedIndex(obj.X, obj.Y);
+        if (obj.Handled) return;
+        obj.Handled = true;
 
-        if (mousedSlotIndex != -1 && mousedSlotIndex != oldIndex)
+        int oldIndex = MousedSlotIndex;
+        //mousedSlotIndex = GetMousedIndex(obj.X, obj.Y);
+        MousedSlotIndex = newIndex;
+
+        if (MousedSlotIndex != -1 && MousedSlotIndex != oldIndex)
         {
-            MainAPI.Capi.Input.TriggerOnMouseEnterSlot(slots[mousedSlotIndex]);
+            MainAPI.Capi.Event.EnqueueMainThreadTask(() =>
+            {
+                MainAPI.Capi.Input.TriggerOnMouseEnterSlot(slots[MousedSlotIndex]);
+            }, "");
         }
 
-        if (mousedSlotIndex == -1 && oldIndex != -1)
+        if (MousedSlotIndex == -1 && oldIndex != -1)
         {
             MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[oldIndex]);
         }
@@ -204,6 +240,8 @@ public class WidgetBaseItemGrid : Widget
             packet = slotInventory.ActivateSlot(slotId, mouseInventory[0], ref op);
         }
 
+        OnSlotActivated(index, clickedSlot);
+
         if (packet != null)
         {
             if (packet is object[] packets)
@@ -237,6 +275,7 @@ public class WidgetBaseItemGrid : Widget
         IInventory slotInventory = clickedSlot.Inventory;
 
         object packet = slotInventory.ActivateSlot(slotInventory.GetSlotId(clickedSlot), sourceSlot, ref op);
+        OnSlotActivated(index, clickedSlot);
 
         if (packet == null) return;
 
@@ -256,9 +295,9 @@ public class WidgetBaseItemGrid : Widget
     public override void Dispose()
     {
         // Leave slot.
-        if (mousedSlotIndex != -1)
+        if (MousedSlotIndex != -1)
         {
-            MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[mousedSlotIndex]);
+            MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[MousedSlotIndex]);
         }
     }
 }

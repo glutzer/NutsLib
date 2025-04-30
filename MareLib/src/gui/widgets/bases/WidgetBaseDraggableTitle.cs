@@ -49,7 +49,8 @@ public class WidgetBaseDraggableTitle : Widget
         if (!held) return;
 
         Vector2i offset = new(obj.X - startedDraggingMouse.X, obj.Y - startedDraggingMouse.Y);
-        offset /= Scale;
+
+        //offset /= Scale; Fixed not scaled anymore.
 
         Vector2i newFixed = startedDraggingFixed + offset;
 

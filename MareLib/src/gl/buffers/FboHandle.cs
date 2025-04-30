@@ -4,6 +4,20 @@ using System.Collections.Generic;
 
 namespace MareLib;
 
+public class AttachmentInfo
+{
+    public PixelInternalFormat InternalFormat { get; set; }
+    public PixelFormat Format { get; set; }
+    public PixelType Type { get; set; }
+
+    public AttachmentInfo(PixelInternalFormat internalFormat, PixelFormat format, PixelType type)
+    {
+        InternalFormat = internalFormat;
+        Format = format;
+        Type = type;
+    }
+}
+
 /// <summary>
 /// Framebuffer, no mipmap support.
 /// </summary>
@@ -14,12 +28,11 @@ public class FboHandle : IDisposable
     public int Width { get; private set; }
     public int Height { get; private set; }
 
-    private readonly bool[] activeColorBuffers = new bool[4];
-
     /// <summary>
     /// Dictionary to the handle.
     /// </summary>
     private readonly Dictionary<FramebufferAttachment, Texture> attachments = new();
+    private readonly Dictionary<FramebufferAttachment, AttachmentInfo> attachmentInfo = new();
 
     public FboHandle(int width, int height)
     {
@@ -46,15 +59,22 @@ public class FboHandle : IDisposable
     /// Set the draw buffers for this framebuffer.
     /// Should only need to be set once.
     /// </summary>
-    public void DrawBuffers(params DrawBuffersEnum[] attachments)
+    public void DrawBuffers(bool isBound, params DrawBuffersEnum[] attachments)
     {
-        int previousFramebufferId = GL.GetInteger(GetPName.FramebufferBinding);
+        if (!isBound)
+        {
+            int previousFramebufferId = GL.GetInteger(GetPName.FramebufferBinding);
 
-        GL.BindFramebuffer(FramebufferTarget.Framebuffer, handle);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, handle);
 
-        GL.DrawBuffers(attachments.Length, attachments);
+            GL.DrawBuffers(attachments.Length, attachments);
 
-        GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebufferId);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebufferId);
+        }
+        else
+        {
+            GL.DrawBuffers(attachments.Length, attachments);
+        }
     }
 
     public void SetDimensions(int width, int height)
@@ -80,7 +100,8 @@ public class FboHandle : IDisposable
             }
             else
             {
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Width, Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
+                AttachmentInfo info = attachmentInfo[attachment.Key];
+                GL.TexImage2D(TextureTarget.Texture2D, 0, info.InternalFormat, Width, Height, 0, info.Format, info.Type, 0);
             }
 
             attachment.Value.Width = width;
@@ -90,6 +111,43 @@ public class FboHandle : IDisposable
         }
 
         GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebufferId);
+    }
+
+    public FboHandle AddAttachment(FramebufferAttachment attachment, bool aliased, PixelInternalFormat internalFormat, PixelFormat format, PixelType type)
+    {
+        if (attachments.ContainsKey(attachment))
+        {
+            throw new Exception($"Attachment already exists: {attachment}!");
+        }
+
+        int textureHandle = GL.GenTexture();
+        GL.BindTexture(TextureTarget.Texture2D, textureHandle);
+
+        if (attachment == FramebufferAttachment.DepthAttachment)
+        {
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent32f, Width, Height, 0, PixelFormat.DepthComponent, PixelType.UnsignedByte, 0);
+        }
+        else
+        {
+
+            AttachmentInfo info = new(internalFormat, format, type);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, internalFormat, Width, Height, 0, format, type, 0);
+            attachmentInfo.Add(attachment, info);
+        }
+
+        // Make it nearest.
+        Texture.SetAliasing(aliased, false, TextureTarget.Texture2D);
+
+        int previousFramebufferId = GL.GetInteger(GetPName.FramebufferBinding);
+
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, handle);
+        GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, attachment, TextureTarget.Texture2D, textureHandle, 0);
+
+        GL.BindFramebuffer(FramebufferTarget.Framebuffer, previousFramebufferId);
+
+        attachments.Add(attachment, new Texture() { Handle = textureHandle, Width = Width, Height = Height });
+
+        return this;
     }
 
     public FboHandle AddAttachment(FramebufferAttachment attachment, bool aliased = true)
@@ -108,8 +166,10 @@ public class FboHandle : IDisposable
         }
         else
         {
+
+            AttachmentInfo info = new(PixelInternalFormat.Rgba, PixelFormat.Rgba, PixelType.UnsignedByte);
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Width, Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, 0);
-            activeColorBuffers[attachment - FramebufferAttachment.ColorAttachment0] = true;
+            attachmentInfo.Add(attachment, info);
         }
 
         // Make it nearest.

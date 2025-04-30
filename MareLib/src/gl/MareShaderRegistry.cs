@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Vintagestory.API.Client;
 using Vintagestory.Client.NoObf;
 
@@ -44,9 +44,9 @@ public static class MareShaderRegistry
     /// <summary>
     /// Get a shader.
     /// </summary>
-    public static MareShader Get(ReadOnlySpan<char> name)
+    public static MareShader Get(string name)
     {
-        return Shaders[name.ToString()];
+        return Shaders[name];
     }
 
     /// <summary>
@@ -76,6 +76,24 @@ public static class MareShaderRegistry
         };
     }
 
+    public static string SetUBOBindings(Dictionary<string, int> uniqueBlocks, string code)
+    {
+        string pattern = @"layout\(std140\)\s+uniform\s+(\w+)";
+
+        return Regex.Replace(code, pattern, match =>
+        {
+            string blockDefinition = match.Groups[0].Value;
+            if (!uniqueBlocks.TryGetValue(blockDefinition, out int id))
+            {
+                id = uniqueBlocks.Count;
+                uniqueBlocks[blockDefinition] = id;
+            }
+            string modifiedBlock = blockDefinition.Replace("layout(std140)", $"layout(std140, binding = {id})");
+
+            return modifiedBlock;
+        });
+    }
+
     private static void RegisterShader(string vertPath, string fragPath, string? geomPath, string shaderName)
     {
         ICoreClientAPI capi = MainAPI.Capi;
@@ -86,17 +104,23 @@ public static class MareShaderRegistry
         object[] vertParams = new object[] { shader, capi.Assets.Get(vertPath).ToText(), null! };
         object[] fragParams = new object[] { shader, capi.Assets.Get(fragPath).ToText(), null! };
 
+        Dictionary<string, int> uniqueBlocks = new();
+
         shader.VertexShader = capi.Shader.NewShader(EnumShaderType.VertexShader);
         shader.FragmentShader = capi.Shader.NewShader(EnumShaderType.FragmentShader);
 
         shader.VertexShader.Code = (string)method.Invoke(null, vertParams)!;
         shader.FragmentShader.Code = (string)method.Invoke(null, fragParams)!;
 
+        shader.VertexShader.Code = SetUBOBindings(uniqueBlocks, shader.VertexShader.Code);
+        shader.FragmentShader.Code = SetUBOBindings(uniqueBlocks, shader.FragmentShader.Code);
+
         if (geomPath != null)
         {
             object[] geomParams = new object[] { shader, capi.Assets.Get(geomPath).ToText(), null! };
             shader.GeometryShader = capi.Shader.NewShader(EnumShaderType.GeometryShader);
             shader.GeometryShader.Code = (string)method.Invoke(null, geomParams)!;
+            shader.GeometryShader.Code = SetUBOBindings(uniqueBlocks, shader.GeometryShader.Code);
         }
 
         capi.Shader.RegisterMemoryShaderProgram(shaderName, shader);

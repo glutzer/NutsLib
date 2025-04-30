@@ -65,15 +65,21 @@
 
 <ItemGroup>
   <Content Include="assets\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
-  <Content Include="genfontpacks.cmd">
+  <Content Include="native\**">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </Content>
+  <Content Include="csogg.dll">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
   <Content Include="modinfo.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
-  <Content Include="msdf-atlas-gen.exe">
+  <Content Include="OpenTK.Core.dll">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </Content>
+  <Content Include="OpenTK.Graphics.dll">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </Content>
 </ItemGroup>

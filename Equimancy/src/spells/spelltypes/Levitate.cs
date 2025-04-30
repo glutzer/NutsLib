@@ -3,7 +3,6 @@ using OpenTK.Mathematics;
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
-using Vintagestory.ServerMods;
 
 namespace Equimancy;
 
@@ -145,6 +144,6 @@ public class Levitate : Spell, IPhysicsTickable
 
     public void AfterPhysicsTick(float dt)
     {
-        GenRockStrataNew
+
     }
 }

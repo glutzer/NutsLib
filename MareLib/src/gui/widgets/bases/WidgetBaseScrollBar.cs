@@ -98,14 +98,7 @@ public class WidgetBaseScrollBar : Widget
         hoveringScrollArea = scrollWidget.IsInAllBounds(obj);
         fullBarHovered = IsInsideAndClip(obj);
 
-        if (IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
-        {
-            barState = EnumButtonState.Hovered;
-        }
-        else
-        {
-            barState = EnumButtonState.Normal;
-        }
+        barState = IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)
@@ -123,14 +116,7 @@ public class WidgetBaseScrollBar : Widget
     {
         if (barState != EnumButtonState.Active) return;
 
-        if (IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
-        {
-            barState = EnumButtonState.Hovered;
-        }
-        else
-        {
-            barState = EnumButtonState.Normal;
-        }
+        barState = IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 
     /// <summary>
@@ -216,7 +202,7 @@ public class WidgetBaseScrollBar : Widget
         // Prevent scroll bar bigger than bounds from going up, probably a bigger issue.
         if (offset < 0) offset = 0;
 
-        scrollWidget.FixedPos(0, -(int)offset / scrollWidget.Scale);
+        scrollWidget.FixedPos(0, -(int)offset);
         scrollWidget.SetBounds();
     }
 

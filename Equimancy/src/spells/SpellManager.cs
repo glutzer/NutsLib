@@ -277,7 +277,7 @@ public class SpellManager : NetworkedGameSystem, IRenderer
 
                     trackedPlayer.player.Entity.StartAnimation("CastSpell");
 
-                    SpawnSpell<ArcLightning>(trackedPlayer.player.Entity.Pos.ToVector(), config);   
+                    SpawnSpell<ArcLightning>(trackedPlayer.player.Entity.Pos.ToVector(), config);
                 }
                 else
                 {

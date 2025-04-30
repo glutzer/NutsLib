@@ -110,7 +110,7 @@ public class WidgetTextBoxSingle : FocusableWidget
             if (insertMode && cursorIndex != text.Text.Length)
             {
                 char charAtIndex = text.Text[cursorIndex];
-                float charWidth = text.font.fontCharData[charAtIndex].xAdvance * text.fontScale;
+                float charWidth = text.font.GetGlyph(charAtIndex).xAdvance * text.fontScale;
                 RenderTools.RenderQuad(shader, X + cursorRelativePos + centerOffset, Y + (Height / 2) + (lineHeight / 4), charWidth, -lineHeight);
             }
             else if (MainAPI.Capi.World.ElapsedMilliseconds / 1000f % 1 < 0.5f) // Blink.
@@ -168,7 +168,7 @@ public class WidgetTextBoxSingle : FocusableWidget
 
         char character = obj.KeyChar;
 
-        if (limitTextToBox && text.font.GetLineWidth(currentLine, text.fontScale) + (text.font.fontCharData[character].xAdvance * text.fontScale) > Width)
+        if (limitTextToBox && text.font.GetLineWidth(currentLine, text.fontScale) + (text.font.GetGlyph(character).xAdvance * text.fontScale) > Width)
         {
             // If the new character would exceed the bounds, skip.
             return;

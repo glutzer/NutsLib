@@ -91,13 +91,11 @@ public abstract class Gui : GuiDialog
         PopulateWidgets();
 
         PartitionWidgets();
-
-        // Set all top level widgets.
-        foreach (Widget widget in widgets) widget.SetBounds();
     }
 
     /// <summary>
     /// Partitions events and order.
+    /// Also sets bounds of all elements.
     /// </summary>
     private void PartitionWidgets()
     {
@@ -119,6 +117,9 @@ public abstract class Gui : GuiDialog
         {
             widgetsBackToFront[i].RegisterEvents(guiEvents);
         }
+
+        // Set bounds.
+        foreach (Widget widget in widgets) widget.SetBounds();
     }
 
     private static void PartitionWidgets(SortedDictionary<int, List<Widget>> sortedDictionary, List<Widget> widgets, int currentPriority)
@@ -239,6 +240,8 @@ public abstract class Gui : GuiDialog
         {
             widget.Dispose();
         }
+
+        widgetsBackToFront = Array.Empty<Widget>();
 
         // Might be some "composers" in there.
         base.Dispose();

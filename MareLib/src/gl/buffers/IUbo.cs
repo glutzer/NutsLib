@@ -2,6 +2,6 @@
 
 public interface IUbo
 {
-    public int Handle { get; }
-    public void Bind(int bindingPoint);
+    int Handle { get; }
+    void Bind(int bindingPoint);
 }

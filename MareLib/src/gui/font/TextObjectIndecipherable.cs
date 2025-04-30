@@ -41,9 +41,6 @@ public class TextObjectIndecipherable : TextObject
     {
         if (centerVertically) y += CenterOffset;
 
-        FontCharData[] fontData = font.fontCharData;
-        FontCharData[] fosterFontData = fosterFont.fontCharData;
-
         // Floor x/y.
         x = (int)x;
         y = (int)y;
@@ -51,7 +48,7 @@ public class TextObjectIndecipherable : TextObject
         guiShader.Uniform("shaderType", 2);
         guiShader.Uniform("fontColor", color);
 
-        guiShader.BindTexture(font.fontAtlas, "tex2d", 0);
+        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d", 0);
 
         // Arbitrary value for italics.
         if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
@@ -61,21 +58,21 @@ public class TextObjectIndecipherable : TextObject
 
         foreach (char c in text)
         {
-            FontCharData fontChar;
+            GlyphRenderInfo fontChar;
 
             if ((type == CipherType.FirstRandomized && index == 0) || type == CipherType.AllRandomized)
             {
                 char randomChar = (char)rand.Next(65, 123);
-                fontChar = fontData[randomChar];
+                fontChar = font.GetGlyph(randomChar);
             }
             else
             {
-                fontChar = fontData[c];
+                fontChar = font.GetGlyph(c);
             }
 
             guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
-            xAdvance += (int)(fosterFontData[c].xAdvance * fontScale);
-            RenderTools.RenderSquareVao(fontChar.meshHandle);
+            xAdvance += (int)(fosterFont.GetGlyph(c).xAdvance * fontScale);
+            RenderTools.RenderSquareVao(fontChar.vaoId);
             index++;
         }
 

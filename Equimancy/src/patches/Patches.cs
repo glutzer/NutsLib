@@ -24,7 +24,8 @@ public class Patches
         }
     }
 
-    // Main entry-point for post-processing.
+    //Main entry-point for post-processing.
+
     //[HarmonyPatch(typeof(EntityPlayerShapeRenderer), "DoRender3DOpaqueBatched")]
     //public class RendererPatch
     //{

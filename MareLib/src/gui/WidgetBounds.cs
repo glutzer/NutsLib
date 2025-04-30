@@ -88,18 +88,7 @@ public abstract partial class Widget
     }
 
     // Topmost widget.
-    public Widget MainWidget
-    {
-        get
-        {
-            if (Parent != null)
-            {
-                return Parent;
-            }
-
-            return this;
-        }
-    }
+    public Widget MainWidget => Parent ?? this;
 
     // Bounds setting.
     public void SetBounds()
@@ -115,13 +104,15 @@ public abstract partial class Widget
 
         float scaledX = positioningH switch
         {
-            BoundsSizing.FixedSize => xPos * guiScale,
+            BoundsSizing.FixedSize => xPos/* * guiScale*/,
             _ => Parent == null ? (int)(xPos * MainAPI.RenderWidth) : (int)(xPos * Parent.Width)
         };
 
+        // Don't scale fixed offsets.
+
         float scaledY = positioningV switch
         {
-            BoundsSizing.FixedSize => yPos * guiScale,
+            BoundsSizing.FixedSize => yPos/* * guiScale*/,
             _ => Parent == null ? (int)(yPos * MainAPI.RenderHeight) : (int)(yPos * Parent.Height)
         };
 
@@ -172,8 +163,17 @@ public abstract partial class Widget
             {
                 Widget boundsToCheck = toCheck.Dequeue();
 
-                if ((childSizing & ChildSizing.Width) != 0) maxX = Math.Max(boundsToCheck.X + boundsToCheck.Width, maxX);
-                if ((childSizing & ChildSizing.Height) != 0) maxY = Math.Max(boundsToCheck.Y + boundsToCheck.Height, maxY);
+                if ((childSizing & ChildSizing.Width) != 0)
+                {
+                    startX = Math.Min(boundsToCheck.X, startX);
+                    maxX = Math.Max(boundsToCheck.X + boundsToCheck.Width, maxX);
+                }
+
+                if ((childSizing & ChildSizing.Height) != 0)
+                {
+                    startY = Math.Min(boundsToCheck.Y, startY);
+                    maxY = Math.Max(boundsToCheck.Y + boundsToCheck.Height, maxY);
+                }
 
                 if ((childSizing & ChildSizing.Once) == 0)
                 {
@@ -184,6 +184,8 @@ public abstract partial class Widget
                 }
             }
 
+            X = startX;
+            Y = startY;
             Width = maxX - startX;
             Height = maxY - startY;
 

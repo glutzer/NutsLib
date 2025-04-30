@@ -10,7 +10,7 @@ public class WidgetTextLine : Widget
     private readonly TextObject textObject;
     private readonly bool center;
 
-    public WidgetTextLine(Widget? parent, Font font, string text, Vector4 color, bool center = true) : base(parent)
+    public WidgetTextLine(Widget? parent, Font font, string text, Vector4 color, bool center = true, bool shadow = true) : base(parent)
     {
         this.center = center;
         textObject = new TextObject(text, font, 50, color);
@@ -19,6 +19,8 @@ public class WidgetTextLine : Widget
         {
             textObject.SetScaleFromWidget(this, 0.9f, 0.7f);
         };
+
+        textObject.Shadow = shadow;
     }
 
     public override void OnRender(float dt, MareShader shader)

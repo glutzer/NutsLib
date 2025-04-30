@@ -35,7 +35,7 @@ public static class TessellatorTools
     /// <summary>
     /// Converts to mesh data for chunks?
     /// </summary>
-    public static MeshData ConvertToMeshData(MeshInfo<StandardVertex> meshInfo, int atlasTextureId, Vector4 vectorColor, short renderPassId, ColorSpace colorSpace)
+    public static MeshData ConvertToMeshData(MeshInfo<StandardVertex> meshInfo, int atlasTextureId, Vector4 vectorColor, short renderPassId, ColorSpace colorSpace, float glow = 0)
     {
         MeshData meshData = new MeshData(meshInfo.vertexAmount, meshInfo.indexAmount).WithColorMaps().WithRenderpasses();
 
@@ -56,36 +56,15 @@ public static class TessellatorTools
 
             if (vertex.normal.X != 0)
             {
-                if (vertex.normal.X > 0)
-                {
-                    face = 2;
-                }
-                else
-                {
-                    face = 4;
-                }
+                face = vertex.normal.X > 0 ? (byte)2 : (byte)4;
             }
             else if (vertex.normal.Y != 0)
             {
-                if (vertex.normal.Y > 0)
-                {
-                    face = 5;
-                }
-                else
-                {
-                    face = 6;
-                }
+                face = vertex.normal.Y > 0 ? (byte)5 : (byte)6;
             }
             else if (vertex.normal.Z != 0)
             {
-                if (vertex.normal.Z > 0)
-                {
-                    face = 3;
-                }
-                else
-                {
-                    face = 1;
-                }
+                face = vertex.normal.Z > 0 ? (byte)3 : (byte)1;
             }
 
             // Once every 4 vertices, and also the first one.
@@ -96,7 +75,14 @@ public static class TessellatorTools
                 meshData.AddXyzFace(face);
             }
 
-            meshData.AddWithFlagsVertex(vertex.position.X, vertex.position.Y, vertex.position.Z, vertex.uv.X, vertex.uv.Y, color, BlockFacing.ALLFACES[face - 1].NormalPackedFlags);
+            int flags = BlockFacing.ALLFACES[face - 1].NormalPackedFlags;
+
+            if (glow > 0)
+            {
+                flags += (int)(glow * 255); // Bits 0-7 for glow.
+            }
+
+            meshData.AddWithFlagsVertex(vertex.position.X, vertex.position.Y, vertex.position.Z, vertex.uv.X, vertex.uv.Y, color, flags);
         }
 
         // Add all indices.
@@ -106,5 +92,43 @@ public static class TessellatorTools
         }
 
         return meshData;
+    }
+
+    public static MeshVertexData SetUvsBasedOnPosition(MeshVertexData vertex)
+    {
+        int sign = vertex.normal.X + vertex.normal.Y + vertex.normal.Z > 0 ? 1 : -1;
+
+        if (vertex.normal.X != 0)
+        {
+            vertex.uv.X = vertex.position.Z;
+            if (sign == -1)
+            {
+                vertex.uv.X = 1 - vertex.uv.X;
+            }
+
+            vertex.uv.Y = 1 - vertex.position.Y;
+        }
+        else if (vertex.normal.Y != 0)
+        {
+            vertex.uv.X = vertex.position.X;
+
+            vertex.uv.Y = vertex.position.Z;
+            if (sign == -1)
+            {
+                vertex.uv.Y = 1 - vertex.uv.Y;
+            }
+        }
+        else if (vertex.normal.Z != 0)
+        {
+            vertex.uv.X = vertex.position.X;
+            if (sign == -1)
+            {
+                vertex.uv.X = 1 - vertex.uv.X;
+            }
+
+            vertex.uv.Y = 1 - vertex.position.Y;
+        }
+
+        return vertex;
     }
 }

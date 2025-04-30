@@ -20,7 +20,7 @@ public abstract class Effect
 
     public Effect()
     {
-        
+
     }
 
     public virtual void OnTick(float dt)
