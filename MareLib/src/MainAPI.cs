@@ -126,9 +126,21 @@ public class MainAPI : ModSystem, IRenderer
         list.ForEach(item => RegisterGameSystem(item.type));
 
         // Initialize all systems.
-        foreach (GameSystem system in gameSystems) system.PreInitialize();
-        foreach (GameSystem system in gameSystems) system.Initialize();
-        foreach (GameSystem system in gameSystems) system.PostInitialize();
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting pre-init {system.GetType().Name}");
+            system.PreInitialize();
+        }
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting init {system.GetType().Name}");
+            system.Initialize();
+        }
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting post-init {system.GetType().Name}");
+            system.PostInitialize();
+        }
     }
 
     #endregion
@@ -290,7 +302,11 @@ public class MainAPI : ModSystem, IRenderer
             DynamicFontAtlas.AssetsLoaded();
         }
 
-        foreach (GameSystem system in gameSystems) system.OnAssetsLoaded();
+        foreach (GameSystem system in gameSystems)
+        {
+            Console.WriteLine($"Starting assets loaded {system.GetType().Name}");
+            system.OnAssetsLoaded();
+        }
     }
 
     public override void Dispose()

@@ -63,6 +63,8 @@ public class EffectManager : NetworkedGameSystem
 
     public override void OnAssetsLoaded()
     {
+        if (api.Side == EnumAppSide.Client) return;
+
         if (effectTypes.Count > 0)
         {
             ReplaceBehaviors();
@@ -74,45 +76,63 @@ public class EffectManager : NetworkedGameSystem
     /// </summary>
     public void ReplaceBehaviors()
     {
-        JObject nuJObjectPlayer = new()
-        {
-            ["code"] = "EntityBehaviorPlayerEffects"
-        };
-
-        JsonObject effectObjectPlayer = new(nuJObjectPlayer);
-
         foreach (EntityProperties entityType in api.World.EntityTypes)
         {
-            JObject nuJObject = new()
-            {
-                ["code"] = "EntityBehaviorEffects"
-            };
-
-            JsonObject effectObject = new(nuJObject);
-
             bool player = entityType.Code.FirstCodePart() == "player";
 
             if (api.Side == EnumAppSide.Server)
             {
                 if (entityType.Server.BehaviorsAsJsonObj.FirstOrDefault(x => x.ToString().ToLower().Contains("health")) != null)
                 {
-                    JsonObject[] newBehaviors = new JsonObject[entityType.Server.BehaviorsAsJsonObj.Length + 1];
-                    Array.Copy(entityType.Server.BehaviorsAsJsonObj, 0, newBehaviors, 1, entityType.Server.BehaviorsAsJsonObj.Length);
-                    newBehaviors[0] = player ? effectObjectPlayer : effectObject;
-                    entityType.Server.BehaviorsAsJsonObj = newBehaviors;
+                    JsonObject[] newServerBehaviors = new JsonObject[entityType.Server.BehaviorsAsJsonObj.Length + 1];
+                    Array.Copy(entityType.Server.BehaviorsAsJsonObj, 0, newServerBehaviors, 1, entityType.Server.BehaviorsAsJsonObj.Length);
 
-                    entityType.Attributes ??= new JsonObject(new JObject());
-                    entityType.Attributes.Token["mareEff"] = new JValue(true);
-                }
-            }
-            else
-            {
-                if (entityType.Attributes?.KeyExists("mareEff") == true)
-                {
-                    JsonObject[] newBehaviors = new JsonObject[entityType.Client.BehaviorsAsJsonObj.Length + 1];
-                    Array.Copy(entityType.Client.BehaviorsAsJsonObj, 0, newBehaviors, 1, entityType.Client.BehaviorsAsJsonObj.Length);
-                    newBehaviors[0] = player ? effectObjectPlayer : effectObject;
-                    entityType.Client.BehaviorsAsJsonObj = newBehaviors;
+                    if (player)
+                    {
+                        JObject nuJObjectPlayer = new()
+                        {
+                            ["code"] = "EntityBehaviorPlayerEffects"
+                        };
+                        JsonObject effectObjectPlayer = new(nuJObjectPlayer);
+                        newServerBehaviors[0] = effectObjectPlayer;
+                    }
+                    else
+                    {
+                        JObject nuJObject = new()
+                        {
+                            ["code"] = "EntityBehaviorEffects"
+                        };
+                        JsonObject effectObject = new(nuJObject);
+                        newServerBehaviors[0] = effectObject;
+                    }
+
+                    entityType.Server.BehaviorsAsJsonObj = newServerBehaviors;
+
+                    // Client.
+
+                    JsonObject[] newClientBehaviors = new JsonObject[entityType.Client.BehaviorsAsJsonObj.Length + 1];
+                    Array.Copy(entityType.Client.BehaviorsAsJsonObj, 0, newClientBehaviors, 1, entityType.Client.BehaviorsAsJsonObj.Length);
+
+                    if (player)
+                    {
+                        JObject nuJObjectPlayer = new()
+                        {
+                            ["code"] = "EntityBehaviorPlayerEffects"
+                        };
+                        JsonObject effectObjectPlayer = new(nuJObjectPlayer);
+                        newClientBehaviors[0] = effectObjectPlayer;
+                    }
+                    else
+                    {
+                        JObject nuJObject = new()
+                        {
+                            ["code"] = "EntityBehaviorEffects"
+                        };
+                        JsonObject effectObject = new(nuJObject);
+                        newClientBehaviors[0] = effectObject;
+                    }
+
+                    entityType.Client.BehaviorsAsJsonObj = newClientBehaviors;
                 }
             }
         }
