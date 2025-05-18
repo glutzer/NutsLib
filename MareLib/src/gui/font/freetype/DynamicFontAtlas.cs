@@ -175,7 +175,12 @@ public static unsafe class DynamicFontAtlas
     private static MeshHandle emptyHandle = null!;
     private static FreeTypeLibrary freetype = null!;
 
+    public const int PADDING = 2;
     public const int FONT_SCALE = 64;
+
+    public const float SDF_OFFSET = 0.125f; // Offset of the quad to deal with sdfs, because I don't know where freetype declares it.
+    public const float CENTER_OFFSET = 0.3f; // Constant values for these, not from freetype.
+    public const float LINEHEIGHT = 1f;
 
     private static int currentAtlasSize = 256;
 
@@ -257,8 +262,8 @@ public static unsafe class DynamicFontAtlas
 
         FT_Set_Pixel_Sizes(face, 0, FONT_SCALE);
 
-        lineHeight = 1f;
-        centerOffset = 0.2f;
+        lineHeight = LINEHEIGHT;
+        centerOffset = CENTER_OFFSET;
 
         FT_Done_Face(face);
     }
@@ -318,18 +323,22 @@ public static unsafe class DynamicFontAtlas
         float xStart = xBearing;
         float yStart = -yBearing;
 
-        float uvStartX = (texNode.Origin.X + 0.5f) / AtlasTexture.Width;
-        float uvStartY = (texNode.Origin.Y - 0.5f) / AtlasTexture.Height;
+        float uvStartX = (texNode.Origin.X + PADDING + 0.5f) / AtlasTexture.Width;
+        float uvStartY = (texNode.Origin.Y + PADDING - 0.5f) / AtlasTexture.Height;
 
-        float uvWidth = (texNode.Size.X - 1f) / AtlasTexture.Width;
-        float uvHeight = (texNode.Size.Y - 1f) / AtlasTexture.Height;
+        float uvWidth = (texNode.Size.X - (PADDING * 2) - 1f) / AtlasTexture.Width;
+        float uvHeight = (texNode.Size.Y - (PADDING * 2) - 1f) / AtlasTexture.Height;
 
         return QuadMeshUtility.CreateGuiQuadMesh(vertex =>
         {
             Vector3 position = new(xStart + (width * vertex.position.X), yStart + (height * vertex.position.Y), 0f);
+
+            position.X -= SDF_OFFSET;
+            position.Y -= SDF_OFFSET;
+
             Vector2 uv = new(uvStartX + (uvWidth * vertex.position.X), uvStartY + (uvHeight * vertex.position.Y));
 
-            return new GuiVertex(position, uv);
+            return new GuiVertex(position, uv, Vector4.One);
         });
     }
 
@@ -414,18 +423,18 @@ public static unsafe class DynamicFontAtlas
     /// </summary>
     private static TextureNode InsertData(int width, int height, byte* data)
     {
-        TextureNode? node = rootNode.FindFirstSuitableNode(new Vector2i(width, height));
+        TextureNode? node = rootNode.FindFirstSuitableNode(new Vector2i(width + (PADDING * 2), height + (PADDING * 2)));
 
         while (node == null)
         {
             ResizeAtlas();
-            node = rootNode.FindFirstSuitableNode(new Vector2i(width, height));
+            node = rootNode.FindFirstSuitableNode(new Vector2i(width + (PADDING * 2), height + (PADDING * 2)));
         }
 
         GL.PixelStore(PixelStoreParameter.UnpackAlignment, 1);
 
         GL.BindTexture(TextureTarget.Texture2D, AtlasTexture.Handle);
-        GL.TexSubImage2D(TextureTarget.Texture2D, 0, node.Origin.X, node.Origin.Y, width, height, PixelFormat.Red, PixelType.UnsignedByte, (nint)data);
+        GL.TexSubImage2D(TextureTarget.Texture2D, 0, node.Origin.X + PADDING, node.Origin.Y + PADDING, width, height, PixelFormat.Red, PixelType.UnsignedByte, (nint)data);
 
         GL.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
 

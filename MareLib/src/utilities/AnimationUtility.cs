@@ -54,7 +54,9 @@ public static class AnimationUtility
             pos *= ConvertMatrix(pMatrixNormalFov).Inverted() * newOrigin.Inverted();
         }
 
-        position = new Vector3d(pos.X + player.CameraPos.X, pos.Y + player.CameraPos.Y, pos.Z + player.CameraPos.Z);
+        position = player.IsSelf()
+            ? new Vector3d(pos.X + player.CameraPos.X, pos.Y + player.CameraPos.Y, pos.Z + player.CameraPos.Z)
+            : new Vector3d(pos.X + player.Pos.X, pos.Y + player.Pos.Y, pos.Z + player.Pos.Z);
     }
 
     public static Matrix4 ConvertMatrix(Matrixf matrixF)
