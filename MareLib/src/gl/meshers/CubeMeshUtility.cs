@@ -1,4 +1,5 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 
 namespace MareLib;
 
@@ -10,6 +11,9 @@ public static class CubeMeshUtility
     private static readonly MeshVertexData[] centeredCubeVertices = new MeshVertexData[24];
     private static readonly MeshVertexData[] gridAlignedVertices = new MeshVertexData[24];
 
+    private static readonly MeshVertexData[] gridAlignedLineVertices = new MeshVertexData[8];
+    public static readonly int[] lineCubeIndices = new int[] { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
+
     public static readonly int[] faceIndices = new int[] { 0, 2, 1, 1, 2, 3 };
     public static readonly int[] cubeIndices; // Initialized in static constructor.
 
@@ -20,6 +24,15 @@ public static class CubeMeshUtility
         centeredCubeVertices[1] = new MeshVertexData(new Vector3(-0.5f, 0.5f, -0.5f), new Vector2(1f, 1f), -Vector3.UnitZ);
         centeredCubeVertices[2] = new MeshVertexData(new Vector3(0.5f, -0.5f, -0.5f), new Vector2(0f, 0f), -Vector3.UnitZ);
         centeredCubeVertices[3] = new MeshVertexData(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(1f, 0f), -Vector3.UnitZ);
+
+        gridAlignedLineVertices[0] = new MeshVertexData(new Vector3(0f, 0f, 0f), new Vector2(0f, 0f), new Vector3(-1f, -1f, -1f).Normalized());
+        gridAlignedLineVertices[1] = new MeshVertexData(new Vector3(1f, 0f, 0f), new Vector2(0f, 0f), new Vector3(1f, -1f, -1f).Normalized());
+        gridAlignedLineVertices[2] = new MeshVertexData(new Vector3(1f, 0f, 1f), new Vector2(0f, 0f), new Vector3(1f, -1f, 1f).Normalized());
+        gridAlignedLineVertices[3] = new MeshVertexData(new Vector3(0f, 0f, 1f), new Vector2(0f, 0f), new Vector3(-1f, -1f, 1f).Normalized());
+        gridAlignedLineVertices[4] = new MeshVertexData(new Vector3(0f, 1f, 0f), new Vector2(0f, 0f), new Vector3(-1f, 1f, -1f).Normalized());
+        gridAlignedLineVertices[5] = new MeshVertexData(new Vector3(1f, 1f, 0f), new Vector2(0f, 0f), new Vector3(1f, 1f, -1f).Normalized());
+        gridAlignedLineVertices[6] = new MeshVertexData(new Vector3(1f, 1f, 1f), new Vector2(0f, 0f), new Vector3(1f, 1f, 1f).Normalized());
+        gridAlignedLineVertices[7] = new MeshVertexData(new Vector3(0f, 1f, 1f), new Vector2(0f, 0f), new Vector3(-1f, 1f, 1f).Normalized());
 
         // East, south, west.
         for (int f = 1; f < 4; f++)
@@ -200,5 +213,29 @@ public static class CubeMeshUtility
         MeshInfo<T> meshData = new(24, 36);
         AddRangeCubeData(meshData, meshDelegate, from, to);
         return RenderTools.UploadMesh(meshData);
+    }
+
+    /// <summary>
+    /// Add a wireframe cube to a mesh using lines.
+    /// </summary>
+    public static void AddWireframeCubeData<T>(MeshInfo<T> meshInfo, MeshDelegate<T> meshDelegate) where T : unmanaged
+    {
+        meshInfo.AddIndicesFromLastVertex(lineCubeIndices);
+
+        for (int i = 0; i < 8; i++)
+        {
+            meshInfo.AddVertex(meshDelegate(gridAlignedLineVertices[i]));
+        }
+    }
+
+    /// <summary>
+    /// Create and upload a wireframe cube, with line draw type.
+    /// </summary>
+    public static MeshHandle CreateWireframeCubeMesh<T>(MeshDelegate<T> meshDelegate) where T : unmanaged
+    {
+        MeshInfo<T> meshInfo = new(8, 24);
+        meshInfo.SetDrawMode(PrimitiveType.Lines);
+        AddWireframeCubeData(meshInfo, meshDelegate);
+        return meshInfo.Upload();
     }
 }

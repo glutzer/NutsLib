@@ -87,17 +87,21 @@ public static unsafe class RenderTools
     /// <summary>
     /// Uses the current origin view matrix and perspective matrix to convert a world position to pixel coordinates.
     /// </summary>
-    public static void WorldPosToPixelCoords(Vector3d worldPos, out int x, out int y, out float depth)
+    public static void WorldPosToPixelCoords(Vector3d worldPos, out float x, out float y, out double distance, out bool isBehind)
     {
         worldPos -= MainAPI.OriginOffset;
-        Vector4 floatPos = new((float)worldPos.X, (float)worldPos.Y, (float)worldPos.Z, 1);
+        Vector4 floatPos = new((float)worldPos.X, (float)worldPos.Y, (float)worldPos.Z, 1f);
 
-        floatPos *= MainAPI.OriginViewMatrix * MainAPI.PerspectiveMatrix;
+        floatPos *= MainAPI.OriginViewMatrix;
+
+        isBehind = floatPos.Z > 0;
+
+        floatPos *= MainAPI.PerspectiveMatrix;
         floatPos /= floatPos.W;
 
-        x = (int)MathF.Round((floatPos.X + 1) / 2 * MainAPI.RenderWidth);
-        y = (int)MathF.Round((1 - floatPos.Y) / 2 * MainAPI.RenderHeight);
-        depth = floatPos.Z;
+        x = (floatPos.X + 1f) / 2f * MainAPI.RenderWidth;
+        y = (1f - floatPos.Y) / 2f * MainAPI.RenderHeight;
+        distance = worldPos.Length;
     }
 
     /// <summary>

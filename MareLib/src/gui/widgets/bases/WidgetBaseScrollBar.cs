@@ -22,10 +22,10 @@ public class WidgetBaseScrollBar : Widget
 
     // Bounds that will be scrolled/offset.
     // The fixed position will be set as the offset.
-    protected Widget scrollWidget;
+    protected Widget? scrollWidget;
     protected int stepsPerPage;
 
-    public WidgetBaseScrollBar(Widget? parent, Widget scrollWidget, int stepsPerPage = 10) : base(parent)
+    public WidgetBaseScrollBar(Widget? parent, Widget? scrollWidget, int stepsPerPage = 10) : base(parent)
     {
         this.scrollWidget = scrollWidget;
         this.stepsPerPage = stepsPerPage;
@@ -41,6 +41,12 @@ public class WidgetBaseScrollBar : Widget
         RenderCursor(X, Y + offset, Width, size, shader, barState);
     }
 
+    public void SetScrollArea(Widget scrollWidget)
+    {
+        this.scrollWidget = scrollWidget;
+        Reset();
+    }
+
     protected virtual void RenderBackground(int x, int y, int width, int height, MareShader shader)
     {
 
@@ -49,12 +55,6 @@ public class WidgetBaseScrollBar : Widget
     protected virtual void RenderCursor(int x, int y, int width, int height, MareShader shader, EnumButtonState barState)
     {
 
-    }
-
-    public void SetNewScrollBounds(Widget scrollWidget)
-    {
-        this.scrollWidget = scrollWidget;
-        Reset();
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
@@ -87,18 +87,31 @@ public class WidgetBaseScrollBar : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
+        if (scrollWidget == null) return;
+
         if (barState == EnumButtonState.Active)
         {
             MoveBar(obj.Y);
-            return;
         }
 
-        if (obj.Handled) return;
-
         hoveringScrollArea = scrollWidget.IsInAllBounds(obj);
-        fullBarHovered = IsInsideAndClip(obj);
 
-        barState = IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y) ? EnumButtonState.Hovered : EnumButtonState.Normal;
+        if (obj.Handled)
+        {
+            fullBarHovered = false;
+            barState = EnumButtonState.Normal;
+        }
+        else
+        {
+            fullBarHovered = IsInAllBounds(obj);
+
+            if (barState != EnumButtonState.Active) barState = fullBarHovered && IsMouseOnScrollBar(obj.X, obj.Y) ? EnumButtonState.Hovered : EnumButtonState.Normal;
+
+            if (IsInAllBounds(obj))
+            {
+                obj.Handled = true;
+            }
+        }
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)
@@ -114,9 +127,7 @@ public class WidgetBaseScrollBar : Widget
 
     private void GuiEvents_MouseUp(MouseEvent obj)
     {
-        if (barState != EnumButtonState.Active) return;
-
-        barState = IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y) ? EnumButtonState.Hovered : EnumButtonState.Normal;
+        barState = IsInAllBounds(obj) && IsMouseOnScrollBar(obj.X, obj.Y) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 
     /// <summary>
@@ -124,7 +135,7 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected float GetScrollBarRatio()
     {
-        return Math.Clamp((float)Height / scrollWidget.Height, 0, 1);
+        return scrollWidget == null ? 1f : Math.Clamp((float)Height / scrollWidget.Height, 0, 1);
     }
 
     /// <summary>
@@ -197,6 +208,8 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected void SetOffset()
     {
+        if (scrollWidget == null) return;
+
         float offset = (scrollWidget.Height - Height) * scrollProgress;
 
         // Prevent scroll bar bigger than bounds from going up, probably a bigger issue.

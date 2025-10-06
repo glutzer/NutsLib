@@ -1,6 +1,5 @@
 ﻿using OpenTK.Mathematics;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace MareLib;
 
@@ -91,7 +90,7 @@ public class Font
     /// Renders a line of text with the gui shader.
     /// Returns advance.
     /// </summary>
-    public float RenderLine(float x, float y, string text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
+    public float RenderLine(float x, float y, string text, float fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
         float xAdvance = 0;
 
@@ -107,41 +106,7 @@ public class Font
         foreach (char c in text)
         {
             GlyphRenderInfo fontChar = GetGlyph(c);
-            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
-            xAdvance += (int)(fontChar.xAdvance * fontScale);
-            RenderTools.RenderSquareVao(fontChar.vaoId);
-        }
-
-        if (italic) guiShader.Uniform("italicSlant", 0f);
-        if (bold) guiShader.Uniform("bold", 0);
-
-        guiShader.Uniform("shaderType", 0);
-
-        return xAdvance;
-    }
-
-    /// <summary>
-    /// Renders a line of text with the gui shader.
-    /// Returns advance.
-    /// </summary>
-    public float RenderLine(float x, float y, StringBuilder text, int fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
-    {
-        float xAdvance = 0;
-
-        guiShader.Uniform("shaderType", 2);
-        guiShader.Uniform("fontColor", color);
-
-        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d", 0);
-
-        // Arbitrary value for italics.
-        if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
-        if (bold) guiShader.Uniform("bold", 1);
-
-        for (int i = 0; i < text.Length; i++)
-        {
-            char c = text[i];
-            GlyphRenderInfo fontChar = GetGlyph(c);
-            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
+            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance, y, 0f));
             xAdvance += (int)(fontChar.xAdvance * fontScale);
             RenderTools.RenderSquareVao(fontChar.vaoId);
         }

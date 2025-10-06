@@ -410,6 +410,7 @@ public class MainAPI : ModSystem, IRenderer
         Vec3d cameraPos = Client.MainCamera.CameraEyePos;
         OriginOffset = new Vector3d(cameraPos.X, cameraPos.Y, cameraPos.Z);
         CameraPosition = new Vector3d(cameraPos.X, cameraPos.Y, cameraPos.Z);
+        CameraNormal = front;
 
         if (previousRenderWidth != RenderWidth || previousRenderHeight != RenderHeight)
         {

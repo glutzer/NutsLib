@@ -1,12 +1,12 @@
 {
   "type": "code",
-  "modid": "marelib",
-  "name": "MareLib",
+  "modid": "ponylib",
+  "name": "PonyLib",
   "authors": [
     "nuts"
   ],
   "description": "mares mares mares",
-  "version": "2.6.3",
+  "version": "2.7.0",
   "dependencies": {
     "game": ""
   },

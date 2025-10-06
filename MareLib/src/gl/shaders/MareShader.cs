@@ -24,7 +24,7 @@ public struct BindingIndex
 /// <summary>
 /// Constructed from a ShaderProgram.
 /// </summary>
-public class MareShader
+public unsafe class MareShader
 {
     // Set when re-registering shader.
     public BindingIndex[]? UniformBlockIds { get; private set; }
@@ -123,13 +123,14 @@ public class MareShader
 
     public void Uniform(string name, Matrix4 value)
     {
-        GL.UniformMatrix4(uniformLocations[name], false, ref value);
+        //GL.UniformMatrix4(uniformLocations[name], false, ref value);
+        GL.UniformMatrix4(uniformLocations[name], 1, false, &value.Row0.X);
     }
 
-    public void Uniform(string name, Matrix3x4 value)
-    {
-        GL.UniformMatrix3x4(uniformLocations[name], false, ref value);
-    }
+    //public void Uniform(string name, Matrix3x4 value)
+    //{
+    //    GL.UniformMatrix3x4(uniformLocations[name], false, ref value);
+    //}
 
     public unsafe void UniformMatrix(string name, float[] matrix)
     {

@@ -32,11 +32,16 @@ public class WidgetSliceBackground : Widget
     {
         guiEvents.MouseDown += GuiEvents_MouseDown;
         guiEvents.MouseMove += GuiEvents_MouseMove;
+
+        guiEvents.MouseWheel += e =>
+        {
+            if (!e.IsHandled && IsInAllBounds(Gui.MouseX, Gui.MouseY)) e.SetHandled();
+        };
     }
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (IsInAllBounds(obj))
+        if (IsInAllBounds(obj) && !obj.Handled)
         {
             obj.Handled = true;
         }

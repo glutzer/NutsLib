@@ -69,6 +69,10 @@ public class WidgetBaseSlider : Widget
             state = EnumButtonState.Hovered;
             obj.Handled = true;
         }
+        else
+        {
+            state = EnumButtonState.Normal;
+        }
     }
 
     protected virtual void GuiEvents_MouseDown(MouseEvent obj)

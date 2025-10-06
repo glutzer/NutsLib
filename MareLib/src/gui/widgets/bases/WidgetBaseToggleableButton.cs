@@ -12,10 +12,11 @@ public class WidgetBaseToggleableButton : Widget
     protected Action<bool> onClick;
     protected bool allowRelease;
 
-    public WidgetBaseToggleableButton(Widget? parent, Action<bool> onClick, bool allowRelease) : base(parent)
+    public WidgetBaseToggleableButton(Widget? parent, Action<bool> onClick, bool allowRelease, bool currentValue) : base(parent)
     {
         this.onClick = onClick;
         this.allowRelease = allowRelease;
+        state = currentValue ? EnumButtonState.Active : EnumButtonState.Normal;
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
@@ -31,13 +32,21 @@ public class WidgetBaseToggleableButton : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
+        if (!IsInAllBounds(obj))
+        {
+            if (state == EnumButtonState.Hovered) state = EnumButtonState.Normal;
+            return;
+        }
+
+        obj.Handled = true;
         if (state == EnumButtonState.Active) return;
-        state = IsInsideAndClip(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
+
+        state = IsInAllBounds(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && IsInsideAndClip(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
 
