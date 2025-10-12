@@ -1,0 +1,16 @@
+{
+  "type": "code",
+  "modid": "nutslib",
+  "name": "NutsLib",
+  "authors": [
+    "nuts"
+  ],
+  "description": "Library for rendering guis, and other stuff.",
+  "version": "3.0.0",
+  "dependencies": {
+    "game": ""
+  },
+  "side": "universal",
+  "requiredOnClient": true,
+  "requiredOnServer": false
+}

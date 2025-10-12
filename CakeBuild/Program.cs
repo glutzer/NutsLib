@@ -17,7 +17,7 @@ namespace CakeBuild;
 
 public static class Program
 {
-    public static string[] ModsToBuild { get; } = { "MareLib" };
+    public static string[] ModsToBuild { get; } = { "NutsLib" };
     public static bool BuildToModsFolder { get; } = true;
 
     public static string ModsFolder { get; } = null!;
