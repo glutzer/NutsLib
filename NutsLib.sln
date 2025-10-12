@@ -5,7 +5,7 @@ VisualStudioVersion = 17.12.35410.144
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CakeBuild", "CakeBuild\CakeBuild.csproj", "{169F6AF0-148C-499C-AF5B-3F20AC60EFE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NutsLibLib", "NutsLib\NutsLib.csproj", "{8047FF66-EF78-4265-BB96-03E196A36F90}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NutsLib", "NutsLib\NutsLib.csproj", "{8047FF66-EF78-4265-BB96-03E196A36F90}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7D400217-B796-4D01-A039-6897A0B8DCA1}"
 	ProjectSection(SolutionItems) = preProject
