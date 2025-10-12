@@ -13,7 +13,7 @@ public class WidgetClip : Widget
         this.clip = clip;
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         if (clip)
         {

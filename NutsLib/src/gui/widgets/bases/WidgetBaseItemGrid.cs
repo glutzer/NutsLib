@@ -32,7 +32,7 @@ public class WidgetBaseItemGrid : Widget
         this.slotSize = slotSize;
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         if (!IsEnabled) return;
 
@@ -60,19 +60,19 @@ public class WidgetBaseItemGrid : Widget
 
     }
 
-    public virtual void RenderBackground(Vector2 start, int size, float dt, MareShader shader, ItemSlot slot, int slotIndex)
+    public virtual void RenderBackground(Vector2 start, int size, float dt, NuttyShader shader, ItemSlot slot, int slotIndex)
     {
 
     }
 
-    public virtual void RenderItem(Vector2 offset, int size, float dt, MareShader shader, ItemSlot slot, int slotIndex)
+    public virtual void RenderItem(Vector2 offset, int size, float dt, NuttyShader shader, ItemSlot slot, int slotIndex)
     {
         RenderTools.PushScissor((int)offset.X, (int)offset.Y, size, size);
         RenderTools.RenderItemStackToGui(slot, shader, offset.X + (size / 2), offset.Y + (size / 2), size / 2, dt, false);
         RenderTools.PopScissor();
     }
 
-    public virtual void RenderOverlay(Vector2 start, int size, float dt, MareShader shader, ItemSlot slot, int slotIndex)
+    public virtual void RenderOverlay(Vector2 start, int size, float dt, NuttyShader shader, ItemSlot slot, int slotIndex)
     {
 
     }

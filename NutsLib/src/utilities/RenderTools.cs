@@ -32,7 +32,7 @@ public struct TransformData
 public static unsafe class RenderTools
 {
     public static UboHandle<TransformData> TransformUbo { get; set; } = null!;
-    private static MareShader guiItemShader = null!;
+    private static NuttyShader guiItemShader = null!;
     public static Stack<Matrix4> GuiTransformStack { get; } = new();
 
     public static void OnStart()
@@ -42,7 +42,7 @@ public static unsafe class RenderTools
 
         UboRegistry.SetUbo("guiTransforms", TransformUbo.handle);
 
-        guiItemShader = MareShaderRegistry.AddShader("nutslib:itemgui", "nutslib:itemgui", "itemgui");
+        guiItemShader = NuttyShaderRegistry.AddShader("nutslib:itemgui", "nutslib:itemgui", "itemgui");
 
         GuiTransformStack.Push(Matrix4.Identity);
     }
@@ -151,7 +151,7 @@ public static unsafe class RenderTools
     /// Use the vanilla pipeline for rendering items.
     /// Removes depth after rendering.
     /// </summary>
-    public static void RenderItemStackToGui(ItemSlot slot, MareShader originalGuiShader, float x, float y, float scale, float dt, bool rotate = false)
+    public static void RenderItemStackToGui(ItemSlot slot, NuttyShader originalGuiShader, float x, float y, float scale, float dt, bool rotate = false)
     {
         ItemStack itemStack = slot.Itemstack;
         if (itemStack == null) return;
@@ -248,7 +248,7 @@ public static unsafe class RenderTools
         originalGuiShader.Use();
     }
 
-    public static void RenderQuadInstanced(MareShader guiShader, float x, float y, float width, float height, int instances)
+    public static void RenderQuadInstanced(NuttyShader guiShader, float x, float y, float width, float height, int instances)
     {
         // Round everything to prevent sub-pixel rendering.
         x = (int)x;
@@ -265,7 +265,7 @@ public static unsafe class RenderTools
     /// Renders a nine-slice texture. Scale with scale the size of the texture that is repeated and the border.
     /// This should be an integer amount for the texture to render correctly, like the gui scale (1-4x).
     /// </summary>
-    public static void RenderNineSlice(NineSliceTexture texture, MareShader guiShader, float x, float y, float width, float height, float scale = 1f)
+    public static void RenderNineSlice(NineSliceTexture texture, NuttyShader guiShader, float x, float y, float width, float height, float scale = 1f)
     {
         // Round everything to prevent sub-pixel rendering.
         x = (int)x;
@@ -294,7 +294,7 @@ public static unsafe class RenderTools
     /// Renders a nine-slice texture. Scale with scale the size of the texture that is repeated and the border.
     /// This should be an integer amount for the texture to render correctly, like the gui scale (1-4x).
     /// </summary>
-    public static void RenderNineSliceSplit(NineSliceTexture texture, MareShader guiShader, float x, float y, float width, float height, float scaleX = 1f, float scaleY = 1f)
+    public static void RenderNineSliceSplit(NineSliceTexture texture, NuttyShader guiShader, float x, float y, float width, float height, float scaleX = 1f, float scaleY = 1f)
     {
         // Round everything to prevent sub-pixel rendering.
         x = (int)x;
@@ -323,7 +323,7 @@ public static unsafe class RenderTools
     /// Render a 0-1 quad at a pixel position.
     /// Coordinates are rounded.
     /// </summary>
-    public static void RenderQuad(MareShader guiShader, float x, float y, float width, float height)
+    public static void RenderQuad(NuttyShader guiShader, float x, float y, float width, float height)
     {
         // Round everything to prevent sub-pixel rendering.
         x = (int)x;
@@ -341,7 +341,7 @@ public static unsafe class RenderTools
     /// Render a 0-1 quad at a pixel position.
     /// Coordinates are rounded.
     /// </summary>
-    public static void RenderElement(MareShader guiShader, float x, float y, float width, float height, MeshHandle handle)
+    public static void RenderElement(NuttyShader guiShader, float x, float y, float width, float height, MeshHandle handle)
     {
         // Round everything to prevent sub-pixel rendering.
         x = (int)x;
@@ -396,7 +396,7 @@ public static unsafe class RenderTools
     /// <summary>
     /// Render a mesh with multiple meshes and textures from the base game.
     /// </summary>
-    public static void RenderMultiTextureMesh(MareShader shader, MultiTextureMeshRef mmr, string samplerName, int textureUnit = 0)
+    public static void RenderMultiTextureMesh(NuttyShader shader, MultiTextureMeshRef mmr, string samplerName, int textureUnit = 0)
     {
         for (int i = 0; i < mmr.meshrefs.Length; i++)
         {

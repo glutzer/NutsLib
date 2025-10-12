@@ -80,7 +80,7 @@ public class WidgetTextBoxSingle : FocusableWidget
             .End();
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         RenderTools.PushScissor(this);
 

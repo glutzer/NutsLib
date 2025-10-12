@@ -72,7 +72,7 @@ public class WidgetTransform : Widget
         }
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         PushToStack(true, dt);
     }

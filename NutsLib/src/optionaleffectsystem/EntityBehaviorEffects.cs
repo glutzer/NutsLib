@@ -57,7 +57,7 @@ public class EntityBehaviorEffects : EntityBehavior
 {
     public override string PropertyName()
     {
-        return "mareeffects";
+        return "nuttyeffects";
     }
 
     public SortedDictionary<string, Effect> ActiveEffects { get; private set; } = [];

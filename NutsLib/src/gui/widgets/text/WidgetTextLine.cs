@@ -23,7 +23,7 @@ public class WidgetTextLine : Widget
         textObject.Shadow = shadow;
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         if (center)
         {

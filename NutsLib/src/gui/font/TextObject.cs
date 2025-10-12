@@ -7,9 +7,9 @@ namespace NutsLib;
 
 public interface IRenderableText
 {
-    float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false);
-    void RenderCenteredLine(float x, float y, MareShader guiShader, bool centerVertically = false);
-    void RenderLeftAlignedLine(float x, float y, MareShader guiShader, bool centerVertically = false);
+    float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false);
+    void RenderCenteredLine(float x, float y, NuttyShader guiShader, bool centerVertically = false);
+    void RenderLeftAlignedLine(float x, float y, NuttyShader guiShader, bool centerVertically = false);
     int PixelLength { get; }
     float LineHeight { get; }
 }
@@ -32,7 +32,7 @@ public class TextObjectGroup : IRenderableText
     public int PixelLength => textObjects.Sum(x => x.PixelLength);
     public float LineHeight => textObjects.Count > 0 ? textObjects[0].LineHeight : 0;
 
-    public float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
+    public float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
         foreach (TextObject textObject in textObjects)
         {
@@ -42,12 +42,12 @@ public class TextObjectGroup : IRenderableText
         return xAdvance;
     }
 
-    public void RenderCenteredLine(float x, float y, MareShader guiShader, bool centerVertically = false)
+    public void RenderCenteredLine(float x, float y, NuttyShader guiShader, bool centerVertically = false)
     {
         RenderLine(x - (PixelLength / 2), y, guiShader, 0, centerVertically);
     }
 
-    public void RenderLeftAlignedLine(float x, float y, MareShader guiShader, bool centerVertically = false)
+    public void RenderLeftAlignedLine(float x, float y, NuttyShader guiShader, bool centerVertically = false)
     {
         RenderLine(x - PixelLength, y, guiShader, 0, centerVertically);
     }
@@ -132,7 +132,7 @@ public class TextObject : IRenderableText
     /// Render a single line using the font.
     /// Returns current x advance.
     /// </summary>
-    public virtual float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
+    public virtual float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
         if (centerVertically) y += CenterOffset;
 
@@ -152,7 +152,7 @@ public class TextObject : IRenderableText
     /// <summary>
     /// Renders a line with the center at the position.
     /// </summary>
-    public void RenderCenteredLine(float x, float y, MareShader guiShader, bool centerVertically = false)
+    public void RenderCenteredLine(float x, float y, NuttyShader guiShader, bool centerVertically = false)
     {
         RenderLine(x - (PixelLength / 2), y, guiShader, 0, centerVertically);
     }
@@ -160,7 +160,7 @@ public class TextObject : IRenderableText
     /// <summary>
     /// Renders a line to the left of the position.
     /// </summary>
-    public void RenderLeftAlignedLine(float x, float y, MareShader guiShader, bool centerVertically = false)
+    public void RenderLeftAlignedLine(float x, float y, NuttyShader guiShader, bool centerVertically = false)
     {
         RenderLine(x - PixelLength, y, guiShader, 0, centerVertically);
     }

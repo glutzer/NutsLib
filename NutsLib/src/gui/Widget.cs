@@ -93,7 +93,7 @@ public abstract partial class Widget
     /// <summary>
     /// Shader assumed to already be in use.
     /// </summary>
-    public virtual void OnRender(float dt, MareShader shader)
+    public virtual void OnRender(float dt, NuttyShader shader)
     {
 
     }

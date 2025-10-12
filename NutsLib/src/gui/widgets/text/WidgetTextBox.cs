@@ -177,7 +177,7 @@ public class WidgetTextBox : Widget
         return lines;
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         RenderTools.PushScissor(this);
 

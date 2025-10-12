@@ -278,8 +278,8 @@ public class MainAPI : ModSystem, IRenderer
             return new GuiVertex(vertex.position, vertex.uv);
         });
 
-        MareShaderRegistry.AddShader("nutslib:gui", "nutslib:gui", "gui");
-        MareShaderRegistry.AddShader("nutslib:gui", "nutslib:colorwheelgui", "colorwheelgui");
+        NuttyShaderRegistry.AddShader("nutslib:gui", "nutslib:gui", "gui");
+        NuttyShaderRegistry.AddShader("nutslib:gui", "nutslib:colorwheelgui", "colorwheelgui");
 
         foreach (GameSystem sys in gameSystems)
         {
@@ -354,7 +354,7 @@ public class MainAPI : ModSystem, IRenderer
             GuiQuad = null!;
             UboRegistry.Dispose();
             RenderTools.OnStop();
-            MareShaderRegistry.Dispose();
+            NuttyShaderRegistry.Dispose();
             ClientCache.Dispose();
 
             Client = null!;

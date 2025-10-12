@@ -24,7 +24,7 @@ public struct BindingIndex
 /// <summary>
 /// Constructed from a ShaderProgram.
 /// </summary>
-public unsafe class MareShader
+public unsafe class NuttyShader
 {
     // Set when re-registering shader.
     public BindingIndex[]? UniformBlockIds { get; private set; }
@@ -33,7 +33,7 @@ public unsafe class MareShader
     public Dictionary<string, int> uniformLocations = null!;
     public Dictionary<string, int> textureLocations = null!;
 
-    public MareShader()
+    public NuttyShader()
     {
 
     }

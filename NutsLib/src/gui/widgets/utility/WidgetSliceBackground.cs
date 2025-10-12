@@ -21,7 +21,7 @@ public class WidgetSliceBackground : Widget
         this.color = color;
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         shader.Uniform("color", color);
         RenderTools.RenderNineSlice(texture, shader, X, Y, Width, Height, SliceScale);

@@ -31,7 +31,7 @@ public class WidgetBaseScrollBar : Widget
         this.stepsPerPage = stepsPerPage;
     }
 
-    public override void OnRender(float dt, MareShader shader)
+    public override void OnRender(float dt, NuttyShader shader)
     {
         float ratio = GetScrollBarRatio();
         int size = GetScrollBarSize(ratio);
@@ -47,12 +47,12 @@ public class WidgetBaseScrollBar : Widget
         Reset();
     }
 
-    protected virtual void RenderBackground(int x, int y, int width, int height, MareShader shader)
+    protected virtual void RenderBackground(int x, int y, int width, int height, NuttyShader shader)
     {
 
     }
 
-    protected virtual void RenderCursor(int x, int y, int width, int height, MareShader shader, EnumButtonState barState)
+    protected virtual void RenderCursor(int x, int y, int width, int height, NuttyShader shader, EnumButtonState barState)
     {
 
     }

@@ -90,7 +90,7 @@ public class Font
     /// Renders a line of text with the gui shader.
     /// Returns advance.
     /// </summary>
-    public float RenderLine(float x, float y, string text, float fontScale, MareShader guiShader, Vector4 color, bool italic = false, bool bold = false)
+    public float RenderLine(float x, float y, string text, float fontScale, NuttyShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
         float xAdvance = 0;
 

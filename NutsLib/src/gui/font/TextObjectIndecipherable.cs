@@ -37,7 +37,7 @@ public class TextObjectIndecipherable : TextObject
     /// Render foster line, copied from font's code.
     /// If this looks broken it's because it's not up to date with the font code.
     /// </summary>
-    public override float RenderLine(float x, float y, MareShader guiShader, float xAdvance = 0, bool centerVertically = false)
+    public override float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false)
     {
         if (centerVertically) y += CenterOffset;
 
