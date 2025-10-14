@@ -66,6 +66,7 @@ public abstract partial class Widget
     // Either fixed or percentage positioning.
     private float xPos;
     private float yPos;
+
     private float xWidth;
     private float yHeight;
 
@@ -78,6 +79,9 @@ public abstract partial class Widget
 
     public int XCenter => X + (Width / 2);
     public int YCenter => Y + (Height / 2);
+
+    public float SetFade { get; set; }
+    public float Fade { get; private set; }
 
     public event Action? OnResize;
 
@@ -101,6 +105,10 @@ public abstract partial class Widget
         if (NoScale) guiScale = 1;
 
         Scale = guiScale;
+
+        // Set current fade.
+        Fade = Parent?.Fade ?? 0f;
+        Fade += SetFade;
 
         float scaledX = positioningH switch
         {

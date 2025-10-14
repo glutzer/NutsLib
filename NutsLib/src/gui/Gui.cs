@@ -162,8 +162,16 @@ public abstract class Gui : GuiDialog
 
         guiEvents.TriggerBeforeRender(dt);
 
+        float currentFade = 0f;
+        guiShader.Uniform("fade", currentFade);
         foreach (Widget widget in widgetsBackToFront)
         {
+            if (widget.Fade != currentFade)
+            {
+                currentFade = widget.Fade;
+                guiShader.Uniform("fade", currentFade);
+            }
+
             widget.OnRender(dt, guiShader);
         }
 

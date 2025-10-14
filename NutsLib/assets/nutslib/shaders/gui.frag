@@ -6,6 +6,7 @@ uniform int shaderType;
 uniform sampler2D tex2d;
 uniform vec4 color = vec4(1.0);
 uniform vec4 fontColor = vec4(1.0);
+uniform float fade;
 
 // 9 slice stuff.
 uniform vec4 dimensions;
@@ -93,4 +94,7 @@ void main() {
     float opacity = clamp(pxDist + (1.0 - sdPower), 0.0, 1.0);
     fragColor = vec4(fontColor.xyz, opacity * fontColor.w);
   }
+
+  float fadeFactor = clamp(1.0 - fade, 0.0, 1.0);
+  fragColor.a *= fadeFactor;
 }
