@@ -95,7 +95,7 @@ public abstract partial class Widget
     public Widget MainWidget => Parent ?? this;
 
     // Bounds setting.
-    public void SetBounds()
+    public void CalculateBounds()
     {
         int cWidth = Width;
         int cHeight = Height;
@@ -153,7 +153,7 @@ public abstract partial class Widget
         // Initialize children.
         foreach (Widget child in children)
         {
-            child.SetBounds();
+            child.CalculateBounds();
         }
 
         // After children are set, try to size this one to fit them if set.
@@ -200,7 +200,7 @@ public abstract partial class Widget
             // Once again, set the bounds of the children based on this new size.
             foreach (Widget child in children)
             {
-                child.SetBounds();
+                child.CalculateBounds();
             }
         }
 
@@ -273,17 +273,6 @@ public abstract partial class Widget
         Y = (int)scaled.Y + parentRenderY;
         Width = (int)scaled.Z;
         Height = (int)scaled.W;
-    }
-
-    /// <summary>
-    /// Will try to move fixed positions, then set the bounds.
-    /// </summary>
-    public void Move(int newX, int newY)
-    {
-        if (positioningH == BoundsSizing.FixedSize) xPos = newX;
-        if (positioningV == BoundsSizing.FixedSize) yPos = newY;
-
-        SetBounds();
     }
 
     public Widget FixedX(int x)
@@ -568,5 +557,69 @@ public abstract partial class Widget
     public Vector2i GetFixedPos()
     {
         return new Vector2i((int)xPos, (int)yPos);
+    }
+
+    /// <summary>
+    /// Will try to move fixed positions.
+    /// </summary>
+    public void Move(float newX, float newY)
+    {
+        if (positioningH == BoundsSizing.FixedSize)
+        {
+            xPos = newX;
+        }
+
+        if (positioningV == BoundsSizing.FixedSize)
+        {
+            yPos = newY;
+        }
+    }
+
+    /// <summary>
+    /// Will try to move percent positions.
+    /// </summary>
+    public void MovePercent(float newX, float newY)
+    {
+        if (positioningH == BoundsSizing.PercentSize)
+        {
+            xPos = newX;
+        }
+
+        if (positioningV == BoundsSizing.PercentSize)
+        {
+            yPos = newY;
+        }
+    }
+
+    /// <summary>
+    /// Will try to change fixed size.
+    /// </summary>
+    public void Resize(float newX, float newY)
+    {
+        if (sizingH == BoundsSizing.FixedSize)
+        {
+            xWidth = newX;
+        }
+
+        if (sizingV == BoundsSizing.FixedSize)
+        {
+            yHeight = newY;
+        }
+    }
+
+    /// <summary>
+    /// Will try to change percent size.
+    /// </summary>
+    public void ResizePercent(float newX, float newY)
+    {
+        if (sizingH == BoundsSizing.PercentSize)
+        {
+            xWidth = newX;
+        }
+
+        if (sizingV == BoundsSizing.PercentSize)
+        {
+            yHeight = newY;
+        }
     }
 }

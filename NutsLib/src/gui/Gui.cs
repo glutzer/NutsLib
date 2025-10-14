@@ -117,9 +117,6 @@ public abstract class Gui : GuiDialog
         {
             widgetsBackToFront[i].RegisterEvents(guiEvents);
         }
-
-        // Set bounds.
-        foreach (Widget widget in widgets) widget.SetBounds();
     }
 
     private static void PartitionWidgets(SortedDictionary<int, List<Widget>> sortedDictionary, List<Widget> widgets, int currentPriority)
@@ -151,6 +148,9 @@ public abstract class Gui : GuiDialog
     public override void OnRenderGUI(float dt)
     {
         if (shouldRepartition) PartitionWidgets();
+
+        // Set bounds.
+        foreach (Widget widget in widgets) widget.CalculateBounds();
 
         // Must re-use the current gui shader when done.
         IShaderProgram currentShader = capi.Render.CurrentActiveShader;

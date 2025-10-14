@@ -9,7 +9,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.GameContent;
 using static FreeTypeSharp.FT;
 using static FreeTypeSharp.FT_LOAD;
 using static FreeTypeSharp.FT_Render_Mode_;
