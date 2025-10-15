@@ -17,6 +17,7 @@ public abstract partial class Widget
     public Widget(Widget? parent, Gui gui)
     {
         parent?.AddChild(this);
+        if (parent == null) gui.MarkForRepartition();
         Gui = gui;
     }
 
