@@ -8,7 +8,7 @@ public class WidgetClip : Widget
 {
     public bool clip;
 
-    public WidgetClip(bool clip, Widget? parent) : base(parent)
+    public WidgetClip(bool clip, Widget? parent, Gui gui) : base(parent, gui)
     {
         this.clip = clip;
     }

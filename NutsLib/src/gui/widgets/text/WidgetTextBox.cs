@@ -73,7 +73,7 @@ public class WidgetTextBox : Widget
         return new Vector2i(index, lineIndex);
     }
 
-    public WidgetTextBox(Widget? parent, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, int maxLines = 1000) : base(parent)
+    public WidgetTextBox(Widget? parent, Gui gui, Font font, int fontScale, Vector4 color, bool limitTextToBox = true, int maxLines = 1000) : base(parent, gui)
     {
         this.font = font;
         this.fontScale = fontScale;

@@ -12,7 +12,7 @@ public class WidgetBaseToggleableButton : Widget
     protected Action<bool> onClick;
     protected bool allowRelease;
 
-    public WidgetBaseToggleableButton(Widget? parent, Action<bool> onClick, bool allowRelease, bool currentValue) : base(parent)
+    public WidgetBaseToggleableButton(Widget? parent, Gui gui, Action<bool> onClick, bool allowRelease, bool currentValue) : base(parent, gui)
     {
         this.onClick = onClick;
         this.allowRelease = allowRelease;

@@ -17,7 +17,7 @@ public class WidgetBaseSlider : Widget
 
     public float Percentage => (float)cursorStep / steps;
 
-    public WidgetBaseSlider(Widget? parent, Action<int> onNewValue, int steps, bool onlyCallOnRelease = false) : base(parent)
+    public WidgetBaseSlider(Widget? parent, Gui gui, Action<int> onNewValue, int steps, bool onlyCallOnRelease = false) : base(parent, gui)
     {
         this.onNewValue = onNewValue;
         this.steps = steps;
@@ -93,6 +93,6 @@ public class WidgetBaseSlider : Widget
             onNewValue(cursorStep);
         }
 
-        state = IsInsideAndClip(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
+        state = IsInAllBounds(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 }

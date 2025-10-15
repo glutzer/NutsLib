@@ -5,7 +5,7 @@
 /// </summary>
 public class WidgetContainer : Widget
 {
-    public WidgetContainer(Widget? parent) : base(parent)
+    public WidgetContainer(Widget? parent, Gui gui) : base(parent, gui)
     {
     }
 }

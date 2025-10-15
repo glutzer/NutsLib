@@ -151,7 +151,7 @@ public abstract partial class Widget
         }
 
         // Initialize children.
-        foreach (Widget child in children)
+        foreach (Widget child in Children)
         {
             child.CalculateBounds();
         }
@@ -160,7 +160,7 @@ public abstract partial class Widget
         if (childSizing != ChildSizing.None)
         {
             Queue<Widget> toCheck = new();
-            foreach (Widget child in children) toCheck.Enqueue(child);
+            foreach (Widget child in Children) toCheck.Enqueue(child);
 
             int startX = X;
             int startY = Y;
@@ -185,7 +185,7 @@ public abstract partial class Widget
 
                 if ((childSizing & ChildSizing.Once) == 0)
                 {
-                    foreach (Widget child in boundsToCheck.children)
+                    foreach (Widget child in boundsToCheck.Children)
                     {
                         toCheck.Enqueue(child);
                     }
@@ -198,7 +198,7 @@ public abstract partial class Widget
             Height = maxY - startY;
 
             // Once again, set the bounds of the children based on this new size.
-            foreach (Widget child in children)
+            foreach (Widget child in Children)
             {
                 child.CalculateBounds();
             }

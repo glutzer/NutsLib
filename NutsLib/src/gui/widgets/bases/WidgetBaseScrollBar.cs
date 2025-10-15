@@ -25,7 +25,7 @@ public class WidgetBaseScrollBar : Widget
     protected Widget? scrollWidget;
     protected int stepsPerPage;
 
-    public WidgetBaseScrollBar(Widget? parent, Widget? scrollWidget, int stepsPerPage = 10) : base(parent)
+    public WidgetBaseScrollBar(Widget? parent, Gui gui, Widget? scrollWidget, int stepsPerPage = 10) : base(parent, gui)
     {
         this.scrollWidget = scrollWidget;
         this.stepsPerPage = stepsPerPage;
@@ -116,7 +116,7 @@ public class WidgetBaseScrollBar : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && IsInsideAndClip(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
+        if (!obj.Handled && IsInAllBounds(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
         {
             obj.Handled = true;
 
@@ -176,7 +176,7 @@ public class WidgetBaseScrollBar : Widget
         float endY = Y + offset + size;
 
         barGrabRatio = (mouseY - startY) / (endY - startY);
-        barGrabRatio = MathF.Round(Math.Clamp(barGrabRatio, 0, 1), 1);
+        barGrabRatio = MathF.Round(Math.Clamp(barGrabRatio, 0f, 1f), 1);
     }
 
     /// <summary>
@@ -198,7 +198,7 @@ public class WidgetBaseScrollBar : Widget
             scrollProgress = MathF.Round(scrollProgress * steps) / steps;
         }
 
-        scrollProgress = Math.Clamp(scrollProgress, 0, 1);
+        scrollProgress = Math.Clamp(scrollProgress, 0f, 1f);
 
         SetOffset();
     }
@@ -213,10 +213,9 @@ public class WidgetBaseScrollBar : Widget
         float offset = (scrollWidget.Height - Height) * scrollProgress;
 
         // Prevent scroll bar bigger than bounds from going up, probably a bigger issue.
-        if (offset < 0) offset = 0;
+        if (offset < 0f) offset = 0f;
 
         scrollWidget.FixedPos(0, -(int)offset);
-        scrollWidget.SetBounds();
     }
 
     /// <summary>
@@ -232,7 +231,7 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     public void Reset()
     {
-        scrollProgress = 0;
+        scrollProgress = 0f;
         SetOffset();
     }
 }

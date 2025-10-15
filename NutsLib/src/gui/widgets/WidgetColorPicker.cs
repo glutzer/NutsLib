@@ -10,11 +10,11 @@ public class WidgetHueSlider : WidgetBaseSlider
 
     public Vector3 color;
 
-    public WidgetHueSlider(Widget? parent, Action<int> onNewValue, int steps, float currentHue, Vector3 currentColor) : base(parent, onNewValue, steps)
+    public WidgetHueSlider(Widget? parent, Gui gui, Action<int> onNewValue, int steps, float currentHue, Vector3 currentColor) : base(parent, gui, onNewValue, steps)
     {
-        texture = TextureBuilder.Begin(16, 16).SetColor(1, 1, 1, 1).FillMode().DrawRectangle(0, 0, 16, 16).End();
+        texture = TextureBuilder.Begin(16, 16).SetColor(1f, 1f, 1f, 1f).FillMode().DrawRectangle(0, 0, 16, 16).End();
 
-        float huePercent = Math.Clamp(currentHue / 360, 0, 1);
+        float huePercent = Math.Clamp(currentHue / 360f, 0f, 1f);
         cursorStep = (int)Math.Round(huePercent * steps);
 
         color = currentColor;
@@ -24,13 +24,13 @@ public class WidgetHueSlider : WidgetBaseSlider
     {
         shader.BindTexture(texture, "tex2d");
 
-        shader.Uniform("color", new Vector4(color, 1));
+        shader.Uniform("color", new Vector4(color, 1f));
         RenderTools.RenderQuad(shader, X, Y, Width, Height);
 
         float percentage = Percentage;
-        float percentWidth = Width / 20;
+        float percentWidth = Width / 20f;
 
-        Vector3 oppositeColor = new(0, 0, 0);
+        Vector3 oppositeColor = new();
 
         float offsetableWidth = Width - percentWidth;
         float offset = offsetableWidth * percentage;
@@ -50,18 +50,18 @@ public class WidgetHueSlider : WidgetBaseSlider
 public class WidgetColorPicker : Widget
 {
     public bool dragging;
-    private Vector3 currentHsv = new(0, 1, 1);
+    private Vector3 currentHsv = new(0f, 1f, 1f);
     public Action<Vector3> onNewColor;
     public TextObject textObj;
 
     private readonly WidgetHueSlider slider;
 
-    public WidgetColorPicker(Widget? parent, Action<Vector3> onNewColor, Vector3 currentColor) : base(parent)
+    public WidgetColorPicker(Widget? parent, Gui gui, Action<Vector3> onNewColor, Vector3 currentColor) : base(parent, gui)
     {
         this.onNewColor = onNewColor;
         currentHsv = ColorUtility.RgbToHsv(currentColor);
 
-        slider = new WidgetHueSlider(this, i =>
+        slider = new WidgetHueSlider(this, gui, i =>
         {
             if (currentHsv.X != i)
             {
@@ -71,10 +71,10 @@ public class WidgetColorPicker : Widget
         }, 360, currentHsv.X, currentColor);
 
         slider.Alignment(Align.CenterBottom, AlignFlags.OutsideV);
-        slider.PercentWidth(1);
+        slider.PercentWidth(1f);
         slider.PercentHeight(0.2f);
 
-        textObj = new($"{currentColor.X}, {currentColor.Y}, {currentColor.Z}", FontRegistry.GetFont("friz"), 4 * MainAPI.GuiScale, new Vector4(0.8f, 0.8f, 0.8f, 1));
+        textObj = new($"{currentColor.X}, {currentColor.Y}, {currentColor.Z}", FontRegistry.GetFont("friz"), 4 * MainAPI.GuiScale, new Vector4(0.8f, 0.8f, 0.8f, 1f));
     }
 
     public void ColorChanged()
@@ -109,11 +109,11 @@ public class WidgetColorPicker : Widget
             float x = (obj.X - X) / (float)Width;
             float y = (obj.Y - Y) / (float)Height;
 
-            x = Math.Clamp(x, 0, 1);
-            y = Math.Clamp(y, 0, 1);
+            x = Math.Clamp(x, 0f, 1f);
+            y = Math.Clamp(y, 0f, 1f);
 
             currentHsv.Y = x;
-            currentHsv.Z = 1 - y;
+            currentHsv.Z = 1f - y;
 
             if (oldHsv != currentHsv)
             {

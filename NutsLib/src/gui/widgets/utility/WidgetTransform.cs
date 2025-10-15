@@ -15,7 +15,7 @@ public class WidgetTransform : Widget
     private readonly Func<float, Matrix4> transformDelegate;
     private readonly bool entering;
 
-    public WidgetTransform(Widget? parent, Func<float, Matrix4> transformDelegate, bool entering) : base(parent)
+    public WidgetTransform(Widget? parent, Gui gui, Func<float, Matrix4> transformDelegate, bool entering) : base(parent, gui)
     {
         this.transformDelegate = transformDelegate;
         this.entering = entering;

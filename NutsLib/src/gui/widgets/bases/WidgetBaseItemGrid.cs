@@ -24,7 +24,7 @@ public class WidgetBaseItemGrid : Widget
 
     protected virtual bool IsEnabled => true;
 
-    public WidgetBaseItemGrid(ItemSlot[] slots, int width, int height, int slotSize, Widget? parent) : base(parent)
+    public WidgetBaseItemGrid(ItemSlot[] slots, int width, int height, int slotSize, Widget? parent, Gui gui) : base(parent, gui)
     {
         this.slots = slots;
         this.width = width;
@@ -122,17 +122,6 @@ public class WidgetBaseItemGrid : Widget
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
         if (!IsEnabled) return;
-
-        //if (!IsInAllBounds(obj))
-        //{
-        //    if (mousedSlotIndex != -1)
-        //    {
-        //        MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[mousedSlotIndex]);
-        //    }
-
-        //    mousedSlotIndex = -1;
-        //    return;
-        //}
 
         int newIndex = GetMousedIndex(obj.X, obj.Y);
         if (newIndex == -1)

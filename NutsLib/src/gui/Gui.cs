@@ -99,6 +99,8 @@ public abstract class Gui : GuiDialog
     /// </summary>
     private void PartitionWidgets()
     {
+        shouldRepartition = false;
+
         guiEvents.ClearEvents();
 
         SortedDictionary<int, List<Widget>> sortedDictionary = [];
@@ -127,17 +129,23 @@ public abstract class Gui : GuiDialog
             if (!sortedDictionary.ContainsKey(sortPriority)) sortedDictionary.Add(sortPriority, []);
             sortedDictionary[sortPriority].Add(widget);
 
-            if (widget.children == null) continue;
-            PartitionWidgets(sortedDictionary, widget.children, sortPriority);
+            if (widget.Children == null) continue;
+            PartitionWidgets(sortedDictionary, widget.Children, sortPriority);
         }
     }
 
     /// <summary>
-    /// Marks widgets to be repartitioned on the next frame.
+    /// Widgets should be partitioned on next event.
+    /// Called when adding/removing children from a widget.
     /// </summary>
     public void MarkForRepartition()
     {
         shouldRepartition = true;
+    }
+
+    private void CheckRepartition()
+    {
+        if (shouldRepartition) PartitionWidgets();
     }
 
     public void AddWidget(Widget widget)
@@ -147,7 +155,7 @@ public abstract class Gui : GuiDialog
 
     public override void OnRenderGUI(float dt)
     {
-        if (shouldRepartition) PartitionWidgets();
+        CheckRepartition();
 
         // Set bounds.
         foreach (Widget widget in widgets) widget.CalculateBounds();
@@ -202,6 +210,7 @@ public abstract class Gui : GuiDialog
 
     public override void OnMouseDown(MouseEvent args)
     {
+        CheckRepartition();
         MouseX = args.X;
         MouseY = args.Y;
         guiEvents.TriggerMouseDown(args);
@@ -209,6 +218,7 @@ public abstract class Gui : GuiDialog
 
     public override void OnMouseUp(MouseEvent args)
     {
+        CheckRepartition();
         MouseX = args.X;
         MouseY = args.Y;
         guiEvents.TriggerMouseUp(args);
@@ -216,6 +226,7 @@ public abstract class Gui : GuiDialog
 
     public override void OnMouseMove(MouseEvent args)
     {
+        CheckRepartition();
         MouseX = args.X;
         MouseY = args.Y;
         MouseOverCursor = null;
@@ -224,32 +235,38 @@ public abstract class Gui : GuiDialog
 
     public override void OnMouseWheel(MouseWheelEventArgs args)
     {
+        CheckRepartition();
         guiEvents.TriggerMouseWheel(args);
     }
 
     public override void OnKeyDown(KeyEvent args)
     {
+        CheckRepartition();
         guiEvents.TriggerKeyDown(args);
     }
 
     public override void OnKeyUp(KeyEvent args)
     {
+        CheckRepartition();
         guiEvents.TriggerKeyUp(args);
     }
 
     public override void OnKeyPress(KeyEvent args)
     {
+        CheckRepartition();
         guiEvents.TriggerKeyPress(args);
     }
 
     public override void Dispose()
     {
+        CheckRepartition();
+
         foreach (Widget widget in widgetsBackToFront)
         {
             widget.Dispose();
         }
 
-        widgetsBackToFront = Array.Empty<Widget>();
+        widgetsBackToFront = [];
 
         // Might be some "composers" in there.
         base.Dispose();

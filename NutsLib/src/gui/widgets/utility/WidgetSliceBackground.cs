@@ -15,7 +15,7 @@ public class WidgetSliceBackground : Widget
 
     public int SliceScale { get; set; } = 1;
 
-    public WidgetSliceBackground(Widget? parent, NineSliceTexture texture, Vector4 color) : base(parent)
+    public WidgetSliceBackground(Widget? parent, Gui gui, NineSliceTexture texture, Vector4 color) : base(parent, gui)
     {
         this.texture = texture;
         this.color = color;

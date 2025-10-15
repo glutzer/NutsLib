@@ -55,7 +55,7 @@ public class WidgetTextBoxSingle : FocusableWidget
         }
     }
 
-    public WidgetTextBoxSingle(Widget? parent, Font font, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null) : base(parent)
+    public WidgetTextBoxSingle(Widget? parent, Gui gui, Font font, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null) : base(parent, gui)
     {
         this.limitTextToBox = limitTextToBox;
         this.centerValues = centerValues;

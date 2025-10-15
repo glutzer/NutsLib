@@ -21,7 +21,7 @@ public class FocusableWidget : Widget, IFocusable
     public bool Focused { get; set; }
     public Gui? gui;
 
-    public FocusableWidget(Widget? parent) : base(parent)
+    public FocusableWidget(Widget? parent, Gui gui) : base(parent, gui)
     {
     }
 

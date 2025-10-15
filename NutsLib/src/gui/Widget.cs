@@ -6,67 +6,103 @@ namespace NutsLib;
 public abstract partial class Widget
 {
     public Widget? Parent { get; private set; }
-    public readonly List<Widget> children = [];
+    public Gui Gui { get; private set; }
+    public List<Widget> Children { get; } = [];
 
     /// <summary>
     /// When elements are sorted, this element and it's children will be prioritized by sort priority.
     /// </summary>
     public virtual int SortPriority => 0;
 
-    public Widget(Widget? parent)
+    public Widget(Widget? parent, Gui gui)
     {
         parent?.AddChild(this);
+        Gui = gui;
     }
 
     public Widget AddChild(Widget child)
     {
-        children.Add(child);
-        child.Parent?.children.Remove(child);
+        Children.Add(child);
+        child.Parent?.Children.Remove(child);
         child.Parent = this;
+        Gui.MarkForRepartition();
         return this;
     }
 
-    public Widget RemoveSelf(bool dispose = true)
+    /// <summary>
+    /// Remove widget and return it, without disposing it.
+    /// </summary>
+    public Widget TakeSelf()
     {
-        Parent?.children.Remove(this);
+        Parent?.Children.Remove(this);
         Parent = null;
-        if (dispose) DisposeAndChildren();
+        Gui.MarkForRepartition();
         return this;
     }
 
-    public Widget ClearChildren(bool dispose = true)
+    /// <summary>
+    /// Removes this widget and disposes it.
+    /// </summary>
+    public void DeleteSelf()
     {
-        foreach (Widget child in children)
+        Parent?.Children.Remove(this);
+        Parent = null;
+        DisposeAndChildren();
+        Gui.MarkForRepartition();
+    }
+
+    /// <summary>
+    /// Removes all widgets and disposes them.
+    /// </summary>
+    public void DeleteChildren()
+    {
+        foreach (Widget child in Children)
         {
+            child.DisposeAndChildren();
             child.Parent = null;
-
-            if (dispose)
-            {
-                child.DisposeAndChildren();
-            }
         }
-        children.Clear();
+
+        Children.Clear();
+        Gui.MarkForRepartition();
+    }
+
+    /// <summary>
+    /// Removes all widgets of a type and disposes them.
+    /// </summary>
+    public Widget DeleteChildren<T>() where T : Widget
+    {
+        foreach (Widget child in Children)
+        {
+            if (child is not T) continue;
+            child.DisposeAndChildren();
+            child.Parent = null;
+        }
+
+        if (Children.RemoveAll(x => x.Parent == null) > 0)
+        {
+            Gui.MarkForRepartition();
+        }
+
         return this;
     }
 
-    public void ClearChildren<T>(bool dispose = true) where T : Widget
+    /// <summary>
+    /// Removes all children where a predicate matches and disposes them.
+    /// </summary>
+    public Widget DeleteChildren(Func<Widget, bool> predicate)
     {
-        for (int i = children.Count - 1; i >= 0; i--)
+        foreach (Widget child in Children)
         {
-            if (children[i] is T t)
-            {
-                t.Parent = null;
-                if (dispose) t.DisposeAndChildren();
-                children.RemoveAt(i);
-            }
+            if (!predicate(child)) continue;
+            child.DisposeAndChildren();
+            child.Parent = null;
         }
-    }
 
-    public Widget RemoveChild(Widget widget, bool dispose = true)
-    {
-        widget.Parent = null;
-        if (dispose) widget.DisposeAndChildren();
-        children.Remove(widget);
+        if (Children.RemoveAll(x => x.Parent == null) > 0)
+        {
+            Gui.MarkForRepartition();
+        }
+
         return this;
     }
 
@@ -76,7 +112,7 @@ public abstract partial class Widget
     public void DisposeAndChildren()
     {
         Dispose();
-        foreach (Widget child in children)
+        foreach (Widget child in Children)
         {
             child.DisposeAndChildren();
         }
@@ -84,9 +120,10 @@ public abstract partial class Widget
 
     public Widget SetParent(Widget? parent)
     {
-        Parent?.children.Remove(this);
+        Parent?.Children.Remove(this);
         Parent = parent;
-        Parent?.children.Add(this);
+        Parent?.Children.Add(this);
+        Gui.MarkForRepartition();
         return this;
     }
 
@@ -98,9 +135,12 @@ public abstract partial class Widget
 
     }
 
+    /// <summary>
+    /// Operate on each child. Does not repartition.
+    /// </summary>
     public void ForEachChild<T>(Action<T> action) where T : Widget
     {
-        foreach (Widget child in children)
+        foreach (Widget child in Children)
         {
             if (child is T t)
             {
@@ -109,6 +149,9 @@ public abstract partial class Widget
         }
     }
 
+    /// <summary>
+    /// Cast to another widget for utility.
+    /// </summary>
     public void As<T>(out T widget) where T : Widget
     {
         widget = (T)this;

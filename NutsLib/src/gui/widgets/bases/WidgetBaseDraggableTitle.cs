@@ -14,7 +14,7 @@ public class WidgetBaseDraggableTitle : Widget
     private Vector2i startedDraggingFixed;
     private Vector2i startedDraggingMouse;
 
-    public WidgetBaseDraggableTitle(Widget? parent, Widget draggableWidget) : base(parent)
+    public WidgetBaseDraggableTitle(Widget? parent, Gui gui, Widget draggableWidget) : base(parent, gui)
     {
         this.draggableWidget = draggableWidget;
     }
