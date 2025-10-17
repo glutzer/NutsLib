@@ -34,6 +34,10 @@ public static unsafe class RenderTools
     public static UboHandle<TransformData> TransformUbo { get; set; } = null!;
     private static NuttyShader guiItemShader = null!;
     public static Stack<Matrix4> GuiTransformStack { get; } = new();
+    public static Stack<ScissorBounds> ScissorStack { get; } = new();
+
+    private static MeshHandle guiLineMesh = null!;
+    private static MeshInfo<GuiVertex> guiData = new(4, 6);
 
     public static void OnStart()
     {
@@ -45,6 +49,15 @@ public static unsafe class RenderTools
         guiItemShader = NuttyShaderRegistry.AddShader("nutslib:itemgui", "nutslib:itemgui", "itemgui");
 
         GuiTransformStack.Push(Matrix4.Identity);
+
+        guiData = new(4, 6)
+        {
+            drawMode = PrimitiveType.Lines
+        };
+        guiData.AddVertex(new GuiVertex(new Vector3(0f, 0f, 0f), new Vector2(0f, 0f)));
+        guiData.AddVertex(new GuiVertex(new Vector3(1f, 0f, 0f), new Vector2(1f, 0f)));
+
+        guiLineMesh = UploadMesh(guiData);
     }
 
     public static void OnStop()
@@ -52,10 +65,11 @@ public static unsafe class RenderTools
         TransformUbo = null!;
         guiItemShader = null!;
 
+        guiLineMesh?.Dispose();
+        guiLineMesh = null!;
+
         GuiTransformStack.Clear();
     }
-
-    public static Stack<ScissorBounds> ScissorStack { get; } = new();
 
     /// <summary>
     /// Make a triangle suitable for rendering a fullscreen quad.
@@ -246,6 +260,21 @@ public static unsafe class RenderTools
         // RENDER NUMBERS HERE.
 
         originalGuiShader.Use();
+    }
+
+    /// <summary>
+    /// Render a line by updating a line mesh and rendering it.
+    /// </summary>
+    public static void RenderLine(NuttyShader guiShader, float x1, float y1, float x2, float y2, float width)
+    {
+        // Set GL to line mode
+        GL.LineWidth(width);
+        guiShader.Uniform("modelMatrix", Matrix4.CreateTranslation(0f, 0f, 0f));
+
+        guiData.vertices[0].position = new Vector3(x1, y1, 0f);
+        guiData.vertices[1].position = new Vector3(x2, y2, 0f);
+        UpdateMesh(guiData, guiLineMesh);
+        RenderMesh(guiLineMesh);
     }
 
     public static void RenderQuadInstanced(NuttyShader guiShader, float x, float y, float width, float height, int instances)
