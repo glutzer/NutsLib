@@ -19,9 +19,9 @@ public partial class TextureBuilder
     /// <summary>
     /// Creates the texture.
     /// </summary>
-    public Texture End()
+    public Texture End(bool aliased = true, bool mipmaps = false)
     {
-        Texture texture = Texture.Create(bmp);
+        Texture texture = Texture.Create(bmp, aliased, mipmaps);
 
         bmp.Dispose();
         canvas.Dispose();

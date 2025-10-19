@@ -12,7 +12,7 @@ public struct GuiVertex
     {
         this.position = position;
         this.uv = uv;
-        color = new Vector4(1, 1, 1, 1);
+        color = new Vector4(1f, 1f, 1f, 1f);
     }
 
     public GuiVertex(Vector3 position, Vector2 uv, Vector4 color)

@@ -11,7 +11,7 @@ public static class QuadMeshUtility
     private static readonly MeshVertexData[] guiVertices = new MeshVertexData[4];
     private static readonly MeshVertexData[] vertices = new MeshVertexData[4];
 
-    public static readonly int[] quadIndices = new int[] { 0, 2, 1, 1, 2, 3 };
+    public static readonly int[] quadIndices = [0, 2, 1, 1, 2, 3];
 
     static QuadMeshUtility()
     {

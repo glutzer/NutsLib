@@ -54,8 +54,11 @@ public static unsafe class RenderTools
         {
             drawMode = PrimitiveType.Lines
         };
-        guiData.AddVertex(new GuiVertex(new Vector3(0f, 0f, 0f), new Vector2(0f, 0f)));
-        guiData.AddVertex(new GuiVertex(new Vector3(1f, 0f, 0f), new Vector2(1f, 0f)));
+        guiData.AddVertex(new GuiVertex(new Vector3(0f, 0f, 1f), new Vector2(0f, 0f)));
+        guiData.AddVertex(new GuiVertex(new Vector3(1f, 0f, 1f), new Vector2(1f, 0f)));
+
+        guiData.AddIndex(0);
+        guiData.AddIndex(1);
 
         guiLineMesh = UploadMesh(guiData);
     }
@@ -271,9 +274,9 @@ public static unsafe class RenderTools
         GL.LineWidth(width);
         guiShader.Uniform("modelMatrix", Matrix4.CreateTranslation(0f, 0f, 0f));
 
-        guiData.vertices[0].position = new Vector3(x1, y1, 0f);
-        guiData.vertices[1].position = new Vector3(x2, y2, 0f);
-        UpdateMesh(guiData, guiLineMesh);
+        guiData.vertices[0].position = new Vector3(x1, y1, 1f);
+        guiData.vertices[1].position = new Vector3(x2, y2, 1f);
+        UpdateMesh(guiData, guiLineMesh, 0, 0);
         RenderMesh(guiLineMesh);
     }
 
@@ -285,7 +288,7 @@ public static unsafe class RenderTools
         width = (int)width;
         height = (int)height;
 
-        Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
+        Matrix4 translation = Matrix4.CreateScale(width, height, 1f) * Matrix4.CreateTranslation(x, y, 0f);
         guiShader.Uniform("modelMatrix", translation);
         RenderMeshInstanced(MainAPI.GuiQuad, instances);
     }
@@ -310,7 +313,7 @@ public static unsafe class RenderTools
 
         guiShader.Uniform("shaderType", 1);
 
-        Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
+        Matrix4 translation = Matrix4.CreateScale(width, height, 1f) * Matrix4.CreateTranslation(x, y, 0f);
 
         guiShader.Uniform("modelMatrix", translation);
 
