@@ -21,7 +21,7 @@ public class TextObjectIndecipherable : TextObject
     private readonly CipherType type;
     private readonly Random rand = new();
 
-    public TextObjectIndecipherable(string text, Font font, int fontScale, Vector4 color, Font fosterFont, CipherType type) : base(text, font, fontScale, color)
+    public TextObjectIndecipherable(string text, Font font, float fontScale, Vector4 color, Font fosterFont, CipherType type) : base(text, font, fontScale, color)
     {
         this.fosterFont = fosterFont;
         this.type = type;
@@ -37,7 +37,7 @@ public class TextObjectIndecipherable : TextObject
     /// Render foster line, copied from font's code.
     /// If this looks broken it's because it's not up to date with the font code.
     /// </summary>
-    public override float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false)
+    public override int RenderLine(float x, float y, NuttyShader guiShader, int xAdvance = 0, bool centerVertically = false)
     {
         if (centerVertically) y += CenterOffset;
 
@@ -51,7 +51,7 @@ public class TextObjectIndecipherable : TextObject
         guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d", 0);
 
         // Arbitrary value for italics.
-        if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
+        if (italic) guiShader.Uniform("italicSlant", LineHeight / 3f);
         if (bold) guiShader.Uniform("bold", 1);
 
         int index = 0;
@@ -70,7 +70,7 @@ public class TextObjectIndecipherable : TextObject
                 fontChar = font.GetGlyph(c);
             }
 
-            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1) * Matrix4.CreateTranslation(x + xAdvance, y, 0));
+            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance, y, 0f));
             xAdvance += (int)(fosterFont.GetGlyph(c).xAdvance * fontScale);
             RenderTools.RenderSquareVao(fontChar.vaoId);
             index++;

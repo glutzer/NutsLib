@@ -41,14 +41,14 @@ public class Font
     /// </summary>
     public int GetLineWidth(string text, float fontScale)
     {
-        float xAdvance = 0;
+        int xAdvance = 0;
 
         foreach (char c in text)
         {
             xAdvance += (int)(GetGlyph(c).xAdvance * fontScale);
         }
 
-        return (int)xAdvance;
+        return xAdvance;
     }
 
     /// <summary>
@@ -90,9 +90,9 @@ public class Font
     /// Renders a line of text with the gui shader.
     /// Returns advance.
     /// </summary>
-    public float RenderLine(float x, float y, string text, float fontScale, NuttyShader guiShader, Vector4 color, bool italic = false, bool bold = false)
+    public int RenderLine(float x, float y, string text, float fontScale, NuttyShader guiShader, Vector4 color, bool italic = false, bool bold = false)
     {
-        float xAdvance = 0;
+        int xAdvance = 0;
 
         guiShader.Uniform("shaderType", 2);
         guiShader.Uniform("fontColor", color);

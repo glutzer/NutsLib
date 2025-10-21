@@ -7,7 +7,7 @@ namespace NutsLib;
 
 public interface IRenderableText
 {
-    float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false);
+    int RenderLine(float x, float y, NuttyShader guiShader, int xAdvance = 0, bool centerVertically = false);
     void RenderCenteredLine(float x, float y, NuttyShader guiShader, bool centerVertically = false);
     void RenderLeftAlignedLine(float x, float y, NuttyShader guiShader, bool centerVertically = false);
     int PixelLength { get; }
@@ -30,9 +30,9 @@ public class TextObjectGroup : IRenderableText
     }
 
     public int PixelLength => textObjects.Sum(x => x.PixelLength);
-    public float LineHeight => textObjects.Count > 0 ? textObjects[0].LineHeight : 0;
+    public float LineHeight => textObjects.Count > 0 ? textObjects[0].LineHeight : 0f;
 
-    public float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false)
+    public int RenderLine(float x, float y, NuttyShader guiShader, int xAdvance = 0, bool centerVertically = false)
     {
         foreach (TextObject textObject in textObjects)
         {
@@ -78,6 +78,7 @@ public class TextObject : IRenderableText
 
     /// <summary>
     /// Pixel length of the current text/scale.
+    /// Equivalent to what would be advanced if it were rendered.
     /// </summary>
     public int PixelLength { get; protected set; }
     public float LineHeight => font.LineHeight * fontScale;
@@ -95,7 +96,7 @@ public class TextObject : IRenderableText
 
     public void SetScaleFromWidget(Widget widget, float widthScale, float heightScale)
     {
-        SetScale(50);
+        SetScale(50f);
 
         float width50 = PixelLength;
         float widthMultiplier = (int)(widget.Width * widthScale) / width50;
@@ -103,7 +104,7 @@ public class TextObject : IRenderableText
         float height50 = font.LineHeight * 50;
         float heightMultiplier = (int)(widget.Height * heightScale) / height50;
 
-        int fontScale = (int)Math.Min(50 * widthMultiplier, 50 * heightMultiplier);
+        float fontScale = (int)Math.Min(50 * widthMultiplier, 50 * heightMultiplier);
 
         SetScale(fontScale);
     }
@@ -132,7 +133,7 @@ public class TextObject : IRenderableText
     /// Render a single line using the font.
     /// Returns current x advance.
     /// </summary>
-    public virtual float RenderLine(float x, float y, NuttyShader guiShader, float xAdvance = 0, bool centerVertically = false)
+    public virtual int RenderLine(float x, float y, NuttyShader guiShader, int xAdvance = 0, bool centerVertically = false)
     {
         if (centerVertically) y += CenterOffset;
 
