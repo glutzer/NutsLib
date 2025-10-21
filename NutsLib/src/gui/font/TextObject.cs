@@ -58,7 +58,7 @@ public class TextObject : IRenderableText
     public bool Shadow { get; set; }
     protected string text;
     public Font font;
-    public int fontScale;
+    public float fontScale;
     public Vector4 color;
 
     protected bool bold;
@@ -108,7 +108,7 @@ public class TextObject : IRenderableText
         SetScale(fontScale);
     }
 
-    public TextObject(string text, Font font, int fontScale, Vector4 color)
+    public TextObject(string text, Font font, float fontScale, Vector4 color)
     {
         this.text = text;
         this.font = font;
@@ -117,7 +117,7 @@ public class TextObject : IRenderableText
         PixelLength = GetLineLength(text);
     }
 
-    public void SetScale(int scale)
+    public void SetScale(float scale)
     {
         fontScale = scale;
         PixelLength = GetLineLength(text);

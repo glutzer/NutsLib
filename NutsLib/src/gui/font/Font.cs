@@ -39,7 +39,7 @@ public class Font
     /// <summary>
     /// Gets the width of a line of text, in pixels.
     /// </summary>
-    public int GetLineWidth(string text, int fontScale)
+    public int GetLineWidth(string text, float fontScale)
     {
         float xAdvance = 0;
 
@@ -55,7 +55,7 @@ public class Font
     /// Gets the index at this advance.
     /// May return text length (1 over index).
     /// </summary>
-    public int GetIndexAtAdvance(string text, int fontScale, float xAdvance)
+    public int GetIndexAtAdvance(string text, float fontScale, float xAdvance)
     {
         for (int i = 0; i < text.Length; i++)
         {
@@ -74,7 +74,7 @@ public class Font
     /// Gets the width of a line of text up to before an index.
     /// Index can be 1 longer than string.
     /// </summary>
-    public float GetLineWidthUpToIndex(string text, int fontScale, int index)
+    public float GetLineWidthUpToIndex(string text, float fontScale, int index)
     {
         float xAdvance = 0;
 
