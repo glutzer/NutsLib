@@ -18,6 +18,11 @@ public abstract class Effect
     public virtual bool PersistThroughDeath => false;
     public virtual EffectType Type => EffectType.Instant;
 
+    /// <summary>
+    /// Does this effect have infinite duration?
+    /// </summary>
+    public virtual bool Infinite => false;
+
     public virtual float BaseDuration => 10f;
 
     [JsonProperty]

@@ -92,7 +92,7 @@ public class EntityBehaviorEffects : EntityBehavior
     {
         if (entity.Api.Side == EnumAppSide.Client)
         {
-            entity.WatchedAttributes.RegisterModifiedListener("activeEffects", LoadEffectData);
+            entity.WatchedAttributes.RegisterModifiedListener("actEffN", LoadEffectData);
         }
 
         LoadEffectData();
@@ -224,7 +224,7 @@ public class EntityBehaviorEffects : EntityBehavior
         }
         string json = JsonConvert.SerializeObject(container);
         byte[] bytes = SerializerUtil.Serialize(json);
-        entity.WatchedAttributes.SetBytes("activeEffects", bytes);
+        entity.WatchedAttributes.SetBytes("actEffN", bytes);
     }
 
     /// <summary>
@@ -233,7 +233,7 @@ public class EntityBehaviorEffects : EntityBehavior
     protected virtual void LoadEffectData()
     {
         // Load bytes.
-        byte[] bytes = entity.WatchedAttributes.GetBytes("activeEffects");
+        byte[] bytes = entity.WatchedAttributes.GetBytes("actEffN");
         if (bytes == null) return;
 
         // Load json.
@@ -283,8 +283,13 @@ public class EntityBehaviorEffects : EntityBehavior
 
             foreach (Effect effect in ActiveEffects.Values)
             {
-                effect.Duration = Math.Clamp(effect.Duration - interval, 0, float.MaxValue);
+                if (effect.Infinite)
+                {
+                    effect.OnTick(dt);
+                    continue;
+                }
 
+                effect.Duration = Math.Clamp(effect.Duration - interval, 0, float.MaxValue);
                 if (effect.Duration <= 0)
                 {
                     if (entity.Api.Side == EnumAppSide.Server)
