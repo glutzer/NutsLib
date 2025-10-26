@@ -75,9 +75,4 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="src\gui\animators\" />
-    <Folder Include="src\gui\widgets\richtext\" />
-  </ItemGroup>
-
 </Project>
