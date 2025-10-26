@@ -8,6 +8,7 @@ using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
@@ -205,6 +206,8 @@ public class MainAPI : ModSystem, IRenderer
     /// </summary>
     public override void StartPre(ICoreAPI api)
     {
+        TreeAttribute.RegisterAttribute(434343, typeof(CustomDataAttribute));
+
         NativesLoader.Load(this);
 
         // Register new asset paths.
@@ -263,6 +266,11 @@ public class MainAPI : ModSystem, IRenderer
         foreach ((Type, EntityAttribute) entity in AttributeUtilities.GetAllAnnotatedClasses<EntityAttribute>())
         {
             api.RegisterEntity(entity.Item1.Name, entity.Item1);
+        }
+
+        foreach ((Type, BlockBehaviorAttribute) blockBeh in AttributeUtilities.GetAllAnnotatedClasses<BlockBehaviorAttribute>())
+        {
+            api.RegisterBlockBehaviorClass(blockBeh.Item1.Name, blockBeh.Item1);
         }
     }
 

@@ -44,13 +44,13 @@ public static class AttributeUtilities
                         }
                         catch
                         {
-
+                            Console.WriteLine($"Error loading types from type {type.FullName}.");
                         }
                     }
                 }
-                catch (Exception e)
+                catch
                 {
-                    Console.WriteLine($"Error loading types from assembly {assembly.FullName}. {e}");
+                    Console.WriteLine($"Error loading types from assembly {assembly.FullName}.");
                 }
             }
 
