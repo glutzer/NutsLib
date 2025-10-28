@@ -27,10 +27,18 @@ public static class AttributeExtensions
                 if (value is byte[] bytes)
                 {
                     T? deserialized = SerializerUtil.Deserialize<T>(bytes);
-                    if (deserialized == null) return null;
+                    if (deserialized == null)
+                    {
+                        // Invalid data.
+                        instance.RemoveAttribute(key);
+                        return null;
+                    }
                     customDataAttribute.SetObject(deserialized);
                     return deserialized;
                 }
+
+                // Invalid data.
+                instance.RemoveAttribute(key);
             }
         }
 

@@ -272,6 +272,16 @@ public class MainAPI : ModSystem, IRenderer
         {
             api.RegisterBlockBehaviorClass(blockBeh.Item1.Name, blockBeh.Item1);
         }
+
+        foreach ((Type, BlockEntityBehaviorAttribute) blockEntityBeh in AttributeUtilities.GetAllAnnotatedClasses<BlockEntityBehaviorAttribute>())
+        {
+            api.RegisterBlockEntityBehaviorClass(blockEntityBeh.Item1.Name, blockEntityBeh.Item1);
+        }
+
+        foreach ((Type, CollectibleBehaviorAttribute) collBeh in AttributeUtilities.GetAllAnnotatedClasses<CollectibleBehaviorAttribute>())
+        {
+            api.RegisterCollectibleBehaviorClass(collBeh.Item1.Name, collBeh.Item1);
+        }
     }
 
     public override void StartClientSide(ICoreClientAPI api)
