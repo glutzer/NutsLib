@@ -80,7 +80,7 @@ public class WidgetTextBoxSingle : FocusableWidget
             .End();
     }
 
-    public override void OnRender(float dt, NuttyShader shader)
+    public override void OnRender(float dt, ShaderGui shader)
     {
         RenderTools.PushScissor(this);
 
@@ -105,7 +105,7 @@ public class WidgetTextBoxSingle : FocusableWidget
 
         if (Focused)
         {
-            shader.BindTexture(cursorTexture.Handle, "tex2d", 0);
+            shader.BindTexture(cursorTexture.Handle, "tex2d");
 
             if (insertMode && cursorIndex != text.Text.Length)
             {
@@ -121,7 +121,7 @@ public class WidgetTextBoxSingle : FocusableWidget
             // Selection is assumed not to be out of the bounds here.
             if (Selecting)
             {
-                shader.BindTexture(selectTexture.Handle, "tex2d", 0);
+                shader.BindTexture(selectTexture.Handle, "tex2d");
 
                 MinAndMaxSelection(out int minSelection, out int maxSelection);
 

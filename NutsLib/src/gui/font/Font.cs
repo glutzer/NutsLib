@@ -61,7 +61,7 @@ public class Font
         {
             xAdvance -= (int)(GetGlyph(text[i]).xAdvance * fontScale);
 
-            if (xAdvance <= 0)
+            if (xAdvance <= 0f)
             {
                 return i;
             }
@@ -90,31 +90,31 @@ public class Font
     /// Renders a line of text with the gui shader.
     /// Returns advance.
     /// </summary>
-    public int RenderLine(float x, float y, string text, float fontScale, NuttyShader guiShader, Vector4 color, bool italic = false, bool bold = false)
+    public int RenderLine(float x, float y, string text, float fontScale, ShaderGui guiShader, Vector4 fontcolor, bool italic = false, bool bold = false)
     {
         int xAdvance = 0;
 
-        guiShader.Uniform("shaderType", 2);
-        guiShader.Uniform("fontColor", color);
+        guiShader.ShaderType = 2;
+        guiShader.FontColor = fontcolor;
 
-        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d", 0);
+        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d");
 
         // Arbitrary value for italics.
-        if (italic) guiShader.Uniform("italicSlant", LineHeight / 3);
-        if (bold) guiShader.Uniform("bold", 1);
+        if (italic) guiShader.ItalicSlant = LineHeight / 3f;
+        if (bold) guiShader.Bold = 1;
 
         foreach (char c in text)
         {
             GlyphRenderInfo fontChar = GetGlyph(c);
-            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance, y, 0f));
+            guiShader.ModelMatrix = Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance, y, 0f);
             xAdvance += (int)(fontChar.xAdvance * fontScale);
             RenderTools.RenderSquareVao(fontChar.vaoId);
         }
 
-        if (italic) guiShader.Uniform("italicSlant", 0f);
-        if (bold) guiShader.Uniform("bold", 0);
+        if (italic) guiShader.ItalicSlant = 0f;
+        if (bold) guiShader.Bold = 0;
 
-        guiShader.Uniform("shaderType", 0);
+        guiShader.ShaderType = 0;
 
         return xAdvance;
     }

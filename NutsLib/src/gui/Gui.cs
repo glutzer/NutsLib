@@ -163,7 +163,7 @@ public abstract class Gui : GuiDialog
         // Must re-use the current gui shader when done.
         IShaderProgram currentShader = capi.Render.CurrentActiveShader;
 
-        NuttyShader guiShader = NuttyShaderRegistry.Get("gui");
+        ShaderGui guiShader = NuttyShaderRegistry.Get<ShaderGui>("gui");
         guiShader.Use();
 
         RenderTools.DisableDepthTest();

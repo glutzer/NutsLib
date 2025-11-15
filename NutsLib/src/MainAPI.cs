@@ -296,8 +296,8 @@ public class MainAPI : ModSystem, IRenderer
             return new GuiVertex(vertex.position, vertex.uv);
         });
 
-        NuttyShaderRegistry.AddShader("nutslib:gui", "nutslib:gui", "gui");
-        NuttyShaderRegistry.AddShader("nutslib:gui", "nutslib:colorwheelgui", "colorwheelgui");
+        NuttyShaderRegistry.AddShader<ShaderGui>("nutslib:gui", "nutslib:gui", "gui");
+        NuttyShaderRegistry.AddShader<ShaderGui>("nutslib:gui", "nutslib:colorwheelgui", "colorwheelgui");
 
         foreach (GameSystem sys in gameSystems)
         {

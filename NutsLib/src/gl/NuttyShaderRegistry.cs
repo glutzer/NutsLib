@@ -50,7 +50,15 @@ public static class NuttyShaderRegistry
     }
 
     /// <summary>
-    /// Add a nu-shader, it will be available to use once initialized.
+    /// Get a typed shader.
+    /// </summary>
+    public static T Get<T>(string name) where T : NuttyShader
+    {
+        return (T)Shaders[name];
+    }
+
+    /// <summary>
+    /// Add a shader, it will be available to use once initialized.
     /// Automatically reloaded.
     /// Example path: "nutslib:gui" - same as nutslib:shaders/gui.vert.
     /// </summary>
@@ -61,6 +69,20 @@ public static class NuttyShaderRegistry
         shaderEntries.Add(new ShaderEntry(vertPath, fragPath, geomPath, shaderName));
         Shaders.Add(shaderName, new NuttyShader());
         return Shaders[shaderName];
+    }
+
+    /// <summary>
+    /// Add a shader, it will be available to use once initialized.
+    /// Automatically reloaded.
+    /// Example path: "nutslib:gui" - same as nutslib:shaders/gui.vert.
+    /// </summary>
+    public static T AddShader<T>(string vertPath, string fragPath, string shaderName, string? geomPath = null) where T : NuttyShader, new()
+    {
+        if (!initialized) Initialize();
+
+        shaderEntries.Add(new ShaderEntry(vertPath, fragPath, geomPath, shaderName));
+        Shaders.Add(shaderName, new T());
+        return (T)Shaders[shaderName];
     }
 
     public static void Initialize()
@@ -78,6 +100,8 @@ public static class NuttyShaderRegistry
 
     public static string SetUBOBindings(Dictionary<string, int> uniqueBlocks, string code)
     {
+        // There is actually a way better way to do this.
+
         string pattern = @"layout\(std140\)\s+uniform\s+(\w+)";
 
         return Regex.Replace(code, pattern, match =>

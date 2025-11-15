@@ -2,6 +2,7 @@
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Vintagestory.API.Client;
 using Vintagestory.API.MathTools;
 using Vintagestory.Client;
@@ -22,6 +23,14 @@ public struct BindingIndex
 }
 
 /// <summary>
+/// Use of this attribute: will set uniform location of fields which are int.
+/// </summary>
+[AttributeUsage(AttributeTargets.Field)]
+public class UniformAttribute : Attribute
+{
+}
+
+/// <summary>
 /// Constructed from a ShaderProgram.
 /// </summary>
 public unsafe class NuttyShader
@@ -32,6 +41,9 @@ public unsafe class NuttyShader
     public int ProgramId { get; private set; }
     public Dictionary<string, int> uniformLocations = null!;
     public Dictionary<string, int> textureLocations = null!;
+
+    [Uniform] protected int modelMatrix;
+    public Matrix4 ModelMatrix { set => Uniform(modelMatrix, value); }
 
     public NuttyShader()
     {
@@ -46,6 +58,63 @@ public unsafe class NuttyShader
         ProgramId = program.ProgramId;
         uniformLocations = program.uniformLocations;
         textureLocations = program.textureLocations;
+
+        // Set uniform locations of uniform fields.
+        Dictionary<string, FieldInfo> uniformFields = [];
+        FieldInfo[] fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+        foreach (FieldInfo field in fields)
+        {
+            UniformAttribute? attribute = field.GetCustomAttribute<UniformAttribute>();
+            if (attribute == null)
+            {
+                continue;
+            }
+
+            uniformFields[field.Name] = field;
+        }
+
+        // Collect uniforms.
+        int[] uniformCount = new int[1];
+        GL.GetProgram(ProgramId, GetProgramParameterName.ActiveUniforms, uniformCount);
+
+        //int textureCount = 0;
+
+        for (int i = 0; i < uniformCount[0]; i++)
+        {
+            GL.GetActiveUniform(ProgramId, i, 256, out int _, out int _, out ActiveUniformType uniformType, out string uniformName);
+            if (uniformName.Contains('.'))
+            {
+                continue; // No uniform blocks.
+            }
+
+            int location = GL.GetUniformLocation(ProgramId, uniformName);
+            string cutUniformName = uniformName.Split('[')[0];
+
+            // If the uniform is a sampler, add it to the texture locations.
+            if (uniformType.ToString().Contains("Sampler"))
+            {
+                // Get current value of the uniform.
+                int[] value = new int[1];
+                fixed (int* ptr = value)
+                {
+                    GL.GetUniform(ProgramId, location, ptr);
+                }
+
+                // Explicitly bound samplers shouldn't be auto-assigned.
+                //if (value[0] < 10)
+                //{
+                //    // Set named uniform.
+                //    GL.ProgramUniform1(ProgramId, location, textureCount);
+                //    textureCount++;
+                //}
+            }
+
+            // Set the location of this uniform, so it can be set directly by a property.
+            if (uniformFields.TryGetValue(cutUniformName, out FieldInfo? field))
+            {
+                field.SetValue(this, location);
+            }
+        }
 
         // Uniforms blocks.
         GL.GetProgram(program.ProgramId, GetProgramParameterName.ActiveUniformBlocks, out int numUniformBlocks);
@@ -91,9 +160,19 @@ public unsafe class NuttyShader
         GL.Uniform1(uniformLocations[name], value);
     }
 
+    protected static void Uniform(int location, int value)
+    {
+        GL.Uniform1(location, value);
+    }
+
     public void Uniform(string name, float value)
     {
         GL.Uniform1(uniformLocations[name], value);
+    }
+
+    protected static void Uniform(int location, float value)
+    {
+        GL.Uniform1(location, value);
     }
 
     public void Uniform(string name, int[] value)
@@ -101,9 +180,19 @@ public unsafe class NuttyShader
         GL.Uniform1(uniformLocations[name], value.Length, value);
     }
 
+    protected static void Uniform(int location, int[] value)
+    {
+        GL.Uniform1(location, value.Length, value);
+    }
+
     public void Uniform(string name, float[] value)
     {
         GL.Uniform1(uniformLocations[name], value.Length, value);
+    }
+
+    protected static void Uniform(int location, float[] value)
+    {
+        GL.Uniform1(location, value.Length, value);
     }
 
     public void Uniform(string name, Vector2 value)
@@ -111,9 +200,19 @@ public unsafe class NuttyShader
         GL.Uniform2(uniformLocations[name], value.X, value.Y);
     }
 
+    protected static void Uniform(int location, Vector2 value)
+    {
+        GL.Uniform2(location, value.X, value.Y);
+    }
+
     public void Uniform(string name, Vector3 value)
     {
         GL.Uniform3(uniformLocations[name], value.X, value.Y, value.Z);
+    }
+
+    protected static void Uniform(int location, Vector3 value)
+    {
+        GL.Uniform3(location, value.X, value.Y, value.Z);
     }
 
     public void Uniform(string name, Vector4 value)
@@ -121,16 +220,31 @@ public unsafe class NuttyShader
         GL.Uniform4(uniformLocations[name], value.X, value.Y, value.Z, value.W);
     }
 
-    public void Uniform(string name, Matrix4 value)
+    protected static void Uniform(int location, Vector4 value)
     {
-        //GL.UniformMatrix4(uniformLocations[name], false, ref value);
-        GL.UniformMatrix4(uniformLocations[name], 1, false, &value.Row0.X);
+        GL.Uniform4(location, value.X, value.Y, value.Z, value.W);
     }
 
-    //public void Uniform(string name, Matrix3x4 value)
-    //{
-    //    GL.UniformMatrix3x4(uniformLocations[name], false, ref value);
-    //}
+    public void Uniform(string name, Matrix4 value)
+    {
+        GL.UniformMatrix4(uniformLocations[name], false, ref value);
+        //GL.UniformMatrix4(uniformLocations[name], 1, false, &value.Row0.X);
+    }
+
+    protected static void Uniform(int location, Matrix4 value)
+    {
+        GL.UniformMatrix4(location, false, ref value);
+    }
+
+    public void Uniform(string name, Matrix3x4 value)
+    {
+        GL.UniformMatrix3x4(uniformLocations[name], false, ref value);
+    }
+
+    protected static void Uniform(int location, Matrix3x4 value)
+    {
+        GL.UniformMatrix3x4(location, false, ref value);
+    }
 
     public unsafe void UniformMatrix(string name, float[] matrix)
     {
@@ -140,13 +254,12 @@ public unsafe class NuttyShader
         }
     }
 
-    public void BindTexture(int textureId, string samplerName, int unit)
+    protected static unsafe void UniformMatrix(int location, float[] matrix)
     {
-        GL.ActiveTexture(TextureUnit.Texture0 + unit);
-        GL.BindTexture(TextureTarget.Texture2D, textureId);
-
-        // Tell uniform sampler to use that texture slot.
-        GL.Uniform1(uniformLocations[samplerName], unit);
+        fixed (float* ptr = matrix)
+        {
+            GL.UniformMatrix4(location, 1, false, ptr);
+        }
     }
 
     public void BindTexture(int textureId, string samplerName)
@@ -158,15 +271,6 @@ public unsafe class NuttyShader
 
         // Tell uniform sampler to use that texture slot.
         GL.Uniform1(uniformLocations[samplerName], id);
-    }
-
-    public void BindTexture(Texture texture, string samplerName, int unit)
-    {
-        GL.ActiveTexture(TextureUnit.Texture0 + unit);
-        GL.BindTexture(TextureTarget.Texture2D, texture.Handle);
-
-        // Tell uniform sampler to use that texture slot.
-        GL.Uniform1(uniformLocations[samplerName], unit);
     }
 
     public void BindTexture(Texture texture, string samplerName)

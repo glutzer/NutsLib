@@ -37,7 +37,7 @@ public class TextObjectIndecipherable : TextObject
     /// Render foster line, copied from font's code.
     /// If this looks broken it's because it's not up to date with the font code.
     /// </summary>
-    public override int RenderLine(float x, float y, NuttyShader guiShader, int xAdvance = 0, bool centerVertically = false)
+    public override int RenderLine(float x, float y, ShaderGui guiShader, int xAdvance = 0, bool centerVertically = false)
     {
         if (centerVertically) y += CenterOffset;
 
@@ -45,14 +45,14 @@ public class TextObjectIndecipherable : TextObject
         x = (int)x;
         y = (int)y;
 
-        guiShader.Uniform("shaderType", 2);
-        guiShader.Uniform("fontColor", color);
+        guiShader.ShaderType = 2;
+        guiShader.Color = color;
 
-        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d", 0);
+        guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d");
 
         // Arbitrary value for italics.
-        if (italic) guiShader.Uniform("italicSlant", LineHeight / 3f);
-        if (bold) guiShader.Uniform("bold", 1);
+        if (italic) guiShader.ItalicSlant = LineHeight / 3f;
+        if (bold) guiShader.Bold = 1;
 
         int index = 0;
 
@@ -70,16 +70,16 @@ public class TextObjectIndecipherable : TextObject
                 fontChar = font.GetGlyph(c);
             }
 
-            guiShader.Uniform("modelMatrix", Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance, y, 0f));
+            guiShader.ModelMatrix = Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance, y, 0f);
             xAdvance += (int)(fosterFont.GetGlyph(c).xAdvance * fontScale);
             RenderTools.RenderSquareVao(fontChar.vaoId);
             index++;
         }
 
-        if (italic) guiShader.Uniform("italicSlant", 0f);
-        if (bold) guiShader.Uniform("bold", 0);
+        if (italic) guiShader.ItalicSlant = 0f;
+        if (bold) guiShader.Bold = 0;
 
-        guiShader.Uniform("shaderType", 0);
+        guiShader.ShaderType = 0;
 
         return xAdvance;
     }

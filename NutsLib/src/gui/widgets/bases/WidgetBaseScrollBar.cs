@@ -31,7 +31,7 @@ public class WidgetBaseScrollBar : Widget
         this.stepsPerPage = stepsPerPage;
     }
 
-    public override void OnRender(float dt, NuttyShader shader)
+    public override void OnRender(float dt, ShaderGui shader)
     {
         float ratio = GetScrollBarRatio();
         int size = GetScrollBarSize(ratio);

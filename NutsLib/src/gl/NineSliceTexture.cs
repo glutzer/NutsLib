@@ -5,6 +5,14 @@ namespace NutsLib;
 
 public static class NineSliceExtension
 {
+    /// <summary>
+    /// Make a repeating nine slice, will repeat the entire texture.
+    /// </summary>
+    public static NineSliceTexture AsRepeating(this Texture texture)
+    {
+        return new NineSliceTexture(texture, 0, 0, 0, 0);
+    }
+
     public static NineSliceTexture AsNineSlice(this Texture texture, int slicePixelX, int slicePixelY)
     {
         return new NineSliceTexture(texture, slicePixelX, slicePixelY);

@@ -177,7 +177,7 @@ public class WidgetTextBox : Widget
         return lines;
     }
 
-    public override void OnRender(float dt, NuttyShader shader)
+    public override void OnRender(float dt, ShaderGui shader)
     {
         RenderTools.PushScissor(this);
 
@@ -193,7 +193,7 @@ public class WidgetTextBox : Widget
         // Render cursor.
         if (active)
         {
-            shader.BindTexture(cursorTexture.Handle, "tex2d", 0);
+            shader.BindTexture(cursorTexture.Handle, "tex2d");
 
             if (insertMode && cursorXIndex != lines[cursorYIndex].Length)
             {
@@ -209,7 +209,7 @@ public class WidgetTextBox : Widget
             // Selection is assumed not to be out of the bounds here.
             if (Selecting)
             {
-                shader.BindTexture(selectTexture.Handle, "tex2d", 0);
+                shader.BindTexture(selectTexture.Handle, "tex2d");
 
                 MinAndMaxSelection(out Vector2i minSelection, out Vector2i maxSelection);
 

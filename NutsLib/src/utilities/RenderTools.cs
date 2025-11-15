@@ -305,7 +305,7 @@ public static unsafe class RenderTools
         width = (int)width;
         height = (int)height;
 
-        guiShader.BindTexture(texture.texture.Handle, "tex2d", 0);
+        guiShader.BindTexture(texture.texture.Handle, "tex2d");
 
         guiShader.Uniform("border", texture.Border);
         guiShader.Uniform("dimensions", texture.GetDimensions(width / scale, height / scale));
@@ -334,7 +334,7 @@ public static unsafe class RenderTools
         width = (int)width;
         height = (int)height;
 
-        guiShader.BindTexture(texture.texture.Handle, "tex2d", 0);
+        guiShader.BindTexture(texture.texture.Handle, "tex2d");
 
         guiShader.Uniform("border", texture.Border);
         guiShader.Uniform("dimensions", texture.GetDimensions(width / scaleX, height / scaleY));
@@ -428,11 +428,11 @@ public static unsafe class RenderTools
     /// <summary>
     /// Render a mesh with multiple meshes and textures from the base game.
     /// </summary>
-    public static void RenderMultiTextureMesh(NuttyShader shader, MultiTextureMeshRef mmr, string samplerName, int textureUnit = 0)
+    public static void RenderMultiTextureMesh(NuttyShader shader, MultiTextureMeshRef mmr, string samplerName)
     {
         for (int i = 0; i < mmr.meshrefs.Length; i++)
         {
-            shader.BindTexture(mmr.textureids[i], samplerName, textureUnit);
+            shader.BindTexture(mmr.textureids[i], samplerName);
             MeshRef meshRef = mmr.meshrefs[i];
             RenderMesh(meshRef);
         }

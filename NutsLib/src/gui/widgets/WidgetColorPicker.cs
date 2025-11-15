@@ -20,7 +20,7 @@ public class WidgetHueSlider : WidgetBaseSlider
         color = currentColor;
     }
 
-    public override void OnRender(float dt, NuttyShader shader)
+    public override void OnRender(float dt, ShaderGui shader)
     {
         shader.BindTexture(texture, "tex2d");
 
@@ -122,7 +122,7 @@ public class WidgetColorPicker : Widget
         }
     }
 
-    public override void OnRender(float dt, NuttyShader shader)
+    public override void OnRender(float dt, ShaderGui shader)
     {
         NuttyShader colorShader = NuttyShaderRegistry.Get("colorwheelgui");
         colorShader.Use();
