@@ -34,6 +34,9 @@ public class ShaderGui : NuttyShader
     [Uniform] protected int bold;
     public int Bold { set => Uniform(bold, value); }
 
+    [Uniform] protected int blendToColorMap;
+    protected float BlendToColorMap { set => Uniform(blendToColorMap, value); }
+
     public ShaderGui() : base()
     {
     }
@@ -46,5 +49,17 @@ public class ShaderGui : NuttyShader
     public void ResetFontColor()
     {
         FontColor = Vector4.One;
+    }
+
+    public void SetColorMap(Texture colorMap, float blendToColorMap)
+    {
+        BindTexture(colorMap, "colorMap");
+        BlendToColorMap = blendToColorMap;
+    }
+
+    public void RemoveColorMap()
+    {
+        BindTexture(0, "colorMap");
+        BlendToColorMap = 0f;
     }
 }

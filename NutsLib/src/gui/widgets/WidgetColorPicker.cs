@@ -1,5 +1,4 @@
 ﻿using OpenTK.Mathematics;
-using System;
 using Vintagestory.API.Client;
 
 namespace NutsLib;
@@ -12,7 +11,9 @@ public class WidgetHueSlider : WidgetBaseSlider
 
     public WidgetHueSlider(Widget? parent, Gui gui, Action<int> onNewValue, int steps, float currentHue, Vector3 currentColor) : base(parent, gui, onNewValue, steps)
     {
-        texture = TextureBuilder.Begin(16, 16).SetColor(1f, 1f, 1f, 1f).FillMode().DrawRectangle(0, 0, 16, 16).End();
+        texture = TextureBuilder.Begin(16, 16)
+            .FillRect(0, 0, 16, 16, SkiaThemes.White)
+            .End();
 
         float huePercent = Math.Clamp(currentHue / 360f, 0f, 1f);
         cursorStep = (int)Math.Round(huePercent * steps);
@@ -24,7 +25,7 @@ public class WidgetHueSlider : WidgetBaseSlider
     {
         shader.BindTexture(texture, "tex2d");
 
-        shader.Uniform("color", new Vector4(color, 1f));
+        shader.Color = new Vector4(color, 1f);
         RenderTools.RenderQuad(shader, X, Y, Width, Height);
 
         float percentage = Percentage;
@@ -35,10 +36,10 @@ public class WidgetHueSlider : WidgetBaseSlider
         float offsetableWidth = Width - percentWidth;
         float offset = offsetableWidth * percentage;
 
-        shader.Uniform("color", new Vector4(oppositeColor, 0.5f));
+        shader.Color = new Vector4(oppositeColor, 0.5f);
         RenderTools.RenderQuad(shader, X + offset, Y, percentWidth, Height);
 
-        shader.Uniform("color", Vector4.One);
+        shader.ResetColor();
     }
 
     public override void Dispose()

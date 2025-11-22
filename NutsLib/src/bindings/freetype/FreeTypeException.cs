@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FreeTypeSharp;
+﻿namespace FreeTypeSharp;
 
 /// <summary>
 /// Represents an exception thrown as a result of a FreeType2 API error.

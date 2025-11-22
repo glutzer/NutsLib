@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FreeTypeSharp;
+﻿namespace FreeTypeSharp;
 
 /// <summary>
 /// Encapsulates the native FreeType2 library object.

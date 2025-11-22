@@ -3,7 +3,11 @@
 in vec2 uv;
 
 uniform int shaderType;
+
 uniform sampler2D tex2d;
+uniform sampler2D colorMap;
+uniform float blendToColorMap;
+
 uniform vec4 color = vec4(1.0);
 uniform vec4 fontColor = vec4(1.0);
 uniform float fade;
@@ -71,8 +75,16 @@ vec4 do9Slice() {
 void main() {
   if (shaderType == 0) { // Regular ui texture.
     fragColor = texture(tex2d, uv) * color;
+    if (blendToColorMap > 0.0) {
+      fragColor.rgb =
+          mix(fragColor.rgb, texture(colorMap, uv).rgb, blendToColorMap);
+    }
   } else if (shaderType == 1) { // 9-slice ui texture.
     fragColor = do9Slice() * color;
+    if (blendToColorMap > 0.0) {
+      fragColor.rgb =
+          mix(fragColor.rgb, texture(colorMap, uv).rgb, blendToColorMap);
+    }
   } else if (shaderType == 2) { // Msdf font.
 
     float sdPower = 0.5;

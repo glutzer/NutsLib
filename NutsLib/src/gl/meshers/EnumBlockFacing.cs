@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NutsLib;
+﻿namespace NutsLib;
 
 public enum EnumBlockFacing
 {

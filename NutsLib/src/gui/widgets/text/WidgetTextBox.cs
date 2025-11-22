@@ -1,6 +1,5 @@
 ﻿using OpenTK.Mathematics;
 using SkiaSharp;
-using System;
 using System.Collections.Generic;
 using System.Text;
 using Vintagestory.API.Client;
@@ -83,13 +82,11 @@ public class WidgetTextBox : Widget
         this.maxLines = maxLines;
 
         cursorTexture = TextureBuilder.Begin(64, 64)
-            .SetColor(SkiaThemes.White.WithAlpha(100))
-            .DrawRectangle(0, 0, 64, 64)
+            .FillRect(0, 0, 64, 64, SkiaThemes.White.WithAlpha(100))
             .End();
 
         selectTexture = TextureBuilder.Begin(64, 64)
-            .SetColor(SkiaThemes.White.WithAlpha(100))
-            .DrawRectangle(0, 0, 64, 64)
+            .FillRect(0, 0, 64, 64, SkiaThemes.White.WithAlpha(100))
             .End();
 
         lines.Add("");
@@ -106,8 +103,7 @@ public class WidgetTextBox : Widget
         SKColor skColor = new((byte)(color.X * 255), (byte)(color.Y * 255), (byte)(color.Z * 255), (byte)(color.W * 255));
 
         cursorTexture = TextureBuilder.Begin(64, 64)
-            .SetColor(skColor)
-            .DrawRectangle(0, 0, 64, 64)
+            .FillRect(0, 0, 64, 64, skColor)
             .End();
 
         return this;
@@ -123,8 +119,7 @@ public class WidgetTextBox : Widget
         SKColor skColor = new((byte)(color.X * 255), (byte)(color.Y * 255), (byte)(color.Z * 255), (byte)(color.W * 255));
 
         selectTexture = TextureBuilder.Begin(64, 64)
-            .SetColor(skColor)
-            .DrawRectangle(0, 0, 64, 64)
+            .FillRect(0, 0, 64, 64, skColor)
             .End();
 
         return this;

@@ -1,5 +1,4 @@
 ﻿using OpenTK.Mathematics;
-using System;
 using Vintagestory.API.MathTools;
 
 namespace NutsLib;

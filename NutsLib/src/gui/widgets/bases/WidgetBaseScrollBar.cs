@@ -1,5 +1,4 @@
-﻿using System;
-using Vintagestory.API.Client;
+﻿using Vintagestory.API.Client;
 
 namespace NutsLib;
 
@@ -47,12 +46,12 @@ public class WidgetBaseScrollBar : Widget
         Reset();
     }
 
-    protected virtual void RenderBackground(int x, int y, int width, int height, NuttyShader shader)
+    protected virtual void RenderBackground(int x, int y, int width, int height, ShaderGui shader)
     {
 
     }
 
-    protected virtual void RenderCursor(int x, int y, int width, int height, NuttyShader shader, EnumButtonState barState)
+    protected virtual void RenderCursor(int x, int y, int width, int height, ShaderGui shader, EnumButtonState barState)
     {
 
     }

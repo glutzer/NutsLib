@@ -1,5 +1,4 @@
 ﻿using OpenTK.Mathematics;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -104,7 +103,23 @@ public class TextObject : IRenderableText
         float height50 = font.LineHeight * 50f;
         float heightMultiplier = (int)(widget.Height * heightScale) / height50;
 
-        float fontScale = (int)Math.Min(50 * widthMultiplier, 50f * heightMultiplier);
+        float fontScale = (int)Math.Min(50f * widthMultiplier, 50f * heightMultiplier);
+
+        SetScale(fontScale);
+    }
+
+    // Fit text into a width.
+    public void SetScaleFromWidth(float width, float height, float widthScale, float heightScale)
+    {
+        SetScale(50f);
+
+        float width50 = PixelLength;
+        float widthMultiplier = (int)(width * widthScale) / width50;
+
+        float height50 = font.LineHeight * 50f;
+        float heightMultiplier = (int)(height * heightScale) / height50;
+
+        float fontScale = (int)Math.Min(50f * widthMultiplier, 50f * heightMultiplier);
 
         SetScale(fontScale);
     }

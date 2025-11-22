@@ -1,7 +1,7 @@
-﻿using HarmonyLib;
+﻿global using System;
+using HarmonyLib;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -373,7 +373,9 @@ public class MainAPI : ModSystem, IRenderer
             UboRegistry.Dispose();
             RenderTools.OnStop();
             NuttyShaderRegistry.Dispose();
+
             ClientCache.Dispose();
+            VanillaThemes.ClearCache();
 
             Client = null!;
             Capi = null!;

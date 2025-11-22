@@ -1,5 +1,4 @@
 ﻿using OpenTK.Mathematics;
-using System;
 using System.Text;
 using Vintagestory.API.Client;
 
@@ -70,13 +69,11 @@ public class WidgetTextBoxSingle : FocusableWidget
         };
 
         cursorTexture = TextureBuilder.Begin(64, 64)
-            .SetColor(SkiaThemes.White.WithAlpha(100))
-            .DrawRectangle(0, 0, 64, 64)
+            .FillRect(0, 0, 64, 64, SkiaThemes.White.WithAlpha(100))
             .End();
 
         selectTexture = TextureBuilder.Begin(64, 64)
-            .SetColor(SkiaThemes.White.WithAlpha(100))
-            .DrawRectangle(0, 0, 64, 64)
+            .FillRect(0, 0, 64, 64, SkiaThemes.White.WithAlpha(100))
             .End();
     }
 

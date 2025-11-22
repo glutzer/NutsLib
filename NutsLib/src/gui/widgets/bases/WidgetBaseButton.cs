@@ -1,5 +1,4 @@
-﻿using System;
-using Vintagestory.API.Client;
+﻿using Vintagestory.API.Client;
 
 namespace NutsLib;
 
@@ -10,11 +9,11 @@ namespace NutsLib;
 public class WidgetBaseButton : Widget
 {
     protected EnumButtonState state = EnumButtonState.Normal;
-    protected Action onClick;
+    protected Action onRelease;
 
-    public WidgetBaseButton(Widget? parent, Gui gui, Action onClick) : base(parent, gui)
+    public WidgetBaseButton(Widget? parent, Gui gui, Action onRelease) : base(parent, gui)
     {
-        this.onClick = onClick;
+        this.onRelease = onRelease;
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
@@ -26,13 +25,17 @@ public class WidgetBaseButton : Widget
 
     public void SetCallback(Action onClick)
     {
-        this.onClick = onClick;
+        onRelease = onClick;
     }
 
     protected virtual void GuiEvents_MouseMove(MouseEvent obj)
     {
         if (IsInAllBounds(obj) && !obj.Handled)
         {
+            if (state == EnumButtonState.Normal)
+            {
+                OnMousedOver();
+            }
             if (state != EnumButtonState.Active) state = EnumButtonState.Hovered;
             obj.Handled = true;
         }
@@ -42,11 +45,22 @@ public class WidgetBaseButton : Widget
         }
     }
 
+    protected virtual void OnMousedOver()
+    {
+
+    }
+
+    protected virtual void OnClicked()
+    {
+
+    }
+
     protected virtual void GuiEvents_MouseDown(MouseEvent obj)
     {
         if (!obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
+            if (state == EnumButtonState.Hovered) OnClicked();
             state = EnumButtonState.Active;
         }
     }
@@ -57,7 +71,7 @@ public class WidgetBaseButton : Widget
 
         if (IsInAllBounds(obj))
         {
-            onClick();
+            onRelease();
             state = EnumButtonState.Hovered;
         }
         else

@@ -1,6 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -196,7 +195,7 @@ public static unsafe class RenderTools
         modelMat = Matrix4.CreateTranslation(transform.Origin.X, transform.Origin.Y, transform.Origin.Z) * modelMat;
 
         // Only use 1 scale since this should always be flat at 0.
-        modelMat = Matrix4.CreateScale(transform.ScaleXYZ.X * scale, transform.ScaleXYZ.Y * scale, 1) * modelMat;
+        modelMat = Matrix4.CreateScale(transform.ScaleXYZ.X * scale, transform.ScaleXYZ.Y * scale, 1f) * modelMat;
 
         modelMat = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(transform.Rotation.X + (isBlock ? 180 : 0))) * modelMat;
         modelMat = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(transform.Rotation.Y - ((!isBlock ? 1 : -1) * (canRotate ? MainAPI.Capi.World.ElapsedMilliseconds / 50f : 0)))) * modelMat;
@@ -215,7 +214,7 @@ public static unsafe class RenderTools
         guiItemShader.Uniform("tempGlowMode", hasTemperature ? 1 : 0);
 
         guiItemShader.Uniform("rgbaGlowIn", hasTemperature ? incandescenceColor : new Vector4(1, 1, 1, clampedTemperature / 255f));
-        guiItemShader.Uniform("rgbaIn", new Vector4(1));
+        guiItemShader.Uniform("rgbaIn", new Vector4(1f));
 
         guiItemShader.Uniform("normalShaded", itemStackRenderInfo.NormalShaded ? 1 : 0);
         guiItemShader.Uniform("applyColor", itemStackRenderInfo.ApplyColor ? 1 : 0);
@@ -223,7 +222,7 @@ public static unsafe class RenderTools
         guiItemShader.Uniform("overlayOpacity", itemStackRenderInfo.OverlayOpacity);
 
         // Light position for rendering this item.
-        guiItemShader.Uniform("lightPosition", new Vector3(1, -1, 0).Normalized());
+        guiItemShader.Uniform("lightPosition", new Vector3(1f, 1f, 1f).Normalized());
 
         if (itemStackRenderInfo.OverlayTexture != null && itemStackRenderInfo.OverlayOpacity > 0f)
         {
@@ -258,7 +257,7 @@ public static unsafe class RenderTools
         guiItemShader.Uniform("damageEffect", 0f);
 
         guiItemShader.Uniform("alphaTest", 0f);
-        guiItemShader.Uniform("rgbaGlowIn", new Vector4(0));
+        guiItemShader.Uniform("rgbaGlowIn", new Vector4(0f));
 
         // RENDER NUMBERS HERE.
 
@@ -342,9 +341,7 @@ public static unsafe class RenderTools
 
         guiShader.Uniform("shaderType", 1);
 
-        Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
-
-        guiShader.Uniform("modelMatrix", translation);
+        guiShader.ModelMatrix = Matrix4.CreateScale(width, height, 1f) * Matrix4.CreateTranslation(x, y, 0f);
 
         RenderMesh(MainAPI.GuiQuad);
 
@@ -363,8 +360,7 @@ public static unsafe class RenderTools
         width = (int)width;
         height = (int)height;
 
-        Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
-        guiShader.Uniform("modelMatrix", translation);
+        guiShader.ModelMatrix = Matrix4.CreateScale(width, height, 1f) * Matrix4.CreateTranslation(x, y, 0f);
 
         RenderMesh(MainAPI.GuiQuad);
     }
@@ -381,8 +377,7 @@ public static unsafe class RenderTools
         width = (int)width;
         height = (int)height;
 
-        Matrix4 translation = Matrix4.CreateScale(width, height, 1) * Matrix4.CreateTranslation(x, y, 0);
-        guiShader.Uniform("modelMatrix", translation);
+        guiShader.ModelMatrix = Matrix4.CreateScale(width, height, 1f) * Matrix4.CreateTranslation(x, y, 0f);
 
         RenderMesh(handle);
     }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Vintagestory.API.Client;
 
 namespace NutsLib;
@@ -110,7 +109,7 @@ public abstract class Gui : GuiDialog
         {
             sortedList.AddRange(pair);
         }
-        widgetsBackToFront = sortedList.ToArray();
+        widgetsBackToFront = [.. sortedList];
 
         // Re-register events.
         RegisterEvents(guiEvents);

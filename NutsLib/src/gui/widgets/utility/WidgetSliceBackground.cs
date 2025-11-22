@@ -23,9 +23,9 @@ public class WidgetSliceBackground : Widget
 
     public override void OnRender(float dt, ShaderGui shader)
     {
-        shader.Uniform("color", color);
+        shader.Color = color;
         RenderTools.RenderNineSlice(texture, shader, X, Y, Width, Height, SliceScale);
-        shader.Uniform("color", Vector4.One);
+        shader.ResetColor();
     }
 
     public override void RegisterEvents(GuiEvents guiEvents)
@@ -41,7 +41,7 @@ public class WidgetSliceBackground : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (IsInAllBounds(obj) && !obj.Handled)
+        if (!obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
         }

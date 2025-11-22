@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static FreeTypeSharp.FT_FACE_FLAG;

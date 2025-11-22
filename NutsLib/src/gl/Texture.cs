@@ -1,6 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using SkiaSharp;
-using System;
 using Vintagestory.API.Common;
 
 namespace NutsLib;

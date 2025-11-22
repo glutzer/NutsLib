@@ -74,7 +74,7 @@ void main() {
 
   normal = unpackNormal(renderFlagsIn);
   if (applyModelMat > 0) {
-    normal = mat3(modelMatrix) * normal;
+    normal = mat3(transpose(inverse(modelMatrix))) * normal;
     normal = normalize(normal);
   }
 
