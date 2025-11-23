@@ -25,7 +25,8 @@ public static class VanillaThemes
     public static Font Font => FontRegistry.GetFont("lora");
 
     public static Vector4 YellowColor => new(1f, 0.8f, 0f, 1f);
-    public static Vector4 WhitishGreyColor => new(0.9f, 0.9f, 0.9f, 1f);
+    public static Vector4 WhitishTextColor => new(0.9f, 0.9f, 0.9f, 1f);
+    public static Vector4 BlueProgress => new(0.4f, 0.7f, 1.5f, 0.7f);
 
     public static Vector4 TemporalColor => new(0f, 1f, 0.55f, 1f);
     public static Vector4 TemporalColorDark => new(0f, 0.9f, 0.45f, 0.5f);
@@ -35,12 +36,16 @@ public static class VanillaThemes
     public static Vector3 Green => new(0f, 1f, 0f);
     public static Vector3 Blue => new(0f, 0f, 1f);
 
-    public static Vector4 ButtonColor => new(0.4f, 0.4f, 0.4f, 1f);
-    public static Vector4 TextColor => new(0, 0.7f, 0.4f, 1f);
-    public static Vector4 DarkColor => new(0.1f, 0.1f, 0.1f, 1f);
-
     private static int StrokeWidth => 3;
     private static int BlurWidth => 2;
+
+    public static WidgetVanillaTitle AddTitleBar(Widget draggableWidget, string title)
+    {
+        WidgetVanillaTitle bar = new(draggableWidget, draggableWidget.Gui, draggableWidget, title);
+        bar.Alignment(Align.CenterTop, AlignFlags.OutsideV).PercentWidth(1f).FixedHeight(8);
+        bar.AddChild(new WidgetVanillaButton(bar, bar.Gui, () => bar.Gui.TryClose(), "").SetColor(new Vector4(0.4f, 0f, 0f, 1f)).Alignment(Align.RightMiddle).FixedSize(8, 8));
+        return bar;
+    }
 
     // Slightly darker inset texture.
     public static NineSliceTexture InsetTexture => GetOrCreate("inset", () =>

@@ -9,7 +9,7 @@ namespace NutsLib;
 public class WidgetBaseScrollBar : Widget
 {
     // Progress from top (0) to bottom (1).
-    protected float scrollProgress = 0;
+    protected float scrollProgress = 0f;
 
     // Active = dragging.
     protected EnumButtonState barState = EnumButtonState.Normal;
@@ -78,7 +78,7 @@ public class WidgetBaseScrollBar : Widget
             scrollProgress -= obj.delta * oneStepProgress;
 
             scrollProgress = MathF.Round(scrollProgress * steps) / steps;
-            scrollProgress = Math.Clamp(scrollProgress, 0, 1);
+            scrollProgress = Math.Clamp(scrollProgress, 0f, 1f);
 
             SetOffset();
         }
@@ -134,7 +134,7 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected float GetScrollBarRatio()
     {
-        return scrollWidget == null ? 1f : Math.Clamp((float)Height / scrollWidget.Height, 0, 1);
+        return scrollWidget == null ? 1f : Math.Clamp((float)Height / scrollWidget.Height, 0f, 1f);
     }
 
     /// <summary>

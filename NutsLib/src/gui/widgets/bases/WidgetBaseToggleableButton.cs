@@ -1,76 +1,33 @@
-﻿using Vintagestory.API.Client;
-
-namespace NutsLib;
+﻿namespace NutsLib;
 
 /// <summary>
 /// Button that can be toggled, and released.
 /// </summary>
-public class WidgetBaseToggleableButton : Widget
+public class WidgetBaseToggleableButton : WidgetBaseButton
 {
-    protected EnumButtonState state = EnumButtonState.Normal;
-    protected Action<bool> onClick;
-    protected bool allowRelease;
+    private readonly Action<bool> onToggle;
+    protected bool enabled;
+    protected bool allowManualRelease;
 
-    public WidgetBaseToggleableButton(Widget? parent, Gui gui, Action<bool> onClick, bool allowRelease, bool currentValue) : base(parent, gui)
+    public WidgetBaseToggleableButton(Widget? parent, Gui gui, Action<bool> onToggle, bool currentValue, bool allowManualRelease = true) : base(parent, gui, null!)
     {
-        this.onClick = onClick;
-        this.allowRelease = allowRelease;
-        state = currentValue ? EnumButtonState.Active : EnumButtonState.Normal;
+        this.onToggle = onToggle;
+        this.allowManualRelease = allowManualRelease;
+        enabled = currentValue;
+        SetCallback(Toggle);
     }
 
-    public override void RegisterEvents(GuiEvents guiEvents)
+    private void Toggle()
     {
-        guiEvents.MouseMove += GuiEvents_MouseMove;
-        guiEvents.MouseDown += GuiEvents_MouseDown;
-    }
-
-    public void SetCallback(Action<bool> onClick)
-    {
-        this.onClick = onClick;
-    }
-
-    private void GuiEvents_MouseMove(MouseEvent obj)
-    {
-        if (!IsInAllBounds(obj))
+        if (enabled && allowManualRelease)
         {
-            if (state == EnumButtonState.Hovered) state = EnumButtonState.Normal;
-            return;
+            enabled = false;
+            onToggle(false);
         }
-
-        obj.Handled = true;
-        if (state == EnumButtonState.Active) return;
-
-        state = IsInAllBounds(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
-    }
-
-    private void GuiEvents_MouseDown(MouseEvent obj)
-    {
-        if (!obj.Handled && IsInAllBounds(obj))
+        else
         {
-            obj.Handled = true;
-
-            if (state != EnumButtonState.Active)
-            {
-                onClick(true);
-                state = EnumButtonState.Active;
-            }
-            else if (allowRelease)
-            {
-                onClick(false);
-                state = EnumButtonState.Hovered;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Force release of button, even if not allow release.
-    /// </summary>
-    public void Release(bool doEvent = false)
-    {
-        if (state == EnumButtonState.Active)
-        {
-            state = EnumButtonState.Normal;
-            if (doEvent) onClick(false);
+            enabled = true;
+            onToggle(true);
         }
     }
 }

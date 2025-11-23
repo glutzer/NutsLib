@@ -23,12 +23,24 @@ public class WidgetBaseSlider : Widget
         this.onlyCallOnRelease = onlyCallOnRelease;
     }
 
+    public override void OnRender(float dt, ShaderGui shader)
+    {
+        RenderBackground(X, Y, Width, Height, shader);
+
+        float percentage = Percentage;
+        float percentWidth = Width / 20f;
+        float offsetableWidth = Width - percentWidth;
+        float offset = offsetableWidth * percentage;
+
+        RenderCursor((int)(X + offset), Y, (int)percentWidth, Height, shader);
+    }
+
     protected virtual void RenderBackground(int x, int y, int width, int height, ShaderGui shader)
     {
 
     }
 
-    protected virtual void RenderCursor(int x, int y, int width, int height, ShaderGui shader, EnumButtonState barState)
+    protected virtual void RenderCursor(int x, int y, int width, int height, ShaderGui shader)
     {
 
     }

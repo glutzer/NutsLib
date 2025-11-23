@@ -9,7 +9,7 @@
 //        VanillaThemes.ClearCache();
 
 //        Widget bg;
-//        AddWidget(bg = new WidgetSliceBackground(null, this, VanillaThemes.OutsetTexture, Vector4.One).Percent(0, 0, 0.5f, 0.5f).Alignment(Align.Center));
+//        AddWidget(bg = new WidgetSliceBackground(null, this, VanillaThemes.OutsetTexture, Vector4.One).PercentSize(0.5f, 0.5f).Alignment(Align.Center));
 
 //        new WidgetVanillaButton(bg, this, () => Console.WriteLine("Button 1 clicked!"), "Button 1").Fixed(20, 20, 50, 20).Alignment(Align.Center);
 
@@ -19,5 +19,12 @@
 //        Vintagestory.API.Common.ItemSlot slots = MainAPI.Capi.World.Player.Entity.ActiveHandItemSlot;
 
 //        new WidgetVanillaItemSlotGrid([slots], 1, 1, 16, bg, this).Alignment(Align.LeftTop).Fixed(0, 0, 16, 16);
+
+//        VanillaThemes.AddTitleBar(bg, "Test Window");
+
+//        new WidgetVanillaCheckbox(bg, this, state => { }, false).Alignment(Align.LeftBottom).FixedSize(8, 8);
+
+//        //new WidgetVanillaSlider(bg, this, val => { }, 120, true).Alignment(Align.RightBottom).Fixed(0, 0, 100, 10);
+//        new WidgetVanillaTextInputBox(bg, this, true, true, null, null, "Enter something...").Alignment(Align.RightBottom).Fixed(0, 0, 100, 10);
 //    }
 //}

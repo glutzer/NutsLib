@@ -28,7 +28,6 @@
 //                {
 //                    gui?.TryClose();
 //                    gui = null;
-//                    return true;
 //                }
 
 //                gui = new GuiTest();

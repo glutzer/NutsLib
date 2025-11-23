@@ -6,7 +6,7 @@ namespace NutsLib;
 public class WidgetVanillaItemSlotGrid : WidgetBaseItemGrid
 {
     public NineSliceTexture slotTex = VanillaThemes.ItemSlotTexture;
-    private readonly TextObject slotNumber = new("", VanillaThemes.Font, 1f, VanillaThemes.WhitishGreyColor);
+    private readonly TextObject slotNumber = new("", VanillaThemes.Font, 1f, VanillaThemes.WhitishTextColor);
 
     public WidgetVanillaItemSlotGrid(ItemSlot[] slots, int width, int height, int slotSize, Widget? parent, Gui gui) : base(slots, width, height, slotSize, parent, gui)
     {
