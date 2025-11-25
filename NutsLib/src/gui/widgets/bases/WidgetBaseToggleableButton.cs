@@ -1,4 +1,6 @@
-﻿namespace NutsLib;
+﻿using Vintagestory.API.Client;
+
+namespace NutsLib;
 
 /// <summary>
 /// Button that can be toggled, and released.
@@ -43,5 +45,25 @@ public class WidgetBaseToggleableButton : WidgetBaseButton
             onToggle(true);
             enabled = true;
         }
+    }
+
+    protected override void GuiEvents_MouseDown(MouseEvent obj)
+    {
+        if (enabled && !allowManualRelease)
+        {
+            state = EnumButtonState.Normal;
+            return;
+        }
+        base.GuiEvents_MouseDown(obj);
+    }
+
+    protected override void GuiEvents_MouseUp(MouseEvent obj)
+    {
+        if (enabled && !allowManualRelease)
+        {
+            state = EnumButtonState.Normal;
+            return;
+        }
+        base.GuiEvents_MouseUp(obj);
     }
 }
