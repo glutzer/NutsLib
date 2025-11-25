@@ -301,15 +301,32 @@ public class MainAPI : ModSystem, IRenderer
 
         foreach (GameSystem sys in gameSystems)
         {
-            sys.OnStart();
+            try
+            {
+                sys.OnStart();
+            }
+            catch (Exception e)
+            {
+                api.Logger.Error(e);
+            }
         }
     }
 
     public override void StartServerSide(ICoreServerAPI api)
     {
-        foreach (GameSystem sys in gameSystems)
+        if (isServer)
         {
-            sys.OnStart();
+            foreach (GameSystem sys in gameSystems)
+            {
+                try
+                {
+                    sys.OnStart();
+                }
+                catch (Exception e)
+                {
+                    api.Logger.Error(e);
+                }
+            }
         }
     }
 

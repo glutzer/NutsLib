@@ -17,17 +17,31 @@ public class WidgetBaseToggleableButton : WidgetBaseButton
         SetCallback(Toggle);
     }
 
+    public void Release(bool doCallback = true)
+    {
+        if (enabled)
+        {
+            enabled = false;
+
+            if (doCallback)
+            {
+                onToggle(false);
+            }
+        }
+    }
+
     private void Toggle()
     {
         if (enabled && allowManualRelease)
         {
-            enabled = false;
             onToggle(false);
+            enabled = false;
+
         }
         else
         {
-            enabled = true;
             onToggle(true);
+            enabled = true;
         }
     }
 }
