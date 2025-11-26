@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Vintagestory.API.Common;
@@ -16,13 +17,31 @@ internal static class NativesLoader
     /// <summary>
     /// Loads all supported binaries for current platform.
     /// </summary>
-    public static bool Load(ModSystem mod)
+    public static bool Load(ModSystem mod, bool isServer)
     {
         DllLoader loader = DllLoader.Loader();
 
         foreach (string library in nativeLibraries)
         {
             if (!loader.Load(library, mod.Mod)) return false;
+        }
+
+        if (isServer)
+        {
+            string dllPath = $"{((ModContainer)mod.Mod).FolderPath}/native/serveronly/";
+
+            // Load each c# assembly in the path.
+            foreach (string file in System.IO.Directory.GetFiles(dllPath, "*.dll"))
+            {
+                try
+                {
+                    Assembly.LoadFrom(file);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
         }
 
         return true;

@@ -208,7 +208,7 @@ public class MainAPI : ModSystem, IRenderer
     {
         TreeAttribute.RegisterAttribute(434343, typeof(CustomDataAttribute));
 
-        NativesLoader.Load(this);
+        NativesLoader.Load(this, api.Side == EnumAppSide.Server);
 
         // Register new asset paths.
         AssetCategory.categories["objs"] = new AssetCategory("objs", false, EnumAppSide.Client);
