@@ -33,14 +33,7 @@ internal static class NativesLoader
             // Load each c# assembly in the path.
             foreach (string file in System.IO.Directory.GetFiles(dllPath, "*.dll"))
             {
-                try
-                {
-                    Assembly.LoadFrom(file);
-                }
-                catch
-                {
-                    return false;
-                }
+                Assembly.LoadFrom(file);
             }
         }
 
