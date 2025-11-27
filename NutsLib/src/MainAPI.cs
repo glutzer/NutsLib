@@ -1,6 +1,5 @@
 ﻿global using System;
 using HarmonyLib;
-using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -12,6 +11,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
+using Vintagestory.Common;
 using Vintagestory.Server;
 
 namespace NutsLib;
@@ -173,9 +173,6 @@ public class MainAPI : ModSystem, IRenderer
 
     public static int FrameNumber { get; private set; }
 
-    // Only initialized on client.
-    private UboHandle<RenderGlobals> renderGlobalsUbo = null!;
-
     public static event Action<int, int>? OnWindowResize;
     public static event Action<int>? OnGuiRescale;
 
@@ -218,9 +215,6 @@ public class MainAPI : ModSystem, IRenderer
             Capi = capi;
             Client = (ClientMain)capi.World;
             ClientHook = this;
-
-            renderGlobalsUbo = new UboHandle<RenderGlobals>(BufferUsageHint.DynamicDraw);
-            UboRegistry.SetUbo("renderGlobals", renderGlobalsUbo.handle);
 
             RenderTools.OnStart();
 
@@ -381,7 +375,6 @@ public class MainAPI : ModSystem, IRenderer
                     Console.WriteLine($"Error closing {system.GetType().Name}: {e}");
                 }
             }
-            renderGlobalsUbo.Dispose();
 
             OnWindowResize = null;
             OnGuiRescale = null;
@@ -462,7 +455,7 @@ public class MainAPI : ModSystem, IRenderer
         };
 
         // Update global ubo.
-        renderGlobalsUbo.UpdateData(globals);
+        RenderTools.UpdateRenderGlobals(globals);
 
         Vec3d cameraPos = Client.MainCamera.CameraEyePos;
         OriginOffset = new Vector3d(cameraPos.X, cameraPos.Y, cameraPos.Z);

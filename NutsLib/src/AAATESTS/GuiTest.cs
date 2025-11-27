@@ -2,6 +2,8 @@
 
 //namespace NutsLib;
 
+//using NutsLib;
+
 //public class GuiTest : Gui
 //{
 //    public override void PopulateWidgets()
@@ -24,7 +26,6 @@
 
 //        new WidgetVanillaCheckbox(bg, this, state => { }, false).Alignment(Align.LeftBottom).FixedSize(8, 8);
 
-//        //new WidgetVanillaSlider(bg, this, val => { }, 120, true).Alignment(Align.RightBottom).Fixed(0, 0, 100, 10);
-//        new WidgetVanillaTextInputBox(bg, this, true, true, null, null, "Enter something...").Alignment(Align.RightBottom).Fixed(0, 0, 100, 10);
+//        new WidgetVanillaSlider(bg, this, val => { }, 120, true).Alignment(Align.RightBottom).Fixed(0, 0, 100, 10);
 //    }
 //}

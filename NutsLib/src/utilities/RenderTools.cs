@@ -38,8 +38,14 @@ public static unsafe class RenderTools
     private static MeshHandle guiLineMesh = null!;
     private static MeshInfo<GuiVertex> guiData = new(4, 6);
 
+    // Only initialized on client.
+    private static UboHandle<RenderGlobals> renderGlobalsUbo = null!;
+
     public static void OnStart()
     {
+        renderGlobalsUbo = new UboHandle<RenderGlobals>(BufferUsageHint.DynamicDraw);
+        UboRegistry.SetUbo("renderGlobals", renderGlobalsUbo.handle);
+
         TransformUbo = new UboHandle<TransformData>(BufferUsageHint.StreamDraw);
         TransformUbo.BufferData(new TransformData() { doTrans = 0, transform = Matrix4.Identity });
 
@@ -62,6 +68,11 @@ public static unsafe class RenderTools
         guiLineMesh = UploadMesh(guiData);
     }
 
+    internal static void UpdateRenderGlobals(RenderGlobals globals)
+    {
+        renderGlobalsUbo.UpdateData(globals);
+    }
+
     public static void OnStop()
     {
         TransformUbo = null!;
@@ -71,6 +82,9 @@ public static unsafe class RenderTools
         guiLineMesh = null!;
 
         GuiTransformStack.Clear();
+
+        renderGlobalsUbo.Dispose();
+        renderGlobalsUbo = null!;
     }
 
     /// <summary>
