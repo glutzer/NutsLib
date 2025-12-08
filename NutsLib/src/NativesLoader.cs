@@ -11,12 +11,12 @@ namespace NutsLib;
 /// Provides method to load all supported binaries for current platform.
 /// https://github.com/maltiez2/VintageStory_ImGui/blob/master/VSImGui/source/Utils/NativesLoader.cs
 /// </summary>
-internal static class NativesLoader
+public static class NativesLoader
 {
     /// <summary>
     /// Loads all supported binaries for current platform.
     /// </summary>
-    public static bool Load(ModSystem mod, bool isServer)
+    public static bool Load(ModSystem mod)
     {
         DllLoader loader = DllLoader.Loader();
 
