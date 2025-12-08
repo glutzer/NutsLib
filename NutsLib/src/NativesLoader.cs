@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Vintagestory.API.Common;
@@ -21,30 +20,24 @@ internal static class NativesLoader
     {
         DllLoader loader = DllLoader.Loader();
 
-        foreach (string library in nativeLibraries)
+        string prefix = RuntimeEnv.OS switch
         {
-            if (!loader.Load(library, mod.Mod)) return false;
-        }
+            OS.Windows => "nutswin/",
+            OS.Mac => "nutsmac/",
+            OS.Linux => "nutslinux/",
+            _ => "nutslinux"
+        };
 
-        if (isServer)
+        string dllPath = $"{((ModContainer)mod.Mod).FolderPath}/native/{prefix}";
+        foreach (string file in Directory.GetFiles(dllPath, "*"))
         {
-            string dllPath = $"{((ModContainer)mod.Mod).FolderPath}/native/serveronly/";
+            string withoutExtension = Path.GetFileNameWithoutExtension(file);
 
-            // Load each c# assembly in the path.
-            foreach (string file in System.IO.Directory.GetFiles(dllPath, "*.dll"))
-            {
-                Assembly.LoadFrom(file);
-            }
+            loader.Load(withoutExtension, mod.Mod);
         }
 
         return true;
     }
-
-    private static readonly HashSet<string> nativeLibraries =
-    [
-        "freetype",
-        "FastNoise"
-    ];
 }
 
 /// <summary>
@@ -83,10 +76,10 @@ internal abstract class DllLoader
 
         string prefix = RuntimeEnv.OS switch
         {
-            OS.Windows => "win/",
-            OS.Mac => "mac/",
-            OS.Linux => "linux/",
-            _ => "linux"
+            OS.Windows => "nutswin/",
+            OS.Mac => "nutsmac/",
+            OS.Linux => "nutslinux/",
+            _ => "nutslinux"
         };
 
         string dllPath = $"{((ModContainer)mod).FolderPath}/native/{prefix}{dllName}{suffix}";
