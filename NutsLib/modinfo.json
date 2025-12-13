@@ -6,7 +6,7 @@
     "nuts"
   ],
   "description": "Library for rendering guis, and other stuff.",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "dependencies": {
     "game": ""
   },

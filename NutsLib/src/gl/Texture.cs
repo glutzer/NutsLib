@@ -90,6 +90,20 @@ public unsafe class Texture : IDisposable
         UpdatePartial(x, y, width, height, bmp, updateMipmaps);
     }
 
+    public void UpdateFromRGBAData(int x, int y, int width, int height, byte[] rgbaData, bool updateMipmaps = false, PixelFormat format = PixelFormat.Rgba)
+    {
+        fixed (byte* ptr = &rgbaData[0])
+        {
+            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, x, y, width, height, format, PixelType.UnsignedByte, (nint)ptr);
+
+            if (updateMipmaps)
+            {
+                SetMipmaps(GetMaxMipmaps(Width, Height), TextureTarget.Texture2D);
+            }
+        }
+    }
+
     /// <summary>
     /// Update a part of a texture.
     /// </summary>
