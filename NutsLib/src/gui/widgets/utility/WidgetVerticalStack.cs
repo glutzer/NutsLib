@@ -33,7 +33,7 @@ public class WidgetVerticalStack : Widget
         foreach (Widget widget in Children)
         {
             Vector2i oldPos = widget.GetFixedPos();
-            if (oldPos.Y == currentAdvance) continue;
+            //if (oldPos.Y == currentAdvance) continue;
 
             Vector2i pos = widget.GetFixedPos();
             widget.Move(pos.X, currentAdvance);

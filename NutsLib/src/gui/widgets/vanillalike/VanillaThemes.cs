@@ -42,7 +42,7 @@ public static class VanillaThemes
     public static WidgetVanillaTitle AddTitleBar(Widget draggableWidget, string title)
     {
         WidgetVanillaTitle bar = new(draggableWidget, draggableWidget.Gui, draggableWidget, title);
-        bar.Alignment(Align.CenterTop, AlignFlags.OutsideV).PercentWidth(1f).FixedHeight(8);
+        bar.Alignment(Align.CenterTop, AlignFlags.OutsideV).PercentWidth(1f).FixedHeight(8).SetChildSizing(ChildSizing.IgnoreThis);
         bar.AddChild(new WidgetVanillaButton(bar, bar.Gui, () => bar.Gui.TryClose(), "").SetColor(new Vector4(0.4f, 0f, 0f, 1f)).Alignment(Align.RightMiddle).FixedSize(8, 8));
         return bar;
     }

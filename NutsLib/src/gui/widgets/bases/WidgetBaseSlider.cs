@@ -23,6 +23,12 @@ public class WidgetBaseSlider : Widget
         this.onlyCallOnRelease = onlyCallOnRelease;
     }
 
+    public WidgetBaseSlider SetCurrentStep(int step)
+    {
+        cursorStep = Math.Clamp(step, 0, steps);
+        return this;
+    }
+
     public override void OnRender(float dt, ShaderGui shader)
     {
         RenderBackground(X, Y, Width, Height, shader);

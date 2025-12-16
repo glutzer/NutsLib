@@ -11,7 +11,9 @@ public enum ChildSizing
     None = 0,
     Width = 1 << 0,
     Height = 1 << 1,
-    Once = 1 << 2
+    Once = 1 << 2,
+    IgnoreThis = 1 << 3,
+    LegacyCalc = 1 << 4
 }
 
 public enum BoundsSizing
@@ -58,7 +60,7 @@ public abstract partial class Widget
     private BoundsSizing positioningV;
     private BoundsSizing sizingH;
     private BoundsSizing sizingV;
-    private Align alignment;
+    private Align alignment = Align.LeftTop;
     private AlignFlags alignmentFlags;
     private ChildSizing childSizing;
 
@@ -156,7 +158,7 @@ public abstract partial class Widget
         }
 
         // After children are set, try to size this one to fit them if set.
-        if (childSizing != ChildSizing.None)
+        if (childSizing is not ChildSizing.None or not ChildSizing.IgnoreThis)
         {
             Queue<Widget> toCheck = new();
             foreach (Widget child in Children) toCheck.Enqueue(child);
@@ -169,6 +171,7 @@ public abstract partial class Widget
             while (toCheck.Count > 0)
             {
                 Widget boundsToCheck = toCheck.Dequeue();
+                if ((boundsToCheck.childSizing & ChildSizing.IgnoreThis) != 0) continue;
 
                 if ((childSizing & ChildSizing.Width) != 0)
                 {
@@ -191,10 +194,31 @@ public abstract partial class Widget
                 }
             }
 
-            X = startX;
-            Y = startY;
-            Width = maxX - startX;
-            Height = maxY - startY;
+            if ((childSizing & ChildSizing.LegacyCalc) != 0)
+            {
+                X = startX;
+                Y = startY;
+                Width = maxX - startX;
+                Height = maxY - startY;
+            }
+            else
+            {
+                int newWidth = maxX - startX;
+                int newHeight = maxY - startY;
+
+                if (Parent == null)
+                {
+                    Vector4 scaledScreen = new(scaledX, scaledY, newWidth, newHeight);
+                    scaledScreen = SetAlignments(MainAPI.RenderWidth, MainAPI.RenderHeight, scaledScreen);
+                    SetRenderPos(0, 0, scaledScreen);
+                }
+                else
+                {
+                    Vector4 scaledParent = new(scaledX, scaledY, scaledWidth, scaledHeight);
+                    scaledParent = SetAlignments(Parent.Width, Parent.Height, scaledParent);
+                    SetRenderPos(Parent.X, Parent.Y, scaledParent);
+                }
+            }
 
             // Once again, set the bounds of the children based on this new size.
             foreach (Widget child in Children)
@@ -268,8 +292,17 @@ public abstract partial class Widget
     /// </summary>
     public void SetRenderPos(int parentRenderX, int parentRenderY, Vector4 scaled)
     {
-        X = (int)scaled.X + parentRenderX;
-        Y = (int)scaled.Y + parentRenderY;
+        if (alignment == Align.None)
+        {
+            X = (int)scaled.X;
+            Y = (int)scaled.Y;
+        }
+        else
+        {
+            X = (int)scaled.X + parentRenderX;
+            Y = (int)scaled.Y + parentRenderY;
+        }
+
         Width = (int)scaled.Z;
         Height = (int)scaled.W;
     }
