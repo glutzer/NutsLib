@@ -13,27 +13,32 @@ namespace NutsLib;
 /// </summary>
 public static class NativesLoader
 {
+    private static readonly object nativeLock = new();
+
     /// <summary>
     /// Loads all supported binaries for current platform.
     /// </summary>
     public static bool Load(ModSystem mod)
     {
-        DllLoader loader = DllLoader.Loader();
-
-        string prefix = RuntimeEnv.OS switch
+        lock (nativeLock)
         {
-            OS.Windows => "nutswin/",
-            OS.Mac => "nutsmac/",
-            OS.Linux => "nutslinux/",
-            _ => "nutslinux"
-        };
+            DllLoader loader = DllLoader.Loader();
 
-        string dllPath = $"{((ModContainer)mod.Mod).FolderPath}/native/{prefix}";
-        foreach (string file in Directory.GetFiles(dllPath, "*"))
-        {
-            string withoutExtension = Path.GetFileNameWithoutExtension(file);
+            string prefix = RuntimeEnv.OS switch
+            {
+                OS.Windows => "nutswin/",
+                OS.Mac => "nutsmac/",
+                OS.Linux => "nutslinux/",
+                _ => "nutslinux"
+            };
 
-            loader.Load(withoutExtension, mod.Mod);
+            string dllPath = $"{((ModContainer)mod.Mod).FolderPath}/native/{prefix}";
+            foreach (string file in Directory.GetFiles(dllPath, "*"))
+            {
+                string withoutExtension = Path.GetFileNameWithoutExtension(file);
+
+                loader.Load(withoutExtension, mod.Mod);
+            }
         }
 
         return true;
@@ -103,9 +108,16 @@ internal partial class WindowsDllLoader : DllLoader
 
     protected override bool Load(string dllPath)
     {
-        IntPtr handle = LoadLibrary(dllPath);
+        try
+        {
+            LoadLibrary(dllPath);
+        }
+        catch
+        {
+            Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
+        }
 
-        return handle != nint.Zero;
+        return true;
     }
 }
 
@@ -119,9 +131,16 @@ internal partial class LinuxDllLoader : DllLoader
 
     protected override bool Load(string dllPath)
     {
-        IntPtr? handle = dlopen(dllPath, 1);
+        try
+        {
+            dlopen(dllPath, 1);
+        }
+        catch
+        {
+            Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
+        }
 
-        return handle != nint.Zero;
+        return true;
     }
 }
 
@@ -135,8 +154,15 @@ internal class MacDllLoader : DllLoader
 
     protected override bool Load(string dllPath)
     {
-        IntPtr? handle = dlopen(dllPath, 1);
+        try
+        {
+            dlopen(dllPath, 1);
+        }
+        catch
+        {
+            Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
+        }
 
-        return handle != nint.Zero;
+        return true;
     }
 }
