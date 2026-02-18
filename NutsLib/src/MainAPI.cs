@@ -204,7 +204,18 @@ public class MainAPI : ModSystem, IRenderer
     {
         TreeAttribute.RegisterAttribute(434343, typeof(CustomDataAttribute));
 
-        NativesLoader.Load(this);
+        // Make sure freetype is loaded!
+        bool loadedFreetype = false;
+        NativesLoader.LoadV2(this);
+        foreach (string binary in NativesLoader.LoadedBinaries)
+        {
+            if (binary.Contains("freetype")) loadedFreetype = true;
+        }
+        if (!loadedFreetype)
+        {
+            api.Logger.Error("[NUTSLIB] Freetype native library failed to load! You won't see fonts rendered.");
+            DynamicFontAtlas.FreetypeError = true;
+        }
 
         // Register new asset paths.
         AssetCategory.categories["objs"] = new AssetCategory("objs", false, EnumAppSide.Client);

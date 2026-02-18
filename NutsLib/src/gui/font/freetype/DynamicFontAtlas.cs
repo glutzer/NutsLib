@@ -164,11 +164,11 @@ public static unsafe class DynamicFontAtlas
     public static Texture AtlasTexture { get; private set; } = null!;
 
     // Fonts in order that will be looked through for fallback glyphs.
-    private static readonly string[] fallbackFonts = new string[]
-    {
+    private static readonly string[] fallbackFonts =
+    [
         "ptserif",
         "yaheibold"
-    };
+    ];
 
     private static TextureNode rootNode = null!;
     private static MeshHandle emptyHandle = null!;
@@ -186,9 +186,11 @@ public static unsafe class DynamicFontAtlas
     private static readonly List<MeshHandle> glyphMeshes = [];
 
     // Cache of all glyphs loaded.
-    private static readonly Dictionary<string, GlyphRenderInfo> glyphCache = [];
+    private static readonly Dictionary<(char, string), GlyphRenderInfo> glyphCache = [];
 
     public static event Action? OnAtlasResize;
+
+    public static bool FreetypeError { get; set; }
 
     private struct FTGlyphMeshInfo
     {
@@ -272,7 +274,12 @@ public static unsafe class DynamicFontAtlas
     /// </summary>
     public static GlyphRenderInfo GetGlyphMesh(char character, string fontName)
     {
-        if (glyphCache.TryGetValue($"{character}@{fontName}", out GlyphRenderInfo cachedInfo)) return cachedInfo;
+        if (FreetypeError)
+        {
+            return new GlyphRenderInfo(emptyHandle.vaoId, 0f);
+        }
+
+        if (glyphCache.TryGetValue((character, fontName), out GlyphRenderInfo cachedInfo)) return cachedInfo;
 
         FontStatus status = LoadFontChar(fontName, character, out TextureNode? texNode, out FTGlyphMeshInfo glyphInfo);
 
@@ -282,7 +289,7 @@ public static unsafe class DynamicFontAtlas
             glyphMeshes.Add(mesh);
 
             GlyphRenderInfo renderInfo = new(mesh.vaoId, glyphInfo.advance);
-            glyphCache.Add($"{character}@{fontName}", renderInfo);
+            glyphCache.Add((character, fontName), renderInfo);
 
             return renderInfo;
         }
@@ -296,7 +303,7 @@ public static unsafe class DynamicFontAtlas
         {
             foreach (string fallback in fallbackFonts)
             {
-                if (glyphCache.TryGetValue($"{character}@{fallback}", out GlyphRenderInfo cachedFallbackInfo)) return cachedFallbackInfo;
+                if (glyphCache.TryGetValue((character, fontName), out GlyphRenderInfo cachedFallbackInfo)) return cachedFallbackInfo;
 
                 FontStatus fallbackStatus = LoadFontChar(fallback, character, out TextureNode? fallbackTexNode, out FTGlyphMeshInfo fallbackGlyphInfo);
 
@@ -306,7 +313,7 @@ public static unsafe class DynamicFontAtlas
                     glyphMeshes.Add(mesh);
 
                     GlyphRenderInfo renderInfo = new(mesh.vaoId, fallbackGlyphInfo.advance);
-                    glyphCache.Add($"{character}@{fallback}", renderInfo);
+                    glyphCache.Add((character, fontName), renderInfo);
 
                     return new GlyphRenderInfo(mesh.vaoId, glyphInfo.advance);
                 }

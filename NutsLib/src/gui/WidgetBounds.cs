@@ -158,7 +158,7 @@ public abstract partial class Widget
         }
 
         // After children are set, try to size this one to fit them if set.
-        if (childSizing is not ChildSizing.None or not ChildSizing.IgnoreThis)
+        if (!childSizing.HasFlag(ChildSizing.None) && !childSizing.HasFlag(ChildSizing.IgnoreThis))
         {
             Queue<Widget> toCheck = new();
             foreach (Widget child in Children) toCheck.Enqueue(child);

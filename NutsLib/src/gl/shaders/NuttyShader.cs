@@ -36,6 +36,7 @@ public unsafe class NuttyShader
 {
     // Set when re-registering shader.
     public BindingIndex[]? UniformBlockIds { get; private set; }
+    public BindingIndex[]? ShaderBufferIds { get; private set; }
 
     public int ProgramId { get; private set; }
     public Dictionary<string, int> uniformLocations = null!;
@@ -137,6 +138,31 @@ public unsafe class NuttyShader
         {
             UniformBlockIds = null;
         }
+
+        int activeResources;
+        int maxNameLength;
+        GL.GetProgramInterface(program.ProgramId, ProgramInterface.ShaderStorageBlock, ProgramInterfaceParameter.ActiveResources, &activeResources);
+        GL.GetProgramInterface(program.ProgramId, ProgramInterface.ShaderStorageBlock, ProgramInterfaceParameter.MaxNameLength, &maxNameLength);
+
+        if (activeResources > 0)
+        {
+            ShaderBufferIds = new BindingIndex[activeResources];
+
+            for (int i = 0; i < activeResources; i++)
+            {
+                GL.GetProgramResourceName(program.ProgramId, ProgramInterface.ShaderStorageBlock, i, maxNameLength, out int _, out string name);
+
+                ProgramProperty property = ProgramProperty.BufferBinding;
+                int[] parameters = new int[1];
+                GL.GetProgramResource(program.ProgramId, ProgramInterface.ShaderStorageBlock, i, 1, [property], 1, out int _, parameters);
+
+                ShaderBufferIds[i] = new BindingIndex(parameters[0], SsboRegistry.RegisterSsboName(name));
+            }
+        }
+        else
+        {
+            ShaderBufferIds = null;
+        }
     }
 
     /// <summary>
@@ -151,6 +177,11 @@ public unsafe class NuttyShader
         if (UniformBlockIds != null)
         {
             UboRegistry.SyncUbos(UniformBlockIds);
+        }
+
+        if (ShaderBufferIds != null)
+        {
+            SsboRegistry.SyncSsbos(ShaderBufferIds);
         }
     }
 

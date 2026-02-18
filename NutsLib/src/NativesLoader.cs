@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Vintagestory.API.Common;
@@ -14,6 +15,8 @@ namespace NutsLib;
 public static class NativesLoader
 {
     private static readonly object nativeLock = new();
+
+    public static HashSet<string> LoadedBinaries { get; } = [];
 
     /// <summary>
     /// Loads all supported binaries for current platform.
@@ -42,6 +45,33 @@ public static class NativesLoader
         }
 
         return true;
+    }
+
+    public static void LoadV2(ModSystem mod)
+    {
+        lock (nativeLock)
+        {
+            DllLoader loader = DllLoader.Loader();
+
+            string prefix = RuntimeEnv.OS switch
+            {
+                OS.Windows => "nutswin/",
+                OS.Mac => "nutsmac/",
+                OS.Linux => "nutslinux/",
+                _ => "nutslinux"
+            };
+
+            string dllPath = $"{((ModContainer)mod.Mod).FolderPath}/native/{prefix}";
+            foreach (string file in Directory.GetFiles(dllPath, "*"))
+            {
+                bool loaded = loader.LoadV2(file, mod.Mod);
+                if (loaded)
+                {
+                    string withoutExtension = Path.GetFileNameWithoutExtension(file);
+                    LoadedBinaries.Add(withoutExtension);
+                }
+            }
+        }
     }
 }
 
@@ -92,6 +122,11 @@ internal abstract class DllLoader
         return Load(dllPath);
     }
 
+    public bool LoadV2(string fullPath, Mod mod)
+    {
+        return Load(fullPath);
+    }
+
     protected abstract bool Load(string dllPath);
 }
 
@@ -115,6 +150,7 @@ internal partial class WindowsDllLoader : DllLoader
         catch
         {
             Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
+            return false;
         }
 
         return true;
@@ -138,6 +174,7 @@ internal partial class LinuxDllLoader : DllLoader
         catch
         {
             Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
+            return false;
         }
 
         return true;
@@ -161,6 +198,7 @@ internal class MacDllLoader : DllLoader
         catch
         {
             Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
+            return false;
         }
 
         return true;
