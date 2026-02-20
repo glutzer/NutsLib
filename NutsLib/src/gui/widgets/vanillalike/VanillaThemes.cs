@@ -47,6 +47,13 @@ public static class VanillaThemes
         return bar;
     }
 
+    public static Texture BlankTexture => GetOrCreate("blank", () =>
+    {
+        return TextureBuilder.Begin(64, 64)
+        .FillRect(0, 0, 64, 64, SkiaThemes.White)
+        .End();
+    });
+
     // Slightly darker inset texture.
     public static NineSliceTexture InsetTexture => GetOrCreate("inset", () =>
     {

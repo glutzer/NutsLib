@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Vintagestory.API.Common;
@@ -15,8 +14,6 @@ namespace NutsLib;
 public static class NativesLoader
 {
     private static readonly object nativeLock = new();
-
-    public static HashSet<string> LoadedBinaries { get; } = [];
 
     /// <summary>
     /// Loads all supported binaries for current platform.
@@ -64,11 +61,13 @@ public static class NativesLoader
             string dllPath = $"{((ModContainer)mod.Mod).FolderPath}/native/{prefix}";
             foreach (string file in Directory.GetFiles(dllPath, "*"))
             {
-                bool loaded = loader.LoadV2(file, mod.Mod);
-                if (loaded)
+                try
                 {
-                    string withoutExtension = Path.GetFileNameWithoutExtension(file);
-                    LoadedBinaries.Add(withoutExtension);
+                    bool loaded = loader.LoadV2(file, mod.Mod);
+                }
+                catch
+                {
+
                 }
             }
         }

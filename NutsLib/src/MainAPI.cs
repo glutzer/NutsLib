@@ -2,6 +2,7 @@
 using HarmonyLib;
 using OpenTK.Mathematics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Vintagestory.API.Client;
@@ -197,6 +198,15 @@ public class MainAPI : ModSystem, IRenderer
         return true;
     }
 
+    private static bool IsDllLoaded(string dllName)
+    {
+        Process process = Process.GetCurrentProcess();
+
+        return process.Modules
+                      .Cast<ProcessModule>()
+                      .Any(m => m.ModuleName.Equals(dllName, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>
     /// Called as soon as dll is loaded.
     /// </summary>
@@ -205,13 +215,17 @@ public class MainAPI : ModSystem, IRenderer
         TreeAttribute.RegisterAttribute(434343, typeof(CustomDataAttribute));
 
         // Make sure freetype is loaded!
-        bool loadedFreetype = false;
         NativesLoader.LoadV2(this);
-        foreach (string binary in NativesLoader.LoadedBinaries)
+
+        bool freetypeLoaded = IsDllLoaded(RuntimeEnv.OS switch
         {
-            if (binary.Contains("freetype")) loadedFreetype = true;
-        }
-        if (!loadedFreetype)
+            OS.Windows => "freetype.dll",
+            OS.Mac => "libfreetype.dylib",
+            OS.Linux => "libfreetype.so",
+            _ => "libfreetype.so"
+        });
+
+        if (!freetypeLoaded)
         {
             api.Logger.Error("[NUTSLIB] Freetype native library failed to load! You won't see fonts rendered.");
             DynamicFontAtlas.FreetypeError = true;

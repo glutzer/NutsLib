@@ -42,6 +42,12 @@ public unsafe class SsboHandle<T> : IUbo, IDisposable where T : unmanaged
         GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, sizeof(T) * data.Length, data);
     }
 
+    public void UpdateData(T[] data, int changedEntries)
+    {
+        GL.BindBuffer(BufferTarget.ShaderStorageBuffer, handle);
+        GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, sizeof(T) * changedEntries, data);
+    }
+
     public void Bind(int bindingPoint)
     {
         GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, bindingPoint, handle);
