@@ -23,11 +23,13 @@ public class WidgetBaseScrollBar : Widget
     // The fixed position will be set as the offset.
     protected Widget? scrollWidget;
     protected int stepsPerPage;
+    protected bool horizontal;
 
-    public WidgetBaseScrollBar(Widget? parent, Gui gui, Widget? scrollWidget, int stepsPerPage = 10) : base(parent, gui)
+    public WidgetBaseScrollBar(Widget? parent, Gui gui, Widget? scrollWidget, int stepsPerPage = 10, bool horizontal = false) : base(parent, gui)
     {
         this.scrollWidget = scrollWidget;
         this.stepsPerPage = stepsPerPage;
+        this.horizontal = horizontal;
     }
 
     public override void OnRender(float dt, ShaderGui shader)
@@ -37,7 +39,15 @@ public class WidgetBaseScrollBar : Widget
         int offset = GetScrollBarOffset(size);
 
         RenderBackground(X, Y, Width, Height, shader);
-        RenderCursor(X, Y + offset, Width, size, shader, barState);
+
+        if (horizontal)
+        {
+            RenderCursor(X + offset, Y, size, Height, shader, barState);
+        }
+        else
+        {
+            RenderCursor(X, Y + offset, Width, size, shader, barState);
+        }
     }
 
     public void SetScrollArea(Widget scrollWidget)
@@ -90,7 +100,7 @@ public class WidgetBaseScrollBar : Widget
 
         if (barState == EnumButtonState.Active)
         {
-            MoveBar(obj.Y);
+            MoveBar(horizontal ? obj.X : obj.Y);
         }
 
         hoveringScrollArea = scrollWidget.IsInAllBounds(obj);
@@ -120,7 +130,7 @@ public class WidgetBaseScrollBar : Widget
             obj.Handled = true;
 
             barState = EnumButtonState.Active;
-            SetScrollBarGrabRatio(obj.Y);
+            SetScrollBarGrabRatio(horizontal ? obj.X : obj.Y);
         }
     }
 
@@ -134,7 +144,9 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected float GetScrollBarRatio()
     {
-        return scrollWidget == null ? 1f : Math.Clamp((float)Height / scrollWidget.Height, 0f, 1f);
+        return horizontal
+            ? scrollWidget == null ? 1f : Math.Clamp((float)Width / scrollWidget.Width, 0f, 1f)
+            : scrollWidget == null ? 1f : Math.Clamp((float)Height / scrollWidget.Height, 0f, 1f);
     }
 
     /// <summary>
@@ -142,7 +154,7 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected int GetScrollBarSize(float scrollBarRatio)
     {
-        return (int)MathF.Round(Height * scrollBarRatio);
+        return horizontal ? (int)MathF.Round(Width * scrollBarRatio) : (int)MathF.Round(Height * scrollBarRatio);
     }
 
     /// <summary>
@@ -150,7 +162,9 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected int GetScrollBarOffset(float scrollBarSize)
     {
-        return (int)MathF.Round((Height - scrollBarSize) * scrollProgress);
+        return horizontal
+            ? (int)MathF.Round((Width - scrollBarSize) * scrollProgress)
+            : (int)MathF.Round((Height - scrollBarSize) * scrollProgress);
     }
 
     protected bool IsMouseOnScrollBar(int x, int y)
@@ -159,7 +173,9 @@ public class WidgetBaseScrollBar : Widget
         int size = GetScrollBarSize(ratio);
         int offset = GetScrollBarOffset(size);
 
-        return x >= X && x <= X + Width && y >= Y + offset && y <= Y + offset + size;
+        return horizontal
+            ? x >= X + offset && x <= X + offset + size && y >= Y && y <= Y + Height
+            : x >= X && x <= X + Width && y >= Y + offset && y <= Y + offset + size;
     }
 
     /// <summary>
@@ -171,25 +187,42 @@ public class WidgetBaseScrollBar : Widget
         int size = GetScrollBarSize(ratio);
         int offset = GetScrollBarOffset(size);
 
-        float startY = Y + offset;
-        float endY = Y + offset + size;
+        if (horizontal)
+        {
+            float startX = X + offset;
+            float endX = X + offset + size;
+            barGrabRatio = (mouseY - startX) / (endX - startX);
+            barGrabRatio = MathF.Round(Math.Clamp(barGrabRatio, 0f, 1f), 1);
+        }
+        else
+        {
+            float startY = Y + offset;
+            float endY = Y + offset + size;
 
-        barGrabRatio = (mouseY - startY) / (endY - startY);
-        barGrabRatio = MathF.Round(Math.Clamp(barGrabRatio, 0f, 1f), 1);
+            barGrabRatio = (mouseY - startY) / (endY - startY);
+            barGrabRatio = MathF.Round(Math.Clamp(barGrabRatio, 0f, 1f), 1);
+        }
     }
 
     /// <summary>
     /// When moving mouse if dragging, move the bar here.
     /// </summary>
-    protected void MoveBar(int mouseY)
+    protected void MoveBar(int mouseXorY)
     {
         float ratio = GetScrollBarRatio();
         int size = GetScrollBarSize(ratio);
 
         // Offset mouse position up to simulate grabbing the bar at that position.
-        float relativePosition = mouseY - Y - (barGrabRatio * size);
-
-        scrollProgress = relativePosition / (Height - size);
+        if (horizontal)
+        {
+            float relativePosition = mouseXorY - X - (barGrabRatio * size);
+            scrollProgress = relativePosition / (Width - size);
+        }
+        else
+        {
+            float relativePosition = mouseXorY - Y - (barGrabRatio * size);
+            scrollProgress = relativePosition / (Height - size);
+        }
 
         if (stepsPerPage > 0)
         {
@@ -209,12 +242,21 @@ public class WidgetBaseScrollBar : Widget
     {
         if (scrollWidget == null) return;
 
-        float offset = (scrollWidget.Height - Height) * scrollProgress;
+        float offset;
 
         // Prevent scroll bar bigger than bounds from going up, probably a bigger issue.
-        if (offset < 0f) offset = 0f;
-
-        scrollWidget.FixedPos(0, -(int)offset);
+        if (horizontal)
+        {
+            offset = (scrollWidget.Width - Width) * scrollProgress;
+            if (offset < 0f) offset = 0f;
+            scrollWidget.FixedX(-(int)offset);
+        }
+        else
+        {
+            offset = (scrollWidget.Height - Height) * scrollProgress;
+            if (offset < 0f) offset = 0f;
+            scrollWidget.FixedY(-(int)offset);
+        }
     }
 
     /// <summary>

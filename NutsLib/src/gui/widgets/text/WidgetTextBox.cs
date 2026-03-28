@@ -37,8 +37,6 @@ public class WidgetTextBox : Widget
     private readonly bool limitTextToBox;
     private readonly int maxLines;
 
-    private Gui? gui;
-
     public void ClearSelection()
     {
         selectStart = Vector2i.Zero;
@@ -235,8 +233,6 @@ public class WidgetTextBox : Widget
         guiEvents.MouseDown += GuiEvents_MouseDown;
         guiEvents.MouseUp += GuiEvents_MouseUp;
         guiEvents.MouseMove += GuiEvents_MouseMove;
-
-        gui = guiEvents.gui;
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)
@@ -271,7 +267,7 @@ public class WidgetTextBox : Widget
         if (!obj.Handled && IsInAllBounds(obj))
         {
             // Set cursor.
-            gui.MouseOverCursor = "textselect";
+            Gui.MouseOverCursor = "textselect";
         }
 
         if (dragging)

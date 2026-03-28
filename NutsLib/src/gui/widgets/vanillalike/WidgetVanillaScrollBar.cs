@@ -2,7 +2,7 @@
 
 public class WidgetVanillaScrollBar : WidgetBaseScrollBar
 {
-    public WidgetVanillaScrollBar(Widget? parent, Gui gui, Widget? scrollWidget, int stepsPerPage = 10) : base(parent, gui, scrollWidget, stepsPerPage)
+    public WidgetVanillaScrollBar(Widget? parent, Gui gui, Widget? scrollWidget, int stepsPerPage = 10, bool horizontal = false) : base(parent, gui, scrollWidget, stepsPerPage, horizontal)
     {
     }
 
