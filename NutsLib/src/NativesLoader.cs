@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.Common;
@@ -9,11 +9,10 @@ namespace NutsLib;
 
 /// <summary>
 /// Provides method to load all supported binaries for current platform.
-/// https://github.com/maltiez2/VintageStory_ImGui/blob/master/VSImGui/source/Utils/NativesLoader.cs
 /// </summary>
 public static class NativesLoader
 {
-    private static readonly object nativeLock = new();
+    private static readonly Lock nativeLock = new();
 
     /// <summary>
     /// Loads all supported binaries for current platform.
@@ -82,16 +81,7 @@ internal abstract class DllLoader
     /// <summary>
     /// Returns loader for the current platform.
     /// </summary>
-    public static DllLoader Loader()
-    {
-        return RuntimeEnv.OS switch
-        {
-            OS.Windows => new WindowsDllLoader(),
-            OS.Mac => new MacDllLoader(),
-            OS.Linux => new LinuxDllLoader(),
-            _ => new WindowsDllLoader()
-        };
-    }
+    public static DllLoader Loader() => new NativeLibraryLoader();
 
     protected DllLoader()
     {
@@ -129,72 +119,11 @@ internal abstract class DllLoader
     protected abstract bool Load(string dllPath);
 }
 
-internal partial class WindowsDllLoader : DllLoader
+internal class NativeLibraryLoader : DllLoader
 {
-    [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern IntPtr LoadLibrary(string fileName);
-
-    [DllImport("kernel32")]
-    private static extern uint GetLastError();
-
-    [DllImport("kernel32", CharSet = CharSet.Unicode)]
-    private static extern uint FormatMessage(uint dwFlags, IntPtr lpSource, uint dwMessageId, uint dwLanguageId, [Out] StringBuilder lpBuffer, uint nSize, IntPtr[] Arguments);
-
     protected override bool Load(string dllPath)
     {
-        try
-        {
-            LoadLibrary(dllPath);
-        }
-        catch
-        {
-            Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
-            return false;
-        }
-
-        return true;
-    }
-}
-
-internal partial class LinuxDllLoader : DllLoader
-{
-    [DllImport("libdl.so.2", CharSet = CharSet.Unicode)]
-    private static extern IntPtr dlopen(string fileName, int flags);
-
-    [DllImport("libdl.so.2")]
-    private static extern IntPtr dlerror();
-
-    protected override bool Load(string dllPath)
-    {
-        try
-        {
-            dlopen(dllPath, 1);
-        }
-        catch
-        {
-            Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
-            return false;
-        }
-
-        return true;
-    }
-}
-
-internal class MacDllLoader : DllLoader
-{
-    [DllImport("libdl.dylib", EntryPoint = "dlopen", CharSet = CharSet.Unicode)]
-    private static extern IntPtr dlopen(string filename, int flags);
-
-    [DllImport("libdl.dylib")]
-    private static extern IntPtr dlerror();
-
-    protected override bool Load(string dllPath)
-    {
-        try
-        {
-            dlopen(dllPath, 1);
-        }
-        catch
+        if (!NativeLibrary.TryLoad(dllPath, out _))
         {
             Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
             return false;

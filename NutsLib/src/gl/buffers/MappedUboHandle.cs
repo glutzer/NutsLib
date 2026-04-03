@@ -4,8 +4,7 @@ namespace NutsLib;
 
 public unsafe class MappedUboHandle<T> : IUbo, IDisposable where T : unmanaged
 {
-    private int handle;
-    public int Handle => handle;
+    public int Handle { get; private set; }
 
     public T* Data { get; private set; }
 
@@ -21,16 +20,16 @@ public unsafe class MappedUboHandle<T> : IUbo, IDisposable where T : unmanaged
     {
         this.length = length;
 
-        handle = GL.GenBuffer();
+        Handle = GL.GenBuffer();
 
-        GL.BindBuffer(BufferTarget.UniformBuffer, handle);
+        GL.BindBuffer(BufferTarget.UniformBuffer, Handle);
         GL.BufferStorage(BufferTarget.UniformBuffer, sizeof(T) * length, IntPtr.Zero, BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit);
         Data = (T*)GL.MapBufferRange(BufferTarget.UniformBuffer, IntPtr.Zero, sizeof(T) * length, BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit | BufferAccessMask.MapCoherentBit);
     }
 
     public void Bind(int bindingPoint)
     {
-        GL.BindBufferBase(BufferRangeTarget.UniformBuffer, bindingPoint, handle);
+        GL.BindBufferBase(BufferRangeTarget.UniformBuffer, bindingPoint, Handle);
     }
 
     /// <summary>
@@ -43,8 +42,8 @@ public unsafe class MappedUboHandle<T> : IUbo, IDisposable where T : unmanaged
 
         Dispose();
 
-        handle = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.UniformBuffer, handle);
+        Handle = GL.GenBuffer();
+        GL.BindBuffer(BufferTarget.UniformBuffer, Handle);
         GL.BufferStorage(BufferTarget.UniformBuffer, sizeof(T) * length, IntPtr.Zero, BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit);
         Data = (T*)GL.MapBufferRange(BufferTarget.UniformBuffer, IntPtr.Zero, sizeof(T) * length, BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit | BufferAccessMask.MapCoherentBit);
     }
@@ -53,11 +52,11 @@ public unsafe class MappedUboHandle<T> : IUbo, IDisposable where T : unmanaged
     {
         GC.SuppressFinalize(this);
 
-        GL.BindBuffer(BufferTarget.UniformBuffer, handle);
+        GL.BindBuffer(BufferTarget.UniformBuffer, Handle);
 
         // Might not need to? Causes errors.
         GL.UnmapBuffer(BufferTarget.UniformBuffer);
 
-        GL.DeleteBuffer(handle);
+        GL.DeleteBuffer(Handle);
     }
 }

@@ -5,12 +5,10 @@
 /// </summary>
 public sealed unsafe class FreeTypeLibrary : IDisposable
 {
-    private bool disposed;
-
     /// <summary>
     /// Gets a value indicating whether the object has been disposed.
     /// </summary>
-    public bool Disposed => disposed;
+    public bool Disposed { get; private set; }
 
     /// <summary>
     /// Gets the native pointer to the FreeType2 library object.
@@ -41,7 +39,7 @@ public sealed unsafe class FreeTypeLibrary : IDisposable
             Native = default;
         }
 
-        disposed = true;
+        Disposed = true;
 
         GC.SuppressFinalize(this);
     }
