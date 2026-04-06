@@ -6,6 +6,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
+using Vintagestory.Client;
 
 namespace NutsLib;
 
@@ -14,13 +15,15 @@ namespace NutsLib;
 /// Active effects are held in the entity behavior.
 /// </summary>
 [GameSystem]
-public class EffectManager : NetworkedGameSystem
+public class SystemEffectManager : NetworkedGameSystem
 {
     public readonly Dictionary<string, Type> effectTypes = [];
 
     public Action<(int previousCount, int currentCount, EntityPlayer player)>? OnPlayerEffectCountChanged;
 
-    public EffectManager(bool isServer, ICoreAPI api) : base(isServer, api, "effectmanager")
+    private HudEffects? hudEffects;
+
+    public SystemEffectManager(bool isServer, ICoreAPI api) : base(isServer, api, "effectmanager")
     {
     }
 
@@ -48,6 +51,26 @@ public class EffectManager : NetworkedGameSystem
     public T? CreateEffect<T>(string effectName) where T : Effect
     {
         return CreateEffect(effectName) as T;
+    }
+
+    public override void OnStart()
+    {
+        if (isServer) return;
+
+        hudEffects = new HudEffects();
+
+        ScreenManager.hotkeyManager.RegisterHotKey("toggleeffectshud", "Toggle Effects HUD", (int)GlKeys.I);
+        MainAPI.Capi.Input.SetHotKeyHandler("toggleeffectshud", _ =>
+        {
+            hudEffects?.Toggle();
+            return true;
+        });
+    }
+
+    public override void OnClose()
+    {
+        hudEffects?.TryClose();
+        hudEffects = null;
     }
 
     protected override void RegisterClientMessages(IClientNetworkChannel channel)
@@ -81,7 +104,7 @@ public class EffectManager : NetworkedGameSystem
 
             if (api.Side == EnumAppSide.Server)
             {
-                if (entityType.Server.BehaviorsAsJsonObj.FirstOrDefault(x => x.ToString().ToLower().Contains("health")) != null)
+                if (entityType.Server.BehaviorsAsJsonObj.FirstOrDefault(x => x.ToString()?.ToLower(System.Globalization.CultureInfo.InvariantCulture).Contains("health") ?? false) != null)
                 {
                     JsonObject[] newServerBehaviors = new JsonObject[entityType.Server.BehaviorsAsJsonObj.Length + 1];
                     Array.Copy(entityType.Server.BehaviorsAsJsonObj, 0, newServerBehaviors, 1, entityType.Server.BehaviorsAsJsonObj.Length);

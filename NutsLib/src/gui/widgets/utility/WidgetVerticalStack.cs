@@ -1,6 +1,4 @@
-﻿using OpenTK.Mathematics;
-
-namespace NutsLib;
+﻿namespace NutsLib;
 
 /// <summary>
 /// Stacks child widgets vertically using fixed positioning on the Y.
@@ -28,24 +26,16 @@ public class WidgetVerticalStack : Widget
     public void RepositionYLevels()
     {
         int currentAdvance = 0;
-        bool changed = false;
 
         foreach (Widget widget in Children)
         {
-            Vector2i oldPos = widget.GetFixedPos();
-            //if (oldPos.Y == currentAdvance) continue;
-
-            Vector2i pos = widget.GetFixedPos();
-            widget.Move(pos.X, currentAdvance);
-
+            widget.Move(widget.GetFixedPos().X, currentAdvance);
             widget.CalculateBounds();
 
             currentAdvance += widget.Height;
             currentAdvance += spacing;
-
-            changed = true;
         }
 
-        if (changed) CalculateBounds();
+        if (Children.Count > 0) CalculateBounds();
     }
 }

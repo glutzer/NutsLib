@@ -245,7 +245,7 @@ public class EntityBehaviorEffects : EntityBehavior
         // Attempt to deserialize every json entry into a type.
         SortedDictionary<string, Effect> deserialized = [];
 
-        EffectManager effectManager = MainAPI.GetGameSystem<EffectManager>(entity.Api.Side);
+        SystemEffectManager effectManager = MainAPI.GetGameSystem<SystemEffectManager>(entity.Api.Side);
 
         foreach (KeyValuePair<string, string> effect in container)
         {

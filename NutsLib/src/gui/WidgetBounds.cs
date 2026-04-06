@@ -158,7 +158,7 @@ public abstract partial class Widget
         }
 
         // After children are set, try to size this one to fit them if set.
-        if (!childSizing.HasFlag(ChildSizing.None) && !childSizing.HasFlag(ChildSizing.IgnoreThis))
+        if (childSizing != ChildSizing.None && !childSizing.HasFlag(ChildSizing.IgnoreThis))
         {
             Queue<Widget> toCheck = new();
             foreach (Widget child in Children) toCheck.Enqueue(child);
@@ -214,7 +214,7 @@ public abstract partial class Widget
                 }
                 else
                 {
-                    Vector4 scaledParent = new(scaledX, scaledY, scaledWidth, scaledHeight);
+                    Vector4 scaledParent = new(scaledX, scaledY, newWidth, newHeight);
                     scaledParent = SetAlignments(Parent.Width, Parent.Height, scaledParent);
                     SetRenderPos(Parent.X, Parent.Y, scaledParent);
                 }

@@ -20,7 +20,7 @@ public class EntityBehaviorPlayerEffects : EntityBehaviorEffects
 
         if (newCount != effectCount)
         {
-            MainAPI.GetGameSystem<EffectManager>(entity.Api.Side).OnPlayerEffectCountChanged?.Invoke((effectCount, newCount, (EntityPlayer)entity));
+            MainAPI.GetGameSystem<SystemEffectManager>(entity.Api.Side).OnPlayerEffectCountChanged?.Invoke((effectCount, newCount, (EntityPlayer)entity));
         }
     }
 }

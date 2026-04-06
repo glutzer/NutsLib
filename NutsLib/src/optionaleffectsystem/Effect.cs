@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Config;
 
 namespace NutsLib;
 
@@ -115,6 +116,14 @@ public abstract class Effect
     public virtual void OnDurationExpired()
     {
 
+    }
+
+    /// <summary>
+    /// Get name for display.
+    /// </summary>
+    public virtual string GetName()
+    {
+        return Lang.Get($"game:effect-{Code}");
     }
 }
 

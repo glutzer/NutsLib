@@ -426,7 +426,7 @@ public class MainAPI : ModSystem, IRenderer
 
         int previousRenderWidth = RenderWidth;
         int previousRenderHeight = RenderHeight;
-        float previousGuiScale = GuiScale;
+        int previousGuiScale = GuiScale;
 
         RenderWidth = Capi.Render.FrameWidth;
         RenderHeight = Capi.Render.FrameHeight;
