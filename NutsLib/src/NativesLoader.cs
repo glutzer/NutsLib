@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Vintagestory.API.Common;
@@ -13,6 +14,14 @@ namespace NutsLib;
 public static class NativesLoader
 {
     private static readonly Lock nativeLock = new();
+
+    /// <summary>
+    /// Maps a normalised library name (e.g. "freetype") to the handle returned
+    /// by <see cref="NativeLibrary.TryLoad(string)"/> when the file was loaded
+    /// from the mod's native folder. Resolver callbacks can consult this map
+    /// instead of re-searching the file system.
+    /// </summary>
+    public static readonly Dictionary<string, IntPtr> LoadedHandles = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Loads all supported binaries for current platform.
@@ -123,12 +132,19 @@ internal class NativeLibraryLoader : DllLoader
 {
     protected override bool Load(string dllPath)
     {
-        if (!NativeLibrary.TryLoad(dllPath, out _))
+        if (!NativeLibrary.TryLoad(dllPath, out IntPtr handle))
         {
             Console.WriteLine($"Failed to load binary {dllPath} for some reason.");
             return false;
         }
 
+        // Derive a normalised key: strip "lib" prefix and any extension so that
+        // e.g. "libfreetype.so" and "freetype.dll" both map to "freetype".
+        string fileName = Path.GetFileNameWithoutExtension(dllPath);
+        if (fileName.StartsWith("lib", StringComparison.OrdinalIgnoreCase))
+            fileName = fileName[3..];
+
+        NativesLoader.LoadedHandles.TryAdd(fileName, handle);
         return true;
     }
 }

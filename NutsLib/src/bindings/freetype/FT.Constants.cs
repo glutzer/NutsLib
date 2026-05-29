@@ -1,7 +1,28 @@
+using System.Runtime.InteropServices;
+
 namespace FreeTypeSharp;
 
 public static partial class FT
 {
+    static FT()
+    {
+        NativeLibrary.SetDllImportResolver(typeof(FT).Assembly, (libraryName, assembly, searchPath) =>
+        {
+            if (libraryName != LibName)
+                return IntPtr.Zero;
+
+            // First, look up the handle that NativesLoader stored when it loaded
+            // the file from the mod's native folder via its full path. This is the
+            // only reliable approach on Linux/macOS because NativeLibrary.TryLoad
+            // with a bare name does NOT search already-loaded-by-path libraries.
+            if (NutsLib.NativesLoader.LoadedHandles.TryGetValue(libraryName, out IntPtr storedHandle))
+                return storedHandle;
+
+            // Fallback: let the runtime's default resolver try (covers system-wide installs).
+            return NativeLibrary.TryLoad(libraryName, assembly, searchPath, out IntPtr handle) ? handle : nint.Zero;
+        });
+    }
+
     // glyph load target flags
     public const int FT_LOAD_TARGET_NORMAL = (0 & 15) << 16;
     public const int FT_LOAD_TARGET_LIGHT = (1 & 15) << 16;
