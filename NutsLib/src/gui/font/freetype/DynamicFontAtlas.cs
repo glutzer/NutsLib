@@ -166,8 +166,7 @@ public static unsafe class DynamicFontAtlas
     // Fonts in order that will be looked through for fallback glyphs.
     private static readonly string[] fallbackFonts =
     [
-        "ptserif",
-        "yaheibold"
+        "ptserif"
     ];
 
     private static TextureNode rootNode = null!;
