@@ -1,6 +1,5 @@
 #version 330 core
 #extension GL_ARB_explicit_attrib_location : enable
-#extension GL_ARB_shading_language_420pack : require
 
 // Example of a standard way of doing opaque shading with shadows.
 

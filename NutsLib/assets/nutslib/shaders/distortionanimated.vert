@@ -1,6 +1,5 @@
 #version 330 core
 #extension GL_ARB_explicit_attrib_location : enable
-#extension GL_ARB_shading_language_420pack : require
 
 layout(location = 0) in vec3 vertexPositionIn;
 layout(location = 1) in vec2 uvIn;
@@ -27,7 +26,7 @@ layout(std140) uniform Animation {
 }
 ElementTransforms;
 
-layout(std140, binding = 1) uniform renderGlobals {
+layout(std140) uniform renderGlobals {
   mat4 viewMatrix;
   mat4 perspectiveMatrix;
   mat4 orthographicMatrix;

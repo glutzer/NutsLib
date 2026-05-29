@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using OpenTK.Graphics.OpenGL4;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Vintagestory.API.Client;
@@ -98,24 +99,21 @@ public static class NuttyShaderRegistry
         };
     }
 
-    public static string SetUBOBindings(Dictionary<string, int> uniqueBlocks, string code)
+    /// <summary>
+    /// Scans GLSL source for UBO names and registers them with UboRegistry.
+    /// The dictionary maps name -> binding point (= registry id), shared across all stages.
+    /// </summary>
+    private static void CollectUboNames(Dictionary<string, int> uboBindings, string code)
     {
-        // There is actually a way better way to do this.
-
         string pattern = @"layout\(std140\)\s+uniform\s+(\w+)";
-
-        return Regex.Replace(code, pattern, match =>
+        foreach (Match match in Regex.Matches(code, pattern))
         {
-            string blockDefinition = match.Groups[0].Value;
-            if (!uniqueBlocks.TryGetValue(blockDefinition, out int id))
+            string blockName = match.Groups[1].Value;
+            if (!uboBindings.ContainsKey(blockName))
             {
-                id = uniqueBlocks.Count;
-                uniqueBlocks[blockDefinition] = id;
+                uboBindings[blockName] = uboBindings.Count; // 0, 1, 2... per shader
             }
-            string modifiedBlock = blockDefinition.Replace("layout(std140)", $"layout(std140, binding = {id})");
-
-            return modifiedBlock;
-        });
+        }
     }
 
     private static void RegisterShader(string vertPath, string fragPath, string? geomPath, string shaderName)
@@ -128,28 +126,40 @@ public static class NuttyShaderRegistry
         object[] vertParams = [shader, capi.Assets.Get(vertPath).ToText(), null!];
         object[] fragParams = [shader, capi.Assets.Get(fragPath).ToText(), null!];
 
-        Dictionary<string, int> uniqueBlocks = [];
-
         shader.VertexShader = capi.Shader.NewShader(EnumShaderType.VertexShader);
         shader.FragmentShader = capi.Shader.NewShader(EnumShaderType.FragmentShader);
 
         shader.VertexShader.Code = (string)method.Invoke(null, vertParams)!;
         shader.FragmentShader.Code = (string)method.Invoke(null, fragParams)!;
 
-        shader.VertexShader.Code = SetUBOBindings(uniqueBlocks, shader.VertexShader.Code);
-        shader.FragmentShader.Code = SetUBOBindings(uniqueBlocks, shader.FragmentShader.Code);
+        // Collect UBO names across all stages before compiling.
+        Dictionary<string, int> uboBindings = [];
+        CollectUboNames(uboBindings, shader.VertexShader.Code);
+        CollectUboNames(uboBindings, shader.FragmentShader.Code);
 
         if (geomPath != null)
         {
             object[] geomParams = [shader, capi.Assets.Get(geomPath).ToText(), null!];
             shader.GeometryShader = capi.Shader.NewShader(EnumShaderType.GeometryShader);
             shader.GeometryShader.Code = (string)method.Invoke(null, geomParams)!;
-            shader.GeometryShader.Code = SetUBOBindings(uniqueBlocks, shader.GeometryShader.Code);
+            CollectUboNames(uboBindings, shader.GeometryShader.Code);
         }
 
         capi.Shader.RegisterMemoryShaderProgram(shaderName, shader);
 
         shader.Compile();
+
+        // After compilation, assign each unique UBO its binding point via the GL API.
+        // This avoids needing layout(binding=N) in the GLSL source.
+        int programId = ((ShaderProgram)shader).ProgramId;
+        foreach ((string blockName, int bindingPoint) in uboBindings)
+        {
+            int blockIndex = GL.GetUniformBlockIndex(programId, blockName);
+            if (blockIndex != -1)
+            {
+                GL.UniformBlockBinding(programId, blockIndex, bindingPoint);
+            }
+        }
 
         // Set relevant shader info.
         NuttyShader nuShader = Shaders[shaderName];
