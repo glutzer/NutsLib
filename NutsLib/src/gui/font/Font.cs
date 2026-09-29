@@ -6,7 +6,7 @@ namespace NutsLib;
 public class Font
 {
     public string Name { get; private set; }
-    public readonly GlyphRenderInfo[] fontCharData = new GlyphRenderInfo[ushort.MaxValue];
+    public readonly GlyphRenderInfo[] fontCharData = new GlyphRenderInfo[ushort.MaxValue + 1];
 
     public float LineHeight { get; private set; }
     public float CenterOffset { get; private set; }

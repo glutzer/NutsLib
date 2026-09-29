@@ -38,5 +38,6 @@ public class WidgetTextLine : Widget
     public void SetText(string text)
     {
         textObject.Text = text;
+        textObject.SetScaleFromWidget(this, 0.9f, 0.7f);
     }
 }

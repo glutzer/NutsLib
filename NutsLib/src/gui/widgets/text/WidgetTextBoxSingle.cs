@@ -49,10 +49,8 @@ public class WidgetTextBoxSingle : FocusableWidget
     public void SetTextNoEvent(string text)
     {
         SetText(text);
-        if (cursorIndex > text.Length)
-        {
-            MoveCursor(text.Length);
-        }
+        ClearSelection();
+        MoveCursor(Math.Min(cursorIndex, text.Length));
     }
 
     public WidgetTextBoxSingle(Widget? parent, Gui gui, Font font, Vector4 color, bool limitTextToBox = true, bool centerValues = true, Action<string>? onNewText = null, string? defaultText = null, string? emptyText = null) : base(parent, gui)
@@ -75,6 +73,7 @@ public class WidgetTextBoxSingle : FocusableWidget
         {
             text.SetScaleFromWidget(this, 1f, 0.7f);
             this.emptyText.SetScaleFromWidget(this, 1f, 0.7f);
+            MoveCursor(Math.Min(cursorIndex, text.Text.Length));
         };
 
         cursorTexture = TextureBuilder.Begin(64, 64)
@@ -178,6 +177,8 @@ public class WidgetTextBoxSingle : FocusableWidget
     {
         if (!Focused || obj.Handled) return;
 
+        if (char.IsControl(obj.KeyChar)) return;
+
         obj.Handled = true;
 
         TryDeleteSelection();
@@ -233,9 +234,8 @@ public class WidgetTextBoxSingle : FocusableWidget
             selectStart = pos;
             selectEnd = pos;
 
-            MoveCursor(pos);
-
             if (!Focused) Focus();
+            MoveCursor(pos);
         }
         else
         {
@@ -278,7 +278,7 @@ public class WidgetTextBoxSingle : FocusableWidget
 
     private void GuiEvents_KeyDown(KeyEvent obj)
     {
-        if (!Focused || obj.Handled) return;
+        if (!Focused || obj.Handled || obj.KeyCode == (int)GlKeys.Escape) return;
 
         obj.Handled = true;
 
@@ -293,6 +293,11 @@ public class WidgetTextBoxSingle : FocusableWidget
     {
         if (obj.KeyCode == (int)GlKeys.Delete)
         {
+            if (Selecting)
+            {
+                TryDeleteSelection();
+                return;
+            }
             TryDeleteSelection();
 
             if (cursorIndex == text.Text.Length) return; // Nothing to delete.
@@ -312,7 +317,6 @@ public class WidgetTextBoxSingle : FocusableWidget
 
         if (obj.KeyCode == (int)GlKeys.Enter)
         {
-            TryDeleteSelection();
             Unfocus(); // No line breaks.
             return;
         }
@@ -379,7 +383,7 @@ public class WidgetTextBoxSingle : FocusableWidget
                 string[] splitLines = MainAPI.Capi.Forms.GetClipboardText().Split('\n');
                 foreach (string line in splitLines)
                 {
-                    sb.Append(line);
+                    sb.Append(line.Replace("\r", ""));
                 }
 
                 // Insert text at cursor pos.

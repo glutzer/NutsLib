@@ -43,7 +43,7 @@ public static class VanillaThemes
     {
         WidgetVanillaTitle bar = new(draggableWidget, draggableWidget.Gui, draggableWidget, title);
         bar.Alignment(Align.CenterTop, AlignFlags.OutsideV).PercentWidth(1f).FixedHeight(8).SetChildSizing(ChildSizing.IgnoreThis);
-        bar.AddChild(new WidgetVanillaButton(bar, bar.Gui, () => bar.Gui.TryClose(), "").SetColor(new Vector4(0.4f, 0f, 0f, 1f)).Alignment(Align.RightMiddle).FixedSize(8, 8));
+        new WidgetVanillaButton(bar, bar.Gui, () => bar.Gui.TryClose(), "×").SetColor(new Vector4(0.4f, 0f, 0f, 1f)).Alignment(Align.RightMiddle).FixedSize(8, 8);
         return bar;
     }
 
@@ -140,7 +140,7 @@ public static class VanillaThemes
 
     public static void ClearCache()
     {
-        foreach (object obj in cache)
+        foreach (object obj in cache.Values)
         {
             if (obj is IDisposable tex)
             {

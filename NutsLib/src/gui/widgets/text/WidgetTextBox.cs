@@ -128,7 +128,7 @@ public class WidgetTextBox : Widget
     /// </summary>
     public void LoadContent(string content)
     {
-        string[] strings = content.Split("\n");
+        string[] strings = content.Replace("\r\n", "\n").Replace("\r", "\n").Split("\n");
 
         lines.Clear();
         lines.AddRange(strings);
@@ -279,13 +279,17 @@ public class WidgetTextBox : Widget
 
     private void GuiEvents_KeyDown(KeyEvent obj)
     {
-        if (!active || obj.Handled) return;
+        if (!active || obj.Handled || obj.KeyCode == (int)GlKeys.Escape) return;
 
         obj.Handled = true;
 
         if (obj.KeyCode == (int)GlKeys.Delete)
         {
-            TryDeleteSelection();
+            if (Selecting)
+            {
+                TryDeleteSelection();
+                return;
+            }
 
             if (cursorXIndex == lines[cursorYIndex].Length && cursorYIndex == lines.Count - 1) return; // Nothing to delete.
 
@@ -311,7 +315,7 @@ public class WidgetTextBox : Widget
         {
             TryDeleteSelection();
 
-            if (cursorYIndex == maxLines - 1) return; // Max lines reached.
+            if (lines.Count >= maxLines) return; // Max lines reached.
 
             string firstLine = lines[cursorYIndex][..cursorXIndex];
 
@@ -432,7 +436,11 @@ public class WidgetTextBox : Widget
                 for (int i = minSelection.Y; i < maxSelection.Y + 1; i++)
                 {
                     string line = lines[i];
-                    if (i == minSelection.Y)
+                    if (minSelection.Y == maxSelection.Y)
+                    {
+                        sb.Append(line[minSelection.X..maxSelection.X]);
+                    }
+                    else if (i == minSelection.Y)
                     {
                         sb.Append(line[minSelection.X..]);
                     }
@@ -458,9 +466,11 @@ public class WidgetTextBox : Widget
 
             if (obj.KeyCode == (int)GlKeys.V)
             {
+                string[] splitLines = MainAPI.Capi.Forms.GetClipboardText().Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+                MinAndMaxSelection(out Vector2i start, out Vector2i end);
+                int removedLines = Selecting ? end.Y - start.Y : 0;
+                if (lines.Count - removedLines + splitLines.Length - 1 > maxLines) return;
                 TryDeleteSelection();
-
-                string[] splitLines = MainAPI.Capi.Forms.GetClipboardText().Split('\n');
 
                 string beforeText = lines[cursorYIndex][..cursorXIndex];
                 string afterText = lines[cursorYIndex][cursorXIndex..];
@@ -474,8 +484,9 @@ public class WidgetTextBox : Widget
 
                 if (splitLines.Length > 1)
                 {
-                    lines.Insert(cursorYIndex + splitLines.Length, afterText);
-                    MoveCursor(0, cursorYIndex + splitLines.Length);
+                    int lastLine = cursorYIndex + splitLines.Length - 1;
+                    lines[lastLine] += afterText;
+                    MoveCursor(splitLines[^1].Length, lastLine);
                 }
                 else
                 {
@@ -490,7 +501,7 @@ public class WidgetTextBox : Widget
 
     private void GuiEvents_KeyPress(KeyEvent obj)
     {
-        if (!active || obj.Handled) return;
+        if (!active || obj.Handled || char.IsControl(obj.KeyChar)) return;
 
         obj.Handled = true;
 

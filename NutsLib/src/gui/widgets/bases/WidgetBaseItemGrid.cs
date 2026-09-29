@@ -20,7 +20,7 @@ public class WidgetBaseItemGrid : Widget
     protected virtual int SlotSize => slotSize * Scale;
 
     // Index of currently moused over slot, or -1 if no slot.
-    public int MousedSlotIndex { get; private set; }
+    public int MousedSlotIndex { get; private set; } = -1;
 
     protected virtual bool IsEnabled => true;
 
@@ -123,7 +123,7 @@ public class WidgetBaseItemGrid : Widget
     {
         if (!IsEnabled) return;
 
-        int newIndex = GetMousedIndex(obj.X, obj.Y);
+        int newIndex = obj.Handled ? -1 : GetMousedIndex(obj.X, obj.Y);
         if (newIndex == -1)
         {
             if (MousedSlotIndex != -1)
@@ -144,10 +144,8 @@ public class WidgetBaseItemGrid : Widget
 
         if (MousedSlotIndex != -1 && MousedSlotIndex != oldIndex)
         {
-            MainAPI.Capi.Event.EnqueueMainThreadTask(() =>
-            {
-                MainAPI.Capi.Input.TriggerOnMouseEnterSlot(slots[MousedSlotIndex]);
-            }, "");
+            if (oldIndex != -1) MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[oldIndex]);
+            MainAPI.Capi.Input.TriggerOnMouseEnterSlot(slots[newIndex]);
         }
 
         if (MousedSlotIndex == -1 && oldIndex != -1)
@@ -272,7 +270,7 @@ public class WidgetBaseItemGrid : Widget
         {
             for (int i = 0; i < array.Length; i++)
             {
-                capi.Network.SendPacketClient(packet);
+                capi.Network.SendPacketClient(array[i]);
             }
         }
         else
@@ -287,6 +285,7 @@ public class WidgetBaseItemGrid : Widget
         if (MousedSlotIndex != -1)
         {
             MainAPI.Capi.Input.TriggerOnMouseLeaveSlot(slots[MousedSlotIndex]);
+            MousedSlotIndex = -1;
         }
     }
 }

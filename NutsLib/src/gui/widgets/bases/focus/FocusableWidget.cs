@@ -35,7 +35,7 @@ public class FocusableWidget : Widget, IFocusable
     {
         if (!obj.Handled && Focused && obj.KeyCode == (int)GlKeys.Tab)
         {
-            TransferFocus(obj.CtrlPressed);
+            TransferFocus(obj.ShiftPressed);
             obj.Handled = true;
         }
     }
@@ -45,6 +45,7 @@ public class FocusableWidget : Widget, IFocusable
         if (gui == null) return;
 
         bool foundIndex = false;
+        IFocusable? first = null;
 
         // Find first widget after this one, call focus on it.
 
@@ -52,6 +53,7 @@ public class FocusableWidget : Widget, IFocusable
         {
             foreach (IFocusable widget in gui.ForWidgets<IFocusable>())
             {
+                first ??= widget;
                 if (foundIndex == true)
                 {
                     widget.Focus();
@@ -68,6 +70,7 @@ public class FocusableWidget : Widget, IFocusable
         {
             foreach (IFocusable widget in gui.ForWidgetsReverse<IFocusable>())
             {
+                first ??= widget;
                 if (foundIndex == true)
                 {
                     widget.Focus();
@@ -81,8 +84,8 @@ public class FocusableWidget : Widget, IFocusable
             }
         }
 
-        // None found, unfocus.
-        Unfocus();
+        // Wrap at either end so keyboard navigation never loses focus.
+        first?.Focus();
     }
 
     public virtual void Focus()

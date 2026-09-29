@@ -57,22 +57,24 @@ public class WidgetBaseButton : Widget
 
     protected virtual void GuiEvents_MouseDown(MouseEvent obj)
     {
+        if (obj.Button != Vintagestory.API.Common.EnumMouseButton.Left) return;
         if (!obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
-            if (state == EnumButtonState.Hovered) OnClicked();
+            OnClicked();
             state = EnumButtonState.Active;
         }
     }
 
     protected virtual void GuiEvents_MouseUp(MouseEvent obj)
     {
-        if (state != EnumButtonState.Active) return;
+        if (obj.Button != Vintagestory.API.Common.EnumMouseButton.Left || state != EnumButtonState.Active) return;
 
-        if (IsInAllBounds(obj))
+        if (!obj.Handled && IsInAllBounds(obj))
         {
-            onRelease();
             state = EnumButtonState.Hovered;
+            obj.Handled = true;
+            onRelease();
         }
         else
         {

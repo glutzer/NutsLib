@@ -1,4 +1,4 @@
-﻿using OpenTK.Mathematics;
+using OpenTK.Mathematics;
 using Vintagestory.API.MathTools;
 
 namespace NutsLib;
@@ -28,7 +28,7 @@ public class FixedPosTransition : IWidgetTransition
     public FixedPosTransition(Widget widget, float duration, Vector2 currentPos, Vector2 targetPos, Action? onComplete)
     {
         this.widget = widget;
-        this.duration = duration;
+        this.duration = Math.Max(0f, duration);
         this.currentPos = currentPos;
         this.targetPos = targetPos;
         OnComplete = onComplete;
@@ -43,7 +43,7 @@ public class FixedPosTransition : IWidgetTransition
     {
         accum += dt;
         accum = Math.Clamp(accum, 0f, duration);
-        float t = accum / duration;
+        float t = duration <= 0f ? 1f : accum / duration;
 
         Vector2 pos = Vector2.Lerp(currentPos, targetPos, t);
 
@@ -66,7 +66,7 @@ public class FixedSizeTransition : IWidgetTransition
     public FixedSizeTransition(Widget widget, float duration, Vector2 currentSize, Vector2 targetSize, Action? onComplete)
     {
         this.widget = widget;
-        this.duration = duration;
+        this.duration = Math.Max(0f, duration);
         this.currentSize = currentSize;
         this.targetSize = targetSize;
         OnComplete = onComplete;
@@ -81,7 +81,7 @@ public class FixedSizeTransition : IWidgetTransition
     {
         accum += dt;
         accum = Math.Clamp(accum, 0f, duration);
-        float t = accum / duration;
+        float t = duration <= 0f ? 1f : accum / duration;
 
         Vector2 size = Vector2.Lerp(currentSize, targetSize, t);
 
@@ -104,7 +104,7 @@ public class PercentPosTransition : IWidgetTransition
     public PercentPosTransition(Widget widget, float duration, Vector2 currentPos, Vector2 targetPos, Action? onComplete)
     {
         this.widget = widget;
-        this.duration = duration;
+        this.duration = Math.Max(0f, duration);
         this.currentPos = currentPos;
         this.targetPos = targetPos;
         OnComplete = onComplete;
@@ -119,7 +119,7 @@ public class PercentPosTransition : IWidgetTransition
     {
         accum += dt;
         accum = Math.Clamp(accum, 0f, duration);
-        float t = accum / duration;
+        float t = duration <= 0f ? 1f : accum / duration;
 
         Vector2 pos = Vector2.Lerp(currentPos, targetPos, t);
 
@@ -142,7 +142,7 @@ public class PercentSizeTransition : IWidgetTransition
     public PercentSizeTransition(Widget widget, float duration, Vector2 currentSize, Vector2 targetSize, Action? onComplete)
     {
         this.widget = widget;
-        this.duration = duration;
+        this.duration = Math.Max(0f, duration);
         this.currentSize = currentSize;
         this.targetSize = targetSize;
         OnComplete = onComplete;
@@ -157,7 +157,7 @@ public class PercentSizeTransition : IWidgetTransition
     {
         accum += dt;
         accum = Math.Clamp(accum, 0f, duration);
-        float t = accum / duration;
+        float t = duration <= 0f ? 1f : accum / duration;
 
         Vector2 size = Vector2.Lerp(currentSize, targetSize, t);
 
@@ -180,7 +180,7 @@ public class FadeTransition : IWidgetTransition
     public FadeTransition(Widget widget, float duration, float targetFade, Action? onComplete)
     {
         this.widget = widget;
-        this.duration = duration;
+        this.duration = Math.Max(0f, duration);
         currentFade = widget.SetFade;
         this.targetFade = targetFade;
         OnComplete = onComplete;
@@ -195,7 +195,7 @@ public class FadeTransition : IWidgetTransition
     {
         accum += dt;
         accum = Math.Clamp(accum, 0f, duration);
-        float t = accum / duration;
+        float t = duration <= 0f ? 1f : accum / duration;
         widget.SetFade = GameMath.Lerp(currentFade, targetFade, t);
     }
 }

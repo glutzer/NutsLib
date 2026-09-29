@@ -1,5 +1,7 @@
 ﻿using Vintagestory.API.Client;
 
+using Vintagestory.API.Common;
+
 namespace NutsLib;
 
 /// <summary>
@@ -19,7 +21,7 @@ public class WidgetBaseSlider : Widget
     public WidgetBaseSlider(Widget? parent, Gui gui, Action<int> onNewValue, int steps, bool onlyCallOnRelease = false) : base(parent, gui)
     {
         this.onNewValue = onNewValue;
-        this.steps = steps;
+        this.steps = Math.Max(1, steps);
         this.onlyCallOnRelease = onlyCallOnRelease;
     }
 
@@ -80,14 +82,8 @@ public class WidgetBaseSlider : Widget
     {
         if (state == EnumButtonState.Active)
         {
-            cursorStep = (int)Math.Round((obj.X - X) / (float)Width * steps);
-            cursorStep = Math.Clamp(cursorStep, 0, steps);
-
-            if (!onlyCallOnRelease)
-            {
-                onNewValue(cursorStep);
-            }
-
+            UpdateFromMouse(obj.X);
+            obj.Handled = true;
             return;
         }
 
@@ -104,16 +100,19 @@ public class WidgetBaseSlider : Widget
 
     protected virtual void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && IsInsideAndClip(obj))
+        if (obj.Button == EnumMouseButton.Left && !obj.Handled && IsInAllBounds(obj))
         {
             obj.Handled = true;
             state = EnumButtonState.Active;
+            UpdateFromMouse(obj.X);
         }
     }
 
     protected virtual void GuiEvents_MouseUp(MouseEvent obj)
     {
-        if (state != EnumButtonState.Active) return;
+        if (obj.Button != EnumMouseButton.Left || state != EnumButtonState.Active) return;
+        UpdateFromMouse(obj.X);
+        obj.Handled = true;
 
         if (onlyCallOnRelease)
         {
@@ -121,5 +120,15 @@ public class WidgetBaseSlider : Widget
         }
 
         state = IsInAllBounds(obj) ? EnumButtonState.Hovered : EnumButtonState.Normal;
+    }
+
+    private void UpdateFromMouse(int mouseX)
+    {
+        if (Width <= 0) return;
+        float thumbWidth = Width / 20f;
+        int value = Math.Clamp((int)Math.Round((mouseX - X - (thumbWidth / 2f)) / (Width - thumbWidth) * steps), 0, steps);
+        if (value == cursorStep) return;
+        cursorStep = value;
+        if (!onlyCallOnRelease) onNewValue(cursorStep);
     }
 }

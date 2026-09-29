@@ -1,10 +1,12 @@
 ﻿using Vintagestory.API.Client;
 
+using Vintagestory.API.Common;
+
 namespace NutsLib;
 
 /// <summary>
 /// Implementation of a scroll bar missing: rendering, textures.
-/// At 0 steps per page it will not step at all.
+/// At 0 steps per page scrolling is continuous rather than snapped.
 /// </summary>
 public class WidgetBaseScrollBar : Widget
 {
@@ -80,7 +82,13 @@ public class WidgetBaseScrollBar : Widget
         {
             obj.SetHandled();
 
-            if (stepsPerPage == 0) return; // Not implemented.
+            if (GetScrollBarRatio() >= 1f) { Reset(); return; }
+            if (stepsPerPage == 0)
+            {
+                scrollProgress = Math.Clamp(scrollProgress - (obj.delta * 0.05f), 0f, 1f);
+                SetOffset();
+                return;
+            }
 
             int steps = GetSteps(GetScrollBarRatio());
             float oneStepProgress = 1f / steps;
@@ -101,6 +109,8 @@ public class WidgetBaseScrollBar : Widget
         if (barState == EnumButtonState.Active)
         {
             MoveBar(horizontal ? obj.X : obj.Y);
+            obj.Handled = true;
+            return;
         }
 
         hoveringScrollArea = scrollWidget.IsInAllBounds(obj);
@@ -125,7 +135,7 @@ public class WidgetBaseScrollBar : Widget
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && IsInAllBounds(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
+        if (obj.Button == EnumMouseButton.Left && !obj.Handled && GetScrollBarRatio() < 1f && IsInAllBounds(obj) && IsMouseOnScrollBar(obj.X, obj.Y))
         {
             obj.Handled = true;
 
@@ -136,6 +146,8 @@ public class WidgetBaseScrollBar : Widget
 
     private void GuiEvents_MouseUp(MouseEvent obj)
     {
+        if (obj.Button != EnumMouseButton.Left) return;
+        if (barState == EnumButtonState.Active) obj.Handled = true;
         barState = IsInAllBounds(obj) && IsMouseOnScrollBar(obj.X, obj.Y) ? EnumButtonState.Hovered : EnumButtonState.Normal;
     }
 
@@ -144,7 +156,9 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected float GetScrollBarRatio()
     {
-        return horizontal
+        return scrollWidget == null || scrollWidget.Width <= 0 || scrollWidget.Height <= 0
+            ? 1f
+            : horizontal
             ? scrollWidget == null ? 1f : Math.Clamp((float)Width / scrollWidget.Width, 0f, 1f)
             : scrollWidget == null ? 1f : Math.Clamp((float)Height / scrollWidget.Height, 0f, 1f);
     }
@@ -211,6 +225,7 @@ public class WidgetBaseScrollBar : Widget
     {
         float ratio = GetScrollBarRatio();
         int size = GetScrollBarSize(ratio);
+        if ((horizontal ? Width : Height) <= size) { Reset(); return; }
 
         // Offset mouse position up to simulate grabbing the bar at that position.
         if (horizontal)
@@ -264,7 +279,7 @@ public class WidgetBaseScrollBar : Widget
     /// </summary>
     protected int GetSteps(float scrollBarRatio)
     {
-        return (int)(1 / scrollBarRatio * stepsPerPage);
+        return Math.Max(1, (int)(1 / Math.Max(scrollBarRatio, 0.0001f) * Math.Max(1, stepsPerPage)));
     }
 
     /// <summary>

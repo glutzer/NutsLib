@@ -93,7 +93,7 @@ public abstract partial class Widget
     }
 
     // Topmost widget.
-    public Widget MainWidget => Parent ?? this;
+    public Widget MainWidget => Parent?.MainWidget ?? this;
 
     // Bounds setting.
     public void CalculateBounds()
@@ -102,8 +102,7 @@ public abstract partial class Widget
         int cHeight = Height;
 
         int guiScale = MainAPI.GuiScale;
-        if (Parent?.NoScale == true) NoScale = true; // Don't scale if parent doesn't scale.
-        if (NoScale) guiScale = 1;
+        if (NoScale || Parent?.Scale == 1) guiScale = 1;
 
         Scale = guiScale;
 

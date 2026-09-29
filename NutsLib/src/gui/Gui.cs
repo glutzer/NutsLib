@@ -84,9 +84,7 @@ public abstract class Gui : GuiDialog
     /// </summary>
     public void SetWidgets()
     {
-        Dispose();
-
-        widgets.Clear();
+        DisposeWidgets();
         PopulateWidgets();
 
         PartitionWidgets();
@@ -149,7 +147,8 @@ public abstract class Gui : GuiDialog
 
     public void AddWidget(Widget widget)
     {
-        widgets.Add(widget);
+        if (!widgets.Contains(widget)) widgets.Add(widget);
+        MarkForRepartition();
     }
 
     public override void OnRenderGUI(float dt)
@@ -242,6 +241,10 @@ public abstract class Gui : GuiDialog
     {
         CheckRepartition();
         guiEvents.TriggerKeyDown(args);
+        if (!args.Handled && args.KeyCode == (int)GlKeys.Escape)
+        {
+            args.Handled = TryClose();
+        }
     }
 
     public override void OnKeyUp(KeyEvent args)
@@ -258,6 +261,15 @@ public abstract class Gui : GuiDialog
 
     public override void Dispose()
     {
+        MainAPI.OnWindowResize -= OnWindowResize;
+        MainAPI.OnGuiRescale -= OnGuiRescale;
+        DisposeWidgets();
+        base.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    private void DisposeWidgets()
+    {
         CheckRepartition();
 
         foreach (Widget widget in widgetsBackToFront)
@@ -266,11 +278,8 @@ public abstract class Gui : GuiDialog
         }
 
         widgetsBackToFront = [];
-
-        // Might be some "composers" in there.
-        base.Dispose();
-
-        GC.SuppressFinalize(this);
+        widgets.Clear();
+        guiEvents.ClearEvents();
     }
 
     /// <summary>

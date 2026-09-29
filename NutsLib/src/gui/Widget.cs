@@ -22,8 +22,9 @@ public abstract partial class Widget
 
     public Widget AddChild(Widget child)
     {
-        Children.Add(child);
+        if (child.Parent == this) return this;
         child.Parent?.Children.Remove(child);
+        Children.Add(child);
         child.Parent = this;
         Gui.MarkForRepartition();
         return this;

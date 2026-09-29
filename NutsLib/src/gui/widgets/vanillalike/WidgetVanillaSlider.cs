@@ -38,9 +38,9 @@ public class WidgetVanillaSlider : WidgetBaseSlider
         // Render display text.
         if (state != EnumButtonState.Normal)
         {
+            displayText.Text = cursorStep.ToString();
             int textWidth = displayText.PixelLength;
             RenderTools.RenderNineSlice(VanillaThemes.OutsetTexture, shader, x - (textWidth / 2) + (width / 2) - Gui.Scaled(4), y - Gui.Scaled(9), textWidth + Gui.Scaled(8), Gui.Scaled(7));
-            displayText.Text = cursorStep.ToString();
             displayText.RenderCenteredLine(x + (width / 2), y - Gui.Scaled(4), shader);
         }
     }

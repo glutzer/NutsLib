@@ -1,6 +1,8 @@
 ﻿using OpenTK.Mathematics;
 using Vintagestory.API.Client;
 
+using Vintagestory.API.Common;
+
 namespace NutsLib;
 
 public class WidgetHueSlider : WidgetBaseSlider
@@ -102,8 +104,9 @@ public class WidgetColorPicker : Widget
 
     private void GuiEvents_MouseMove(MouseEvent obj)
     {
-        if (dragging)
+        if (dragging && Width > 0 && Height > 0)
         {
+            obj.Handled = true;
             Vector3 oldHsv = currentHsv;
 
             // Get pos relative to X, Y.
@@ -141,11 +144,17 @@ public class WidgetColorPicker : Widget
 
     private void GuiEvents_MouseUp(MouseEvent obj)
     {
+        if (obj.Button != EnumMouseButton.Left) return;
+        if (dragging) obj.Handled = true;
         dragging = false;
     }
 
     private void GuiEvents_MouseDown(MouseEvent obj)
     {
-        if (!obj.Handled && IsInAllBounds(obj)) dragging = true;
+        if (obj.Button == EnumMouseButton.Left && !obj.Handled && IsInAllBounds(obj))
+        {
+            dragging = true;
+            GuiEvents_MouseMove(obj);
+        }
     }
 }

@@ -48,7 +48,7 @@ public class MarkdownTag : IMarkdownToken
             {
                 string key = parts[i][..index];
                 string value = parts[i][(index + 1)..];
-                attributes.Add(key, value);
+                attributes[key] = value;
             }
         }
     }
@@ -80,7 +80,7 @@ public static partial class Markdown
     {
         if (token is MarkdownText markdownText)
         {
-            objects.Add(new TextObject(markdownText.text, FontRegistry.GetFont("celestia"), fontScale, color).Bold(bold).Italic(italic));
+            objects.Add(new TextObject(markdownText.text, VanillaThemes.Font, fontScale, color).Bold(bold).Italic(italic));
             return;
         }
 
@@ -186,6 +186,8 @@ public static partial class Markdown
 
             if (c == '>' && insideTag)
             {
+                insideTag = false;
+                if (builder.Length == 0) continue;
                 if (builder[0] == '/') // Try to close the tag.
                 {
                     // Get current tag except /

@@ -19,6 +19,7 @@ public class WidgetVanillaButton : WidgetBaseButton
     public void SetText(string text)
     {
         textLine.Text = text;
+        textLine.SetScaleFromWidget(this, 0.6f, 0.9f);
     }
 
     public WidgetVanillaButton SetColor(Vector4 color)
