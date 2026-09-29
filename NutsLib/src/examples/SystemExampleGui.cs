@@ -185,7 +185,7 @@ public class ExampleGui : Gui
 
         public ExampleRichText(Widget parent, Gui gui) : base(parent, gui)
         {
-            rich.textObjects = Markdown.ConvertMarkdownLine("Normal <strong>bold</strong> <i>italic</i> <font color=#66ccff>color</font>", 16);
+            rich.textObjects = Markdown.ConvertMarkdownLine("Normal <strong>bold</strong> <i>italic</i> <font color=#66ccff>color</font> <indecipherable>secret</indecipherable>", 16);
             cipher = new TextObjectIndecipherable("Randomized text", FontRegistry.GetFont("friz"), 16, VanillaThemes.YellowColor,
                 VanillaThemes.Font, CipherType.AllRandomized);
         }

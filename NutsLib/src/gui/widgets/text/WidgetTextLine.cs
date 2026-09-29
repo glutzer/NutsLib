@@ -10,10 +10,15 @@ public class WidgetTextLine : Widget
     private readonly TextObject textObject;
     private readonly bool center;
 
-    public WidgetTextLine(Widget? parent, Gui gui, Font font, string text, Vector4 color, bool center = true, bool shadow = true) : base(parent, gui)
+    public WidgetTextLine(Widget? parent, Gui gui, Font font, string text, Vector4 color, bool center = true, bool shadow = true)
+        : this(parent, gui, new TextObject(text, font, 50, color), center, shadow)
+    {
+    }
+
+    public WidgetTextLine(Widget? parent, Gui gui, TextObject textObject, bool center = true, bool shadow = true) : base(parent, gui)
     {
         this.center = center;
-        textObject = new TextObject(text, font, 50, color);
+        this.textObject = textObject;
 
         OnResize += () =>
         {

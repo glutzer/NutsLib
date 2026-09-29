@@ -11,7 +11,6 @@ public enum CipherType
 
 /// <summary>
 /// Text object that renders with the advance of another font.
-/// Can't be bold/italic.
 /// Font = runic, foster font is font to replace.
 /// </summary>
 public class TextObjectIndecipherable : TextObject
@@ -45,7 +44,7 @@ public class TextObjectIndecipherable : TextObject
         y = (int)y;
 
         guiShader.ShaderType = 2;
-        guiShader.Color = color;
+        guiShader.FontColor = color;
 
         guiShader.BindTexture(DynamicFontAtlas.AtlasTexture, "tex2d");
 
@@ -59,14 +58,26 @@ public class TextObjectIndecipherable : TextObject
         {
             GlyphRenderInfo fontChar;
 
-            if ((type == CipherType.FirstRandomized && index == 0) || type == CipherType.AllRandomized)
+            if (!char.IsWhiteSpace(c) && ((type == CipherType.FirstRandomized && index == 0) || type == CipherType.AllRandomized))
             {
-                char randomChar = (char)rand.Next(65, 123);
+                const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                char randomChar = alphabet[rand.Next(alphabet.Length)];
                 fontChar = font.GetGlyph(randomChar);
             }
             else
             {
                 fontChar = font.GetGlyph(c);
+            }
+
+            if (Shadow)
+            {
+                Vector4 shadowColor = color;
+                shadowColor.Xyz *= 0.25f;
+                float shadowOffset = fontScale / 20f;
+                guiShader.FontColor = shadowColor;
+                guiShader.ModelMatrix = Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance + shadowOffset, y + shadowOffset, 0f);
+                RenderTools.RenderSquareVao(fontChar.vaoId);
+                guiShader.FontColor = color;
             }
 
             guiShader.ModelMatrix = Matrix4.CreateScale(fontScale, fontScale, 1f) * Matrix4.CreateTranslation(x + xAdvance, y, 0f);

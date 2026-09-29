@@ -4,12 +4,17 @@ namespace NutsLib;
 
 public class WidgetVanillaButton : WidgetBaseButton
 {
-    private readonly TextObject textLine = new("", VanillaThemes.Font, 1, Vector4.One);
+    private readonly TextObject textLine;
     private Vector4 color = Vector4.One;
 
-    public WidgetVanillaButton(Widget? parent, Gui gui, Action onRelease, string text) : base(parent, gui, onRelease)
+    public WidgetVanillaButton(Widget? parent, Gui gui, Action onRelease, string text)
+        : this(parent, gui, onRelease, new TextObject(text, VanillaThemes.Font, 1, Vector4.One))
     {
-        textLine.Text = text;
+    }
+
+    public WidgetVanillaButton(Widget? parent, Gui gui, Action onRelease, TextObject text) : base(parent, gui, onRelease)
+    {
+        textLine = text;
         OnResize += () =>
         {
             textLine.SetScaleFromWidget(this, 0.6f, 0.9f);

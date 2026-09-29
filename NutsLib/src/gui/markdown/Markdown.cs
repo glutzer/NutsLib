@@ -66,7 +66,7 @@ public static partial class Markdown
 
         foreach (IMarkdownToken token in tokens)
         {
-            ProcessToken(textObjects, token, false, false, Vector4.One, fontScale);
+            ProcessToken(textObjects, token, false, false, Vector4.One, fontScale, null, CipherType.AllRandomized);
         }
 
         return textObjects;
@@ -76,16 +76,28 @@ public static partial class Markdown
     /// Recursively processes tokens.
     /// Could be bad if it's really big but it's not.
     /// </summary>
-    private static void ProcessToken(List<TextObject> objects, IMarkdownToken token, bool bold, bool italic, Vector4 color, int fontScale)
+    private static void ProcessToken(List<TextObject> objects, IMarkdownToken token, bool bold, bool italic, Vector4 color, int fontScale, Font? cipherFont, CipherType cipherType)
     {
         if (token is MarkdownText markdownText)
         {
-            objects.Add(new TextObject(markdownText.text, VanillaThemes.Font, fontScale, color).Bold(bold).Italic(italic));
+            TextObject textObject = cipherFont == null
+                ? new TextObject(markdownText.text, VanillaThemes.Font, fontScale, color)
+                : new TextObjectIndecipherable(markdownText.text, cipherFont, fontScale, color, VanillaThemes.Font, cipherType);
+            objects.Add(textObject.Bold(bold).Italic(italic));
             return;
         }
 
         if (token is MarkdownTag tag)
         {
+            if (tag.tag == "indecipherable")
+            {
+                cipherFont = tag.attributes.TryGetValue("font", out string? name)
+                    ? FontRegistry.GetFont(name.Trim('"', '\'')) : VanillaThemes.Font;
+                cipherType = tag.attributes.TryGetValue("type", out string? type)
+                    && Enum.TryParse(type.Trim('"', '\''), true, out CipherType parsedType)
+                    && Enum.IsDefined(parsedType) ? parsedType : CipherType.AllRandomized;
+            }
+
             if (tag.tag == "i")
             {
                 italic = true;
@@ -106,7 +118,7 @@ public static partial class Markdown
 
             foreach (IMarkdownToken child in tag.children)
             {
-                ProcessToken(objects, child, bold, italic, color, fontScale);
+                ProcessToken(objects, child, bold, italic, color, fontScale, cipherFont, cipherType);
             }
         }
     }
